@@ -1,0 +1,1 @@
+<a href="<?php echo e(route('customer.show_details',$customer->id)); ?>"><?php echo e($customer->first_name); ?></a><?php /**PATH /var/www/html/mytestdhatri/Modules/Customer/Resources/views/customers/components/_name_td.blade.php ENDPATH**/ ?>
