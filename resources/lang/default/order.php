@@ -37,7 +37,7 @@
     'confirmed_orders' => 'Confirmed Orders',
     'completed_orders' => 'Completed Orders',
     'pending_payment_orders' => 'Pending Payment Orders',
-    'cancelled_orders' => 'Refused/Cancelled Orders',
+    'cancelled_orders' => 'Return/Cancelled Orders',
     'total_product_qty' => 'Total Product QTY',
     'is_paid' => 'Is Paid',
     'order_state' => 'Order State',

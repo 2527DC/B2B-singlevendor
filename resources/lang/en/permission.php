@@ -145,7 +145,7 @@ return [
     "order_details"=> "Order Details",
     "delivery_process"=> "Delivery Process",
     "cancel_reason"=> "Cancel Reason",
-    "refund_manage"=> "Refund Manage",
+    "refund_manage"=> "Return Manage",
     "update_status"=> "Update Status",
     "confirmed_list"=> "Confirmed List",
     "update_refund_process"=> "Update Refund Process",

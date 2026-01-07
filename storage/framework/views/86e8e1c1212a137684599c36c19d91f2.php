@@ -186,8 +186,8 @@
                                             <span id="error_variant_sku_prefix" class="text-danger"><?php echo e($errors->first('variant_sku_prefix')); ?></span>
                                         </div>
                                     </div>
-                                    <div class="col-lg-3">
-                                        <div class="primary_input mb-15">
+                                    <div class="col-lg-3" style="display: none;">
+                                        <div class="primary_input mb-15 ">
                                             <label class="primary_input_label" for="model_number"> <?php echo e(__('common.model_number')); ?></label>
                                             <input class="primary_input_field" id="model_number" name="model_number" placeholder="<?php echo e(__('common.model_number')); ?>" type="text" value="<?php echo e(old('model_number')); ?>">
                                             <span class="text-danger"><?php echo e($errors->first('model_number')); ?></span>
@@ -346,20 +346,21 @@
                                        <div class="row">
                                            <div class="col-lg-3">
                                                <div class="primary_input mb-15">
-                                                   <label class="primary_input_label" for="weight"> <?php echo e(__('product.weight')); ?> [<?php echo e(__('product.gm')); ?>]</label>
+                                                   <label class="primary_input_label" for="weight"> <?php echo e(__('product.weight')); ?> [<?php echo e(__('kg')); ?>]</label>
                                                    <input class="primary_input_field" name="weight" id="weight" type="number" min="0" step="<?php echo e(step_decimal()); ?>" value="<?php echo e(old('weight')); ?>">
                                                    <span class="text-danger" id="error_weight"><?php echo e($errors->first('weight')); ?></span>
                                                </div>
                                            </div>
                                            <div class="col-lg-3">
-                                               <div class="primary_input mb-15">
+                                           <div class="primary_input mb-15" style="display: none;">
+
                                                    <label class="primary_input_label" for="length"> <?php echo e(__('product.length')); ?> [<?php echo e(__('product.cm')); ?>]</label>
                                                    <input class="primary_input_field" name="length" id="length" type="number" min="0" step="<?php echo e(step_decimal()); ?>" value="<?php echo e(old('length')); ?>">
                                                    <span class="text-danger" id="error_length"><?php echo e($errors->first('length')); ?></span>
                                                </div>
                                            </div>
                                            <div class="col-lg-3">
-                                               <div class="primary_input mb-15">
+                                               <div class="primary_input mb-15" style =" display :none">
                                                    <label class="primary_input_label" for="breadth"> <?php echo e(__('product.breadth')); ?> [<?php echo e(__('product.cm')); ?>]</label>
                                                    <input class="primary_input_field" name="breadth" id="breadth" type="number" min="0" step="<?php echo e(step_decimal()); ?>" value="<?php echo e(old('breadth')); ?>">
                                                    <span class="text-danger" id="error_breadth"><?php echo e($errors->first('breadth')); ?></span>
@@ -367,7 +368,7 @@
                                            </div>
 
                                            <div class="col-lg-3">
-                                               <div class="primary_input mb-15">
+                                               <div class="primary_input mb-15 " style =" display :none">
                                                    <label class="primary_input_label" for="height"> <?php echo e(__('product.height')); ?> [<?php echo e(__('product.cm')); ?>]</label>
                                                    <input class="primary_input_field" name="height" id="height" type="number" min="0" step="<?php echo e(step_decimal()); ?>" value="<?php echo e(old('height')); ?>">
                                                    <span class="text-danger" id="error_height"><?php echo e($errors->first('height')); ?></span>

@@ -1,0 +1,21 @@
+{
+    "CheckPincode": {
+        "item_id": "49678944",
+        "migration": [
+            "2023_04_20_100403_create_check_pincodes_table.php",
+            "2023_04_20_145919_create_pin_code_configurations_table.php",
+            "2023_04_21_130529_create_check_pincode_permission.php"
+        ],
+        "names": [],
+        "versions": [
+            "1.3"
+        ],
+        "min_system_version":"3.8",
+        "url": [
+             "https://aorasoft.com"
+        ],
+        "notes": [
+            "This is Check Pincode module for Amazcart. Thanks for using. Amazcrt version required 3.8"
+        ]
+    }
+}

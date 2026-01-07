@@ -15,6 +15,7 @@ use App\Traits\Accounts;
 use Carbon\Carbon;
 use Modules\UserActivityLog\Traits\LogActivity;
 use Razorpay\Api\Api;
+use Illuminate\Support\Facades\Log;
 
 class RazorpayController extends Controller
 {
@@ -30,69 +31,167 @@ class RazorpayController extends Controller
         return view('paymentgateway::razorPay.index');
     }
 
+
     public function payment($data)
     {
-        //Input items of form
+        Log::info('Razorpay payment method started', [
+            'input' => $data
+        ]);
+    
         $input = $data;
-        //get API Configuration
-        $credential = $this->getCredential();
-        $api = new Api(@$credential->perameter_1, @$credential->perameter_2);
-        //Fetch payment information by razorpay_payment_id
-        $payment = $api->payment->fetch($input['razorpay_payment_id']);
-
-        if(count($input)  && !empty($input['razorpay_payment_id'])) {
-            try {
-                $response = $api->payment->fetch($input['razorpay_payment_id'])->capture(array('amount'=>$payment['amount']));
-                $return_data = $response['id'];
-                if (session()->has('wallet_recharge')) {
-
-                    $amount = $response['amount'] / 100;
-                    $walletService = new WalletRepository;
-                    Session()->forget('order_payment');
-                    return $walletService->walletRecharge($amount, $credential->method->id, $return_data);
-                    
-                }
-                if (session()->has('order_payment')) {
-                    $amount = $response['amount'] / 100;
-                    $orderPaymentService = new OrderRepository;
-                    $order_payment = $orderPaymentService->orderPaymentDone($amount, $credential->method->id, $return_data, (auth()->check())?auth()->user():null);
-                    if($order_payment == 'failed'){
-                        Toastr::error('Invalid Payment');
-                        return redirect(url('/checkout'));
-                    }
-                    $payment_id = $order_payment->id;
-                    Session()->forget('order_payment');
-                    LogActivity::successLog('Order payment successful.');
-                    return $payment_id;
-                }
-                if (session()->has('subscription_payment')) {
-                    $amount = $response['amount'] / 100;
-                    $defaultIncomeAccount = $this->defaultIncomeAccount();
-                    $transactionRepo = new TransactionRepository(new Transaction);
-                    $seller_subscription = getParentSeller()->SellerSubscriptions;
-                    $transaction = $transactionRepo->makeTransaction(getParentSeller()->first_name." - Subsriction Payment", "in", "Razor Pay", "subscription_payment", $defaultIncomeAccount, "Subscription Payment", $seller_subscription, $amount, Carbon::now()->format('Y-m-d'), getParentSellerId(), null, null);
-                    $seller_subscription->update(['last_payment_date' => Carbon::now()->format('Y-m-d')]);
-                    SubsciptionPaymentInfo::create([
-                        'transaction_id' => $transaction->id,
-                        'txn_id' => $return_data,
-                        'seller_id' => getParentSellerId(),
-                        'subscription_type' => getParentSeller()->sellerAccount->subscription_type,
-                        'commission_type' => @$seller_subscription->pricing->name
-                    ]);
-                    session()->forget('subscription_payment');
-                    Toastr::success(__('common.payment_successfully'),__('common.success'));
-                    LogActivity::successLog('Subscription payment successful.');
-                    return redirect()->route('seller.dashboard');
-                }
-            } catch (\Exception $e) {
-
-            LogActivity::errorLog($e->getMessage());
-                return  $e->getMessage();
+    
+        try {
+            $credential = $this->getCredential();
+    
+            Log::info('Razorpay credentials fetched', [
+                'key' => @$credential->perameter_1
+            ]);
+    
+            $api = new Api(
+                @$credential->perameter_1,
+                @$credential->perameter_2
+            );
+    
+            if (empty($input['razorpay_payment_id'])) {
+                Log::warning('Razorpay payment id missing', $input);
+                return 'Payment ID missing';
             }
+    
+            Log::info('Fetching Razorpay payment', [
+                'payment_id' => $input['razorpay_payment_id']
+            ]);
+    
+            $payment = $api->payment->fetch($input['razorpay_payment_id']);
+    
+            Log::info('Razorpay payment fetched', [
+                'amount' => $payment['amount'],
+                'status' => $payment['status']
+            ]);
+    
+            $response = $api->payment
+                ->fetch($input['razorpay_payment_id'])
+                ->capture(['amount' => $payment['amount']]);
+    
+            Log::info('Razorpay payment captured successfully', [
+                'response' => $response
+            ]);
+    
+            $return_data = $response['id'];
+            $amount = $response['amount'] / 100;
+    
+            /** ---------------- Wallet Recharge ---------------- */
+            if (session()->has('wallet_recharge')) {
+                Log::info('Wallet recharge flow started', [
+                    'amount' => $amount
+                ]);
+    
+                $walletService = new WalletRepository;
+                session()->forget('order_payment');
+    
+                return $walletService->walletRecharge(
+                    $amount,
+                    $credential->method->id,
+                    $return_data
+                );
+            }
+    
+            /** ---------------- Order Payment ---------------- */
+            if (session()->has('order_payment')) {
+                Log::info('Order payment flow started', [
+                    'amount' => $amount
+                ]);
+    
+                $orderPaymentService = new OrderRepository;
+                $order_payment = $orderPaymentService->orderPaymentDone(
+                    $amount,
+                    $credential->method->id,
+                    $return_data,
+                    auth()->check() ? auth()->user() : null
+                );
+    
+                if ($order_payment === 'failed') {
+                    Log::error('Order payment failed', [
+                        'txn_id' => $return_data
+                    ]);
+    
+                    Toastr::error('Invalid Payment');
+                    return redirect(url('/checkout'));
+                }
+    
+                session()->forget('order_payment');
+    
+                Log::info('Order payment successful', [
+                    'order_payment_id' => $order_payment->id
+                ]);
+    
+                return $order_payment->id;
+            }
+    
+            /** ---------------- Subscription Payment ---------------- */
+            if (session()->has('subscription_payment')) {
+                Log::info('Subscription payment flow started', [
+                    'amount' => $amount
+                ]);
+    
+                $defaultIncomeAccount = $this->defaultIncomeAccount();
+                $transactionRepo = new TransactionRepository(new Transaction);
+                $seller_subscription = getParentSeller()->SellerSubscriptions;
+    
+                $transaction = $transactionRepo->makeTransaction(
+                    getParentSeller()->first_name . ' - Subscription Payment',
+                    'in',
+                    'Razor Pay',
+                    'subscription_payment',
+                    $defaultIncomeAccount,
+                    'Subscription Payment',
+                    $seller_subscription,
+                    $amount,
+                    Carbon::now()->format('Y-m-d'),
+                    getParentSellerId()
+                );
+    
+                $seller_subscription->update([
+                    'last_payment_date' => Carbon::now()->format('Y-m-d')
+                ]);
+    
+                SubsciptionPaymentInfo::create([
+                    'transaction_id' => $transaction->id,
+                    'txn_id' => $return_data,
+                    'seller_id' => getParentSellerId(),
+                    'subscription_type' => getParentSeller()->sellerAccount->subscription_type,
+                    'commission_type' => optional($seller_subscription->pricing)->name
+                ]);
+    
+                session()->forget('subscription_payment');
+    
+                Log::info('Subscription payment successful', [
+                    'transaction_id' => $transaction->id
+                ]);
+    
+                Toastr::success(__('common.payment_successfully'), __('common.success'));
+                return redirect()->route('seller.dashboard');
+            }
+    
+        } catch (\Exception $e) {
+    
+            Log::error('Razorpay payment exception', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+    
+            return $e->getMessage();
         }
-        Toastr::success(__('order.payment_successful_your_order_will_be_despatched_in_the_next_48_hours'),__('common.success'));
+    
+        Log::info('Payment completed with default redirect');
+    
+        Toastr::success(
+            __('order.payment_successful_your_order_will_be_despatched_in_the_next_48_hours'),
+            __('common.success')
+        );
+    
         return redirect()->route('frontend.welcome');
     }
+    
 
     private function getCredential(){
         $url = explode('?',url()->previous());

@@ -209,8 +209,8 @@ $LanguageList = getLanguageList();
                                         </div>
                                     </div>
                                         <input type="hidden" name="new_attribute_added" id="new_attribute_added_id" value="0">
-                                        <div class="col-lg-3">
-                                            <div class="primary_input mb-15">
+                                        <div class="col-lg-3 "  style="display: none;" >
+                                            <div class="primary_input mb-15" style="display: none;" >
                                                 <label class="primary_input_label" for="model_number">
                                                     {{ __('common.model_number') }}</label>
                                                 <input class="primary_input_field" name="model_number"
@@ -395,27 +395,27 @@ $LanguageList = getLanguageList();
                                             <div class="row">
                                                 <div class="col-lg-3">
                                                     <div class="primary_input mb-15">
-                                                        <label class="primary_input_label" for="weight"> {{__('product.weight')}} [{{__('product.gm')}}]</label>
+                                                        <label class="primary_input_label" for="weight"> {{__('product.weight')}} [{{__('kg')}}]</label>
                                                         <input value="{{@$product->skus->first()->weight}}" class="primary_input_field" name="weight" id="weight" type="number" min="0" step="{{step_decimal()}}">
                                                         <span class="text-danger" id="error_weight">{{ $errors->first('weight') }}</span>
                                                     </div>
                                                 </div>
                                                 <div class="col-lg-3">
-                                                    <div class="primary_input mb-15">
+                                                    <div class="primary_input mb-15" style="display: none;">
                                                         <label class="primary_input_label" for="length"> {{ __('product.length')}} [{{__('product.cm')}}]</label>
                                                         <input value="{{@getNumberTranslate($product->skus->first()->length)}}" class="primary_input_field" name="length" id="length" type="number" min="0" step="{{step_decimal()}}">
                                                         <span class="text-danger" id="error_length">{{ $errors->first('length') }}</span>
                                                     </div>
                                                 </div>
                                                 <div class="col-lg-3">
-                                                    <div class="primary_input mb-15">
+                                                    <div class="primary_input mb-15" style="display: none;">
                                                         <label class="primary_input_label" for=""> {{ __('product.breadth')}} [{{__('product.cm')}}]</label>
                                                         <input value="{{@$product->skus->first()->breadth}}" class="primary_input_field" name="breadth" id="breadth" type="number" min="0" step="{{step_decimal()}}">
                                                         <span class="text-danger" id="error_breadth">{{ $errors->first('breadth') }}</span>
                                                     </div>
                                                 </div>
                                                 <div class="col-lg-3">
-                                                    <div class="primary_input mb-15">
+                                                    <div class="primary_input mb-15" style="display: none;" >
                                                         <label class="primary_input_label" for=""> {{ __('product.height')}} [{{__('product.cm')}}]</label>
                                                         <input value="{{@$product->skus->first()->height}}" class="primary_input_field" name="height" id="height"
                                                                type="number" min="0" step="{{step_decimal()}}">

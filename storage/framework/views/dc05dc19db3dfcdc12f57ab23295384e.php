@@ -239,7 +239,7 @@
                     </svg>
                     <?php echo e(__('customer_panel.my_account')); ?></a>
                 </li>
-                <li>
+                <!-- <li>
                     <a class="position-relative d-flex align-items-center" href="<?php echo e(route('frontend.digital_product')); ?>">
                     <svg  width="17.607" height="17.999" viewBox="0 0 17.607 17.999">
                     <g id="wallet-minus" transform="translate(-1.488 -1.25)">
@@ -252,7 +252,7 @@
                     </g>
                     </svg>
                     <?php echo e(__('customer_panel.digital_products')); ?></a>
-                </li>
+                </li> -->
                 <li>
                     <a class="position-relative d-flex align-items-center" href="<?php echo e(url('/profile/referral')); ?>">
                     <svg  width="17.431" height="18" viewBox="0 0 17.431 18">

@@ -1,5 +1,5 @@
 <?php return [
-    'refund_manage' => 'Refund Manage',
+    'refund_manage' => 'Return Manage',
     'reasons' => 'Reasons',
     'reason_list' => 'Reason List',
     'add_new_reason' => 'Add New Reason',
