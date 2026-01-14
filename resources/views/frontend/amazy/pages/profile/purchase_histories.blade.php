@@ -41,6 +41,8 @@
                                             <th class="font_14 f_w_700 border-start-0 border-end-0" scope="col">{{__('common.amount')}}</th>
                                             <th class="font_14 f_w_700 border-start-0 border-end-0" scope="col">{{__('order.delivery_status')}}</th>
                                             <th class="font_14 f_w_700 border-start-0 border-end-0" scope="col">{{__('order.payment_status')}}</th>
+                                            <!-- <th class="font_14 f_w_700">OTP</th> -->
+
                                             <th class="font_14 f_w_700 border-start-0 border-end-0" scope="col">{{__('common.action')}}</th>
                                         </tr>
                                     </thead>
@@ -86,6 +88,12 @@
                                                         <a class="table_badge_btn style3 text-nowrap">{{__('common.pending')}}</a>
                                                     @endif
                                                 </td>
+                                                <!-- <td> -->
+    <!-- <span class="font_14 f_w_600">
+        {{ optional($order->order)->otp ?? 'NA' }}
+    </span>
+</td> -->
+
                                                 <td>
                                                     <div class="amazy_status_btns d-flex gap_5 align-items-center">
                                                         <button class="amazy_status_btn purchase_show" data-id="{{$order->id}}">

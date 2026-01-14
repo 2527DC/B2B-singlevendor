@@ -167,10 +167,34 @@
                             <input name="last_name" id="last_name" value="{{ old('last_name') }}" placeholder="{{ __('formBuilder.last_name') }}" onfocus="this.placeholder = ''" onblur="this.placeholder = '{{ __('common.last_name') }}'" class="primary_input3 radius_5px" type="text">
                             <span class="text-danger" >{{ $errors->first('last_name') }}</span>
                         </div>
+
+                            <div class="col-12 mb_20">
+        <label class="primary_label2">Store Name <span>*</span></label>
+        <input name="store_name" value="{{ old('store_name') }}" class="primary_input3 radius_5px" type="text" required>
+        <span class="text-danger">{{ $errors->first('store_name') }}</span>
+    </div>
+
+    <div class="col-12 mb_20">
+        <label class="primary_label2">Document Type <span>*</span></label>
+        <select name="document_type" class="primary_input3 radius_5px" required>
+            <option value="">Select Document</option>
+            <option value="GST" {{ old('document_type') == 'GST' ? 'selected' : '' }}>GST</option>
+            <option value="MSME" {{ old('document_type') == 'MSME' ? 'selected' : '' }}>MSME</option>
+        </select>
+        <span class="text-danger">{{ $errors->first('document_type') }}</span>
+    </div>
+
+    <div class="col-12 mb_20">
+        <label class="primary_label2">Upload Document <span>*</span></label>
+        <input type="file" name="document" class="primary_input3 radius_5px" accept=".jpg,.jpeg,.png,.pdf" required>
+        <span class="text-danger">{{ $errors->first('document') }}</span>
+    </div>
+
+
                         @if(isModuleActive('Otp') && otp_configuration('otp_activation_for_customer') || app('business_settings')->where('type', 'email_verification')->first()->status == 0)
                         <div class="col-12 mb_20">
-                            <label class="primary_label2">{{__('formBuilder.email_or_phone')}} <span>*</span></label>
-                            <input name="email" id="email" value="{{ old('email') }}" placeholder="{{ __('formBuilder.email_or_phone') }}" onfocus="this.placeholder = ''" onblur="this.placeholder = '{{ __('common.email_or_phone') }}'" class="primary_input3 radius_5px" type="text">
+                            <label class="primary_label2">{{__('formBuilder.phone')}} <span>*</span></label>
+                            <input name="email" id="email" value="{{ old('email') }}" placeholder="{{ __('formBuilder.phone') }}" onfocus="this.placeholder = ''" onblur="this.placeholder = '{{ __('common.email_or_phone') }}'" class="primary_input3 radius_5px" type="text">
                             <span class="text-danger" >{{ $errors->first('email') }}</span>
                         </div>
                         @else

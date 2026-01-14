@@ -75,6 +75,10 @@ class RegisterController extends Controller
             'first_name' => ['required', 'string', 'max:255'],
             'email' => $email,
             'password' => ['required', 'string', 'min:8', 'confirmed'],
+            // 'store_name' => ['required', 'string', 'max:191'],
+            // 'document_type' => ['required', Rule::in(['GST','MSME'])],
+            // 'document' => ['required','file','mimes:jpg,jpeg,png,pdf','max:2048'],
+
             'g-recaptcha-response' =>$g_recaptcha,
             'referral_code' => ['sometimes', 'nullable', Rule::exists('referral_codes', 'referral_code')->where('status', 1)]
         ],
@@ -91,6 +95,12 @@ class RegisterController extends Controller
 
     public function create($data)
     {
+        // 📎 Handle GST / MSME document upload
+    // $documentPath = null;
+
+    // if ($data->hasFile('document')) {
+    //     $documentPath = $data->file('document')->store('user_documents', 'public');
+    // }
         $c_data = [];
         if($data->has('custom_field')){
             foreach (json_decode($data['custom_field']) as  $key => $f){
@@ -120,6 +130,10 @@ class RegisterController extends Controller
             'password' => Hash::make($data['password']),
             'role_id' => 4,
             'phone' => isset($phone) ? $phone : NULL,
+//             'store_name' => $data['store_name'],
+// 'document_type' => $data['document_type'],
+// 'document' => $documentPath,
+
             'others' => $this->othersFieldValue($c_data),
             'currency_id' => app('general_setting')->currency,
             'lang_code' => app('general_setting')->language_code,
@@ -183,6 +197,10 @@ class RegisterController extends Controller
             'first_name' => ['required', 'string', 'max:255'],
             'email' => $email,
             'password' => ['required', 'string', 'min:8', 'confirmed'],
+//             'store_name' => ['required', 'string', 'max:191'],
+// 'document_type' => ['required', Rule::in(['GST','MSME'])],
+// 'document' => ['required','file','mimes:jpg,jpeg,png,pdf','max:2048'],
+
             'referral_code' => ['sometimes', 'nullable', Rule::exists('referral_codes', 'referral_code')->where('status', 1)]
         ], [
             'password.min' => 'The password field minimum 8 character.',

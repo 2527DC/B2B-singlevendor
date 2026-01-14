@@ -23,6 +23,7 @@
 'first_name' => 'First Name  ',
 'last_name' => 'Last Name  ',
 'email_or_phone' => 'Phone Or Email  ',
+'phone' => 'Phone',
 'referral_code_(optional)' => 'Referral code (optional)  ',
 'First Name' => 'First Name  ',
 'Last Name' => 'Last Name  ',

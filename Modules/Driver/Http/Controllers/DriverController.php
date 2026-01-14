@@ -7,7 +7,6 @@ use Illuminate\Routing\Controller;
 use Modules\Driver\Entities\Driver;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-
 class DriverController extends Controller
 {
     public function index()
@@ -149,5 +148,9 @@ class DriverController extends Controller
             ->with('success', 'Password reset successfully.');
     }
     
+
+
+
+
     
 }

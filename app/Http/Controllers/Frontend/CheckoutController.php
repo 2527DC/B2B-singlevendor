@@ -18,6 +18,7 @@ use Modules\Setup\Repositories\StateRepository;
 use Modules\UserActivityLog\Traits\LogActivity;
 use Modules\Setup\Entities\CheckoutFieldVisibility;
 use \Modules\PaymentGateway\Services\PaymentGatewayService;
+use Illuminate\Support\Facades\Log;
 
 class CheckoutController extends Controller
 {
@@ -32,7 +33,9 @@ class CheckoutController extends Controller
     public function index(Request $request)
     {
 
+        Log::info('Method checkout index  called');
         if(isset($request->checkout_type) && base64_decode($request->checkout_type) == 'buy_it_now'){
+            Log::info('Method checkout inside if of checkout_type  called');
             session()->put('buy_it_now', 'yes');
 
             if(isModuleActive('AuctionProducts') && $request->get('auction_type')=='auction'){
@@ -59,6 +62,7 @@ class CheckoutController extends Controller
         $checkoutField = CheckoutFieldVisibility::all();
 
         if(isModuleActive('MultiVendor') && app('general_setting')->seller_wise_payment){
+            Log::info('Method MultiVendor active  called');
             if(!isset($request->step)){
                 if(!isset($request->owner)){
                     Toastr::error('Invalid Seller', 'Error');
@@ -624,6 +628,7 @@ class CheckoutController extends Controller
 
     public function changeShippingMethod(Request $request)
     {
+        Log::info('Method checkout changeShippingMethod  called');
         $cartDataGroup = $this->checkoutService->getCartItem();
         $cartData = $cartDataGroup['cartData'];
         $giftCardExist = $cartDataGroup['gift_card_exist'];
@@ -725,16 +730,19 @@ class CheckoutController extends Controller
             'gateway_activations','countries', 'giftCardExist', 'states', 'cities','total_items','total_package','shipping_cost','discount', 'postalCodeRequired','checkoutField'));
     }
     public function destroy(Request $request){
+        Log::info('Method checkout destroy  called');
         $this->checkoutService->deleteProduct($request->except('_token'));
         LogActivity::successLog('product delete by checkout successful.');
         return $this->reloadWithData();
     }
     public function shippingAddressChange(Request $request){
+        Log::info('Method checkout shippingAddressChange  called');
         $this->checkoutService->shippingAddressChange($request->except('_token'));
         LogActivity::successLog('Shipping address change successful.');
         return true;
     }
     public function billingAddressChange(Request $request){
+        Log::info('Method checkout billingAddressChange  called');
         $address = auth()->user()->customerAddresses->where('id',$request->id)->first();
         if($address){
             $states = (new StateRepository())->getByCountryId($address->country)->where('status', 1);
@@ -751,6 +759,7 @@ class CheckoutController extends Controller
     }
 
     public function couponApply(CouponApplyRequest $request){
+        Log::info('Method checkout couponApply  called');
         $coupon = Coupon::where('coupon_code',$request->coupon_code)->first();
         if(isset($coupon)){
             if(date('Y-m-d')>=$coupon->start_date && date('Y-m-d')<=$coupon->end_date){
@@ -864,6 +873,7 @@ class CheckoutController extends Controller
 
 
     public function couponDelete(){
+        Log::info('Method checkout couponDelete  called');
         Session::forget('coupon_type');
         Session::forget('coupon_discount');
         Session::forget('coupon_discount_type');
@@ -874,6 +884,8 @@ class CheckoutController extends Controller
     }
 
     private function couponCount($total_for_coupon,$shippingtotal){
+
+        Log::info('Method checkout couponCount  called');
         $coupon = 0;
         if(Session::has('coupon_type')&&Session::has('coupon_discount')){
             $coupon_type = Session::get('coupon_type');
@@ -927,6 +939,8 @@ class CheckoutController extends Controller
 
     private function reloadWithData()
     {
+
+        Log::info('Method checkout reloadWithData  called');
         $cartDataGroup = $this->checkoutService->getCartItem();
         $cartData = $cartDataGroup['cartData'];
         $giftCardExist = $cartDataGroup['gift_card_exist'];
@@ -1001,6 +1015,8 @@ class CheckoutController extends Controller
 
     public function billingAddressStore(Request $request)
     {
+
+        Log::info('Method  billingAddressStore called',);
         $checkoutField = CheckoutFieldVisibility::all();
 
         if($checkoutField[0]->required==1){
@@ -1053,6 +1069,7 @@ class CheckoutController extends Controller
     }
 
     public function shippingAddressStore(Request $request){
+        Log::info('Method checkout shippingAddressStore  called');
         $checkoutField = CheckoutFieldVisibility::all();
 
         if($checkoutField[0]->required==1){
@@ -1106,6 +1123,8 @@ class CheckoutController extends Controller
     }
 
     public function checkCartPriceUpdate(){
+
+        Log::info('Method checkout checkCartPriceUpdate  called');
         $result = $this->checkoutService->checkCartPriceUpdate();
         return response()->json([
             'count' => $result,

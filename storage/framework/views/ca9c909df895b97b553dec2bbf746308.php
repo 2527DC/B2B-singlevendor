@@ -1,0 +1,72 @@
+
+
+<?php $__env->startSection('mainContent'); ?>
+    <section class="admin-visitor-area up_st_admin_visitor">
+        <div class="container-fluid p-0">
+            <div class="row justify-content-center">
+                <div class="col-lg-12">
+                    <div class="box_header common_table_header">
+                        <div class="main-title d-md-flex">
+                            <h3 class="mb-0 mr-30 mb_xs_15px mb_sm_20px"><?php echo e(__('general_settings.sms_template')); ?></h3>
+                            <ul class="d-flex">
+                                <li><a class="primary-btn radius_30px mr-10 fix-gr-bg" href="<?php echo e(route('sms_templates.create')); ?>"><?php echo e(__('general_settings.add_new_template')); ?></a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-12">
+                    <div class="common_QA_section QA_section_heading_custom">
+                        <div class="QA_table ">
+                            <!-- table-responsive -->
+                            <div class="table_div">
+                                <?php echo $__env->make('generalsetting::sms_templates.components.list',['sms_templates' => $sms_templates], \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+<?php $__env->stopSection(); ?>
+<?php $__env->startPush('scripts'); ?>
+    <script type="text/javascript">
+        (function($){
+            "use strict";
+            $(document).ready(function() {
+                $(document).on('click',".checkbox", function(){
+                    if (this.checked == false) {
+                        var status = 0;
+                    }else {
+                        var status = 1;
+                    }
+                    $.post("<?php echo e(route('sms_templates.update_status')); ?>", {_token:'<?php echo e(csrf_token()); ?>',id:this.value,status:status}, function(data){
+                        if(data.msg == 'not_possible'){
+                            toastr.warning("<?php echo e(__('You hove to keep Active Atleast 1 Template for same type.')); ?>","<?php echo e(__('common.warning')); ?>");
+                            $('.table_div').html(data.list);
+                            CRMTableThreeReactive();
+                        }
+                        else if(data.msg == 1){
+                            toastr.success("<?php echo e(__('common.updated_successfully')); ?>","<?php echo e(__('common.success')); ?>");
+                            $('.table_div').html(data.list);
+                            CRMTableThreeReactive();
+                        }
+                        else{
+                            toastr.error("<?php echo e(__('common.error_message')); ?>","<?php echo e(__('common.error')); ?>");
+                        }
+
+                    }).fail(function(response) {
+                        if(response.responseJSON.error){
+                            toastr.error(response.responseJSON.error ,"<?php echo e(__('common.error')); ?>");
+                            $('#pre-loader').addClass('d-none');
+                            return false;
+                        }
+
+                    });
+                });
+
+            });
+        })(jQuery);
+    </script>
+<?php $__env->stopPush(); ?>
+
+<?php echo $__env->make('backEnd.master', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH /var/www/html/mytestdhatri/Modules/GeneralSetting/Resources/views/sms_templates/index.blade.php ENDPATH**/ ?>

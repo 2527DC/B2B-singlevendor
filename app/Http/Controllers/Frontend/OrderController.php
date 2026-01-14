@@ -45,6 +45,9 @@ use Modules\PaymentGateway\Http\Controllers\BankPaymentController;
 use Modules\PaymentGateway\Http\Controllers\FlutterwaveController;
 use Modules\PaymentGateway\Http\Controllers\TabbyPaymentController;
 use Modules\Shipping\Http\Controllers\OrderSyncWithCarrierController;
+
+use Illuminate\Support\Facades\Log;
+
 class OrderController extends Controller
 {
 
@@ -631,11 +634,29 @@ class OrderController extends Controller
         }
     }
 
-    public function myPurchaseHistories(Request $request){
+    public function myPurchaseHistories(Request $request)
+    {
+        Log::info('My Purchase Histories API called', [
+            'user_id' => auth()->id(),
+            'request_data' => $request->all(),
+        ]);
+    
         $filter = $request->get('filter');
+    
+        Log::info('Purchase history filter applied', [
+            'filter' => $filter,
+        ]);
+    
         $orders = $this->orderService->purchaseHistories($filter);
-        return view(theme('pages.profile.purchase_histories'),compact('orders'));
+    
+        Log::info('Purchase histories fetched successfully', [
+            'user_id' => auth()->id(),
+            'orders_count' => $orders->count() ?? count($orders),
+        ]);
+    
+        return view(theme('pages.profile.purchase_histories'), compact('orders'));
     }
+    
 
     public function myPurchaseHistoryModal(Request $request){
 

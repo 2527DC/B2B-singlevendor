@@ -73,6 +73,8 @@
                                                         <th><?php echo e(__('common.sl')); ?></th>
                                                         <th width="10%"><?php echo e(__('common.date')); ?></th>
                                                         <th><?php echo e(__('common.order_id')); ?></th>
+                                                        <th><?php echo e(__('name')); ?></th>
+                                                        <th><?php echo e(__('phone')); ?></th>
                                                         <th><?php echo e(__('common.email')); ?></th>
                                                         <th><?php echo e(__('order.total_product_qty')); ?></th>
                                                         <th><?php echo e(__('common.total_amount')); ?></th>
@@ -105,6 +107,8 @@
                                                         <th><?php echo e(__('common.sl')); ?></th>
                                                         <th width="10%"><?php echo e(__('common.date')); ?></th>
                                                         <th><?php echo e(__('common.order_id')); ?></th>
+                                                        <th><?php echo e(__('name')); ?></th>
+                                                        <th><?php echo e(__('phone')); ?></th>
                                                         <th><?php echo e(__('common.email')); ?></th>
                                                         <th><?php echo e(__('order.total_product_qty')); ?></th>
                                                         <th><?php echo e(__('common.total_amount')); ?></th>
@@ -137,6 +141,8 @@
                                                         <th><?php echo e(__('common.sl')); ?></th>
                                                         <th width="10%"><?php echo e(__('common.date')); ?></th>
                                                         <th><?php echo e(__('common.order_id')); ?></th>
+                                                        <th><?php echo e(__('name')); ?></th>
+                                                        <th><?php echo e(__('phone')); ?></th>
                                                         <th><?php echo e(__('common.email')); ?></th>
                                                         <th><?php echo e(__('order.total_product_qty')); ?></th>
                                                         <th><?php echo e(__('common.total_amount')); ?></th>
@@ -170,6 +176,8 @@
                                                         <th><?php echo e(__('common.sl')); ?></th>
                                                         <th width="10%"><?php echo e(__('common.date')); ?></th>
                                                         <th><?php echo e(__('common.order_id')); ?></th>
+                                                        <th><?php echo e(__('name')); ?></th>
+                                                        <th><?php echo e(__('phone')); ?></th>
                                                         <th><?php echo e(__('common.email')); ?></th>
                                                         <th><?php echo e(__('order.total_product_qty')); ?></th>
                                                         <th><?php echo e(__('common.total_amount')); ?></th>
@@ -203,6 +211,8 @@
                                                         <th><?php echo e(__('common.sl')); ?></th>
                                                         <th width="10%"><?php echo e(__('common.date')); ?></th>
                                                         <th><?php echo e(__('common.order_id')); ?></th>
+                                                        <th><?php echo e(__('name')); ?></th>
+                                                        <th><?php echo e(__('phone')); ?></th>
                                                         <th><?php echo e(__('common.email')); ?></th>
                                                         <th><?php echo e(__('order.total_product_qty')); ?></th>
                                                         <th><?php echo e(__('common.total_amount')); ?></th>
@@ -236,6 +246,8 @@
                                                         <th><?php echo e(__('common.sl')); ?></th>
                                                         <th width="10%"><?php echo e(__('common.date')); ?></th>
                                                         <th><?php echo e(__('common.order_id')); ?></th>
+                                                        <th><?php echo e(__('name')); ?></th>
+                                                        <th><?php echo e(__('phone')); ?></th>
                                                         <th><?php echo e(__('common.email')); ?></th>
                                                         <th><?php echo e(__('order.total_product_qty')); ?></th>
                                                         <th><?php echo e(__('common.total_amount')); ?></th>
@@ -285,6 +297,8 @@
                         }},
                         { data: 'date', name: 'date' },
                         { data: 'order_number', name: 'order_number' },
+                        { data: 'customer.name', name: 'customer_phone' },
+                        { data: 'customer_phone', name: 'customer_phone' },
                         { data: 'email', name: 'customer.email' },
                         { data: 'total_qty', name: 'total_qty' },
                         { data: 'total_amount', name: 'grand_total' },
@@ -388,6 +402,8 @@
                         }},
                         { data: 'date', name: 'date' },
                         { data: 'order_number', name: 'order_number' },
+                        { data: 'customer.name', name: 'customer_phone' },
+                        { data: 'customer_phone', name: 'customer_phone' },
                         { data: 'email', name: 'customer.email' },
                         { data: 'total_qty', name: 'total_qty' },
                         { data: 'total_amount', name: 'grand_total' },
@@ -476,107 +492,40 @@
                 });
 
                 $('#confirmedTable').DataTable({
-                    processing: true,
-                    serverSide: true,
-                    "stateSave": true,
-                    "ajax": ( {
-                        url: "<?php echo e(route('order_manage.total_sales_get_data')); ?>" + '?table=confirmed'
-                    }),
-                    "initComplete":function(json){
+    processing: true,
+    serverSide: true,
+    stateSave: true,
 
-                    },
-                    columns: [
-                        { data: 'DT_RowIndex', name: 'id' ,render:function(data){
-                            return numbertrans(data)
-                        }},
-                        { data: 'date', name: 'date' },
-                        { data: 'order_number', name: 'order_number' },
-                        { data: 'email', name: 'customer.email' },
-                        { data: 'total_qty', name: 'total_qty' },
-                        { data: 'total_amount', name: 'grand_total' },
-                        { data: 'order_status', name: 'order_status' },
-                        { data: 'is_paid', name: 'is_paid' },
-                        { data: 'action', name: 'action' }
+    ajax: {
+        url: "<?php echo e(route('order_manage.total_sales_get_data')); ?>?table=confirmed",
+        dataSrc: function (json) {
+            console.log('FULL RESPONSE:', json);     // 🔥 logs everything
+            console.log('ROWS DATA:', json.data);    // 🔥 actual table rows
+            return json.data;
+        }
+    },
 
-                    ],
+    columns: [
+        { data: 'DT_RowIndex', name: 'id', render: function (data) {
+            return numbertrans(data);
+        }},
+        { data: 'date', name: 'date' },
+        { data: 'order_number', name: 'order_number' },
+        { data: 'customer.name', name: 'customer_phone' },
+        { data: 'customer_phone', name: 'customer_phone' },
+        { data: 'email', name: 'customer.email' },
+        { data: 'total_qty', name: 'total_qty' },
+        { data: 'total_amount', name: 'grand_total' },
+        { data: 'order_status', name: 'order_status' },
+        { data: 'is_paid', name: 'is_paid' },
+        { data: 'action', name: 'action' }
+    ],
 
-                    bLengthChange: false,
-                    "bDestroy": true,
-                    language: {
-                        search: "<i class='ti-search'></i>",
-                        searchPlaceholder: trans('common.quick_search'),
-                        paginate: {
-                            next: "<i class='ti-arrow-right'></i>",
-                            previous: "<i class='ti-arrow-left'></i>"
-                        }
-                    },
-                    dom: 'Bfrtip',
-                    buttons: [{
-                            extend: 'copyHtml5',
-                            text: '<i class="fa fa-files-o"></i>',
-                            title: $("#header_title").text(),
-                            titleAttr: 'Copy',
-                            exportOptions: {
-                                columns: ':visible',
-                                columns: ':not(:last-child)',
-                            }
-                        },
-                        {
-                            extend: 'excelHtml5',
-                            text: '<i class="fa fa-file-excel-o"></i>',
-                            titleAttr: 'Excel',
-                            title: $("#header_title").text(),
-                            margin: [10, 10, 10, 0],
-                            exportOptions: {
-                                columns: ':visible',
-                                columns: ':not(:last-child)',
-                            },
+    bLengthChange: false,
+    bDestroy: true,
+    responsive: true
+});
 
-                        },
-                        {
-                            extend: 'csvHtml5',
-                            text: '<i class="fa fa-file-text-o"></i>',
-                            titleAttr: 'CSV',
-                            exportOptions: {
-                                columns: ':visible',
-                                columns: ':not(:last-child)',
-                            }
-                        },
-                        {
-                            extend: 'pdfHtml5',
-                            text: '<i class="fa fa-file-pdf-o"></i>',
-                            title: $("#header_title").text(),
-                            titleAttr: 'PDF',
-                            exportOptions: {
-                                columns: ':visible',
-                                columns: ':not(:last-child)',
-                            },
-                            pageSize: 'A4',
-                            margin: [0, 0, 0, 0],
-                            alignment: 'center',
-                            header: true,
-
-                        },
-                        {
-                            extend: 'print',
-                            text: '<i class="fa fa-print"></i>',
-                            titleAttr: 'Print',
-                            title: $("#header_title").text(),
-                            exportOptions: {
-                                columns: ':not(:last-child)',
-                            }
-                        },
-                        {
-                            extend: 'colvis',
-                            text: '<i class="fa fa-columns"></i>',
-                            postfixButtons: ['colvisRestore']
-                        }
-                    ],
-                    columnDefs: [{
-                        visible: false
-                    }],
-                    responsive: true,
-                });
 
                 $('#completedTable').DataTable({
                     processing: true,
@@ -594,6 +543,8 @@
                         }},
                         { data: 'date', name: 'date' },
                         { data: 'order_number', name: 'order_number' },
+                        { data: 'customer.name', name: 'customer_phone' },
+                        { data: 'customer_phone', name: 'customer_phone' },
                         { data: 'email', name: 'customer.email' },
                         { data: 'total_qty', name: 'total_qty' },
                         { data: 'total_amount', name: 'grand_total' },
@@ -697,6 +648,8 @@
                         }},
                         { data: 'date', name: 'date' },
                         { data: 'order_number', name: 'order_number' },
+                        { data: 'customer.name', name: 'customer_phone' },
+                        { data: 'customer_phone', name: 'customer_phone' },
                         { data: 'email', name: 'customer.email' },
                         { data: 'total_qty', name: 'total_qty' },
                         { data: 'total_amount', name: 'grand_total' },
@@ -800,6 +753,8 @@
                         }},
                         { data: 'date', name: 'date' },
                         { data: 'order_number', name: 'order_number' },
+                        { data: 'customer.name', name: 'customer_phone' },
+                        { data: 'customer_phone', name: 'customer_phone' }, 
                         { data: 'email', name: 'customer.email' },
                         { data: 'total_qty', name: 'total_qty' },
                         { data: 'total_amount', name: 'grand_total' },

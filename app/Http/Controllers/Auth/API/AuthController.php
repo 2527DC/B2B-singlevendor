@@ -21,7 +21,7 @@ use Modules\Affiliate\Repositories\AffiliateRepository;
 use Modules\GeneralSetting\Entities\NotificationSetting;
 use Modules\GeneralSetting\Entities\UserNotificationSetting;
 use Modules\GeneralSetting\Services\NotificationSettingService;
-
+use Illuminate\Support\Facades\Log;
 /**
  * @group User Management
  *
@@ -126,116 +126,98 @@ class AuthController extends Controller
             'timestamp' => now()->toDateTimeString(),
             'input_data' => $request->except('password'), 
         ]);
-        
+    
         try {
             \Log::debug('Validating login request');
             $request->validate([
-                'phone' => 'required',
+                'login' => 'required', // can be email or phone
                 'password' => 'required',
-                'device_token' => "required",
+                'device_token' => 'required',
             ]);
-            
+    
+            $loginInput = $request->login;
+    
             \Log::info('Login attempt', [
-                'phone' => $request->phone,
+                'login' => $loginInput,
                 'device_token' => $request->device_token,
             ]);
-            
-            \Log::debug('Searching user by phone number');
-            // First, try to find user by phone number
-            $user = User::where('phone', $request->phone)
+    
+            \Log::debug('Searching user by phone or email');
+    
+            $user = User::where(function ($q) use ($loginInput) {
+                            $q->where('phone', $loginInput)
+                              ->orWhere('email', $loginInput);
+                        })
                         ->where('is_active', 1)
                         ->whereHas('role', function ($q) {
-                            return $q->where('type', 'customer');
-                        })->first();
-            
-            if ($user) {
-                \Log::info('User found by phone', [
-                    'user_id' => $user->id,
-                    'phone' => $user->phone,
-                    'is_active' => $user->is_active,
+                            $q->where('type', 'customer');
+                        })
+                        ->first();
+    
+            if (!$user) {
+                \Log::warning('User not found', [
+                    'login' => $loginInput,
+                    'reason' => 'User not found or inactive'
                 ]);
-            } else {
-                \Log::debug('No user found by phone, trying email');
-                // If no user found by phone, try by email (if you want to keep backward compatibility)
-                $user = User::where('email', $request->phone)
-                            ->where('is_active', 1)
-                            ->whereHas('role', function ($q) {
-                                return $q->where('type', 'customer');
-                            })->first();
-                
-                if ($user) {
-                    \Log::info('User found by email', [
-                        'user_id' => $user->id,
-                        'email' => $user->email,
-                        'is_active' => $user->is_active,
-                    ]);
-                } else {
-                    \Log::warning('User not found', [
-                        'phone/email' => $request->phone,
-                        'reason' => 'User not found or inactive'
-                    ]);
-                }
+    
+                return response(['message' => 'Invalid Credentials'], 401);
             }
-            
-            if ($user) {
-                \Log::debug('Checking password and role');
-                if (Hash::check($request->password, $user->password) && $user->role->type == 'customer') {
-                    \Log::info('Password verification successful', ['user_id' => $user->id]);
-                    
-                    \Log::debug('Processing cart migration');
-                    $carts = Cart::where('session_id', $request->device_token)->get();
-                    \Log::info('Carts found for migration', [
-                        'user_id' => $user->id,
-                        'cart_count' => $carts->count(),
-                        'device_token' => $request->device_token,
-                    ]);
-                    
-                    Cart::where('session_id', $request->device_token)->update([
-                        'user_id' => $user->id,
-                        'session_id' => ''
-                    ]);
-                    
-                    \Log::debug('Creating authentication token');
-                    $token = $user->createToken('my_token')->plainTextToken;
-                    
-                    $response = [
-                        'user' => $user,
-                        'token' => $token,
-                        'message' => 'Successfully logged In'
-                    ];
-                    
-                    \Log::info('Login successful', [
-                        'user_id' => $user->id,
-                        'token_created' => true,
-                        'response_code' => 200,
-                    ]);
-                    
-                    return response($response, 200);
-                } else {
-                    \Log::warning('Password or role verification failed', [
-                        'user_id' => $user->id,
-                        'password_match' => Hash::check($request->password, $user->password),
-                        'role_type' => $user->role->type ?? 'N/A',
-                        'expected_role' => 'customer',
-                    ]);
-                }
-            }
-            
-            \Log::warning('Invalid login attempt', [
-                'phone' => $request->phone,
-                'reason' => 'Invalid credentials or inactive account',
-                'ip_address' => $request->ip(),
+    
+            \Log::debug('User found, verifying password and role', [
+                'user_id' => $user->id,
+                'role_type' => $user->role->type
             ]);
-            
-            return response(['message' => 'Invalid Credentials'], 401);
-            
+    
+            if (!Hash::check($request->password, $user->password)) {
+                \Log::warning('Password verification failed', [
+                    'user_id' => $user->id
+                ]);
+    
+                return response(['message' => 'Invalid Credentials'], 401);
+            }
+    
+            // Migrate carts
+            \Log::debug('Processing cart migration', [
+                'user_id' => $user->id,
+                'device_token' => $request->device_token,
+            ]);
+    
+            $carts = Cart::where('session_id', $request->device_token)->get();
+    
+            \Log::info('Carts found for migration', [
+                'user_id' => $user->id,
+                'cart_count' => $carts->count()
+            ]);
+    
+            Cart::where('session_id', $request->device_token)->update([
+                'user_id' => $user->id,
+                'session_id' => ''
+            ]);
+    
+            // Create token
+            \Log::debug('Creating authentication token', ['user_id' => $user->id]);
+            $token = $user->createToken('my_token')->plainTextToken;
+    
+            $response = [
+                'user' => $user,
+                'token' => $token,
+                'message' => 'Successfully logged in'
+            ];
+    
+            \Log::info('Login successful', [
+                'user_id' => $user->id,
+                'token_created' => true
+            ]);
+    
+            return response($response, 200);
+    
         } catch (\Illuminate\Validation\ValidationException $e) {
             \Log::error('Login validation failed', [
                 'errors' => $e->errors(),
                 'input' => $request->except('password'),
             ]);
             throw $e;
-            
+    
         } catch (\Exception $e) {
             \Log::error('Login method exception', [
                 'error_message' => $e->getMessage(),
@@ -244,13 +226,14 @@ class AuthController extends Controller
                 'error_trace' => $e->getTraceAsString(),
                 'input' => $request->except('password'),
             ]);
-            
+    
             return response([
                 'message' => 'An error occurred during login',
                 'error' => config('app.debug') ? $e->getMessage() : 'Internal server error'
             ], 500);
         }
     }
+    
     public function customerLogin(Request $request)
     {
         $request->validate([
@@ -352,45 +335,163 @@ class AuthController extends Controller
      * }
      */
 
+    // public function register(Request $request)
+    // {
+    //     $request->validate([
+    //         'first_name' => 'required',
+    //         'email' => ['required', 'string', 'max:255'],
+    //         'password' => 'required|min:8|confirmed',
+    //         'user_type' => 'required',
+    //         'device_token' => "required"
+    //     ], [
+    //         'password.min' => 'The password field minimum 8 character.'
+    //     ]);
+    //     $user_exist = $this->authService->getRegister($request->all());
+    //     if ($user_exist) {
+    //         return $this->registerCustomerResponse($user_exist);
+    //     }
+
+    //     $request->validate([
+    //         'first_name' => 'required',
+    //         'email' => ['required', 'string', 'max:255', 'unique:users,email', 'check_unique_phone'],
+    //         'password' => 'required|min:8|confirmed',
+    //         'user_type' => 'required',
+    //         'device_token' => "required"
+    //     ], [
+    //         'password.min' => 'The password field minimum 8 character.'
+    //     ]);
+    //     if ($request->user_type == 'customer') {
+
+    //         $user = $this->authService->register($request->all());
+    //         Cart::where('session_id',$request->device_token)->update([
+    //             'user_id' => $user->id,
+    //             'session_id' => ''
+    //         ]);
+    //         return $this->registerCustomerResponse($user);
+    //     } else {
+    //         $response = ['message' => 'invalid Credintials'];
+    //         return response()->json($response, 409);
+    //     }
+    // }
+
+
     public function register(Request $request)
     {
-        $request->validate([
-            'first_name' => 'required',
-            'email' => ['required', 'string', 'max:255'],
-            'password' => 'required|min:8|confirmed',
-            'user_type' => 'required',
-            'device_token' => "required"
-        ], [
-            'password.min' => 'The password field minimum 8 character.'
+        // 🔹 Log incoming request (hide password fields)
+        Log::info('Register API called', [
+            'ip'      => $request->ip(),
+            'headers' => $request->headers->all(),
+            'payload' => $request->except(['password', 'password_confirmation']),
         ]);
-        $user_exist = $this->authService->getRegister($request->all());
-        if ($user_exist) {
-            return $this->registerCustomerResponse($user_exist);
-        }
-
-        $request->validate([
-            'first_name' => 'required',
-            'email' => ['required', 'string', 'max:255', 'unique:users,email', 'check_unique_phone'],
-            'password' => 'required|min:8|confirmed',
-            'user_type' => 'required',
-            'device_token' => "required"
-        ], [
-            'password.min' => 'The password field minimum 8 character.'
-        ]);
-        if ($request->user_type == 'customer') {
-
+    
+        try {
+            // Validation rules
+            $rules = [
+                'first_name'   => 'required|string|max:255',
+                'phone'        => 'nullable|string|max:15|unique:users,phone',
+                'email'        => 'nullable|email|max:255|unique:users,email',
+                'password'     => 'required|min:8|confirmed',
+                'user_type'    => 'required|in:customer',
+                'device_token' => 'required',
+            ];
+    
+            $messages = [
+                'required'     => 'The :attribute field is required.',
+                'password.min' => 'The password field must be at least 8 characters.',
+                'user_type.in' => 'Invalid user type provided.',
+                'phone.unique' => 'This phone number is already registered.',
+                'email.unique' => 'This email is already registered.',
+                'email.email'  => 'The email must be a valid email address.',
+            ];
+    
+            // Custom validation: at least one of phone or email must be provided
+            $validator = \Validator::make($request->all(), $rules, $messages);
+            $validator->after(function ($validator) use ($request) {
+                if (!$request->filled('phone') && !$request->filled('email')) {
+                    $validator->errors()->add('phone', 'Either phone or email must be provided.');
+                    $validator->errors()->add('email', 'Either phone or email must be provided.');
+                }
+            });
+    
+            if ($validator->fails()) {
+                Log::warning('Register API validation failed', [
+                    'errors' => $validator->errors()->toArray(),
+                    'payload' => $request->except(['password', 'password_confirmation']),
+                ]);
+    
+                return response()->json([
+                    'message' => 'Validation failed',
+                    'errors'  => $validator->errors(),
+                ], 422);
+            }
+    
+            // Check if user already exists by phone or email
+            $existingUser = $this->authService->getRegister($request->all());
+            if ($existingUser) {
+                $response = $this->registerCustomerResponse($existingUser);
+    
+                Log::info('Register API response - existing user', [
+                    'user_id'  => $existingUser->id ?? null,
+                    'response' => $response->getData(true),
+                    'status'   => $response->status(),
+                ]);
+    
+                return $response;
+            }
+    
+            // Register new user
             $user = $this->authService->register($request->all());
-            Cart::where('session_id',$request->device_token)->update([
-                'user_id' => $user->id,
+    
+            // Attach guest cart to user
+            Cart::where('session_id', $request->device_token)->update([
+                'user_id'    => $user->id,
                 'session_id' => ''
             ]);
-            return $this->registerCustomerResponse($user);
-        } else {
-            $response = ['message' => 'invalid Credintials'];
-            return response()->json($response, 409);
+    
+            $response = $this->registerCustomerResponse($user);
+    
+            Log::info('Register API response - success', [
+                'user_id'  => $user->id,
+                'response' => $response->getData(true),
+                'status'   => $response->status(),
+            ]);
+    
+            return $response;
+    
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Handle duplicate entry for unique fields (like phone or email)
+            if ($e->errorInfo[1] == 1062) { // MySQL duplicate entry code
+                return response()->json([
+                    'message' => 'Duplicate data found: '.$e->errorInfo[2]
+                ], 409);
+            }
+    
+            Log::error('Register API failed', [
+                'error' => $e->getMessage(),
+                'file'  => $e->getFile(),
+                'line'  => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+    
+            return response()->json([
+                'message' => 'Something went wrong'
+            ], 500);
+    
+        } catch (\Throwable $e) {
+            Log::error('Register API failed', [
+                'error' => $e->getMessage(),
+                'file'  => $e->getFile(),
+                'line'  => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+    
+            return response()->json([
+                'message' => 'Something went wrong'
+            ], 500);
         }
     }
-
+    
+    
     /**
      * Change Password
      * @bodyParam old_password string required old password

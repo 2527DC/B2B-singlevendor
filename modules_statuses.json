@@ -39,8 +39,9 @@
     "Utilities": true,
     "FormBuilder": true,
     "MultiVendor": false,
-    "WholeSale": true,
-    "Affiliate": true,
+    "Driver": true,
     "Otp": true,
-    "Driver": true
+    "Affiliate": true,
+    "WholeSale": true,
+    "CheckPincode": true
 }

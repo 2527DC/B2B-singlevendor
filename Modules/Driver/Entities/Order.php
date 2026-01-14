@@ -33,6 +33,7 @@ class Order extends Model
 
         'photo_proof',
         'signature_proof',
+        'otp',
 
         'note',
     ];

@@ -460,14 +460,14 @@
                                         </div>
                                     </div>
 
-                                    <div class="col-lg-3">
+                                    <div class="col-lg-3" style="display: none !important;">
                                         <div class="primary_input mb-15">
                                             <label class="primary_input_label" for="discount"> {{ __('product.discount') }}</label>
                                             <input class="primary_input_field" name="discount" id="discount" placeholder="{{ __('product.discount') }}" type="number" min="0" step="{{step_decimal()}}" value="{{old('discount')?old('discount'):0}}">
                                             <span class="text-danger" id="error_discunt">{{ $errors->first('discount')}}</span>
                                         </div>
                                     </div>
-                                    <div class="col-lg-3">
+                                    <div class="col-lg-3" style="display: none !important;">
                                         <div class="primary_input mb-25">
                                             <label class="primary_input_label" for="discount_type">{{ __('product.discount_type')}}</label>
                                             <select class="primary_select mb-25" name="discount_type" id="discount_type">

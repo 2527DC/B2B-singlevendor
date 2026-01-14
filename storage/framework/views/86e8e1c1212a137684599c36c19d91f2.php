@@ -459,14 +459,14 @@
                                         </div>
                                     </div>
 
-                                    <div class="col-lg-3">
+                                    <div class="col-lg-3" style="display: none !important;">
                                         <div class="primary_input mb-15">
                                             <label class="primary_input_label" for="discount"> <?php echo e(__('product.discount')); ?></label>
                                             <input class="primary_input_field" name="discount" id="discount" placeholder="<?php echo e(__('product.discount')); ?>" type="number" min="0" step="<?php echo e(step_decimal()); ?>" value="<?php echo e(old('discount')?old('discount'):0); ?>">
                                             <span class="text-danger" id="error_discunt"><?php echo e($errors->first('discount')); ?></span>
                                         </div>
                                     </div>
-                                    <div class="col-lg-3">
+                                    <div class="col-lg-3" style="display: none !important;">
                                         <div class="primary_input mb-25">
                                             <label class="primary_input_label" for="discount_type"><?php echo e(__('product.discount_type')); ?></label>
                                             <select class="primary_select mb-25" name="discount_type" id="discount_type">
