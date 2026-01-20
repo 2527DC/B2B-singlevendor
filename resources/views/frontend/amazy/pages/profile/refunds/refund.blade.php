@@ -28,10 +28,10 @@
                         <div class="white_box_header d-flex align-items-center gap_20 flex-wrap  amazy_bb3 justify-content-between ">
                             <div class="d-flex flex-column  ">
                                 <div class="d-flex align-items-center flex-wrap gap_5">
-                                    <h4 class="font_14 f_w_500 m-0 lh-base">{{__('common.order_id')}}: </h4> <p class="font_14 f_w_400 m-0 lh-base"> {{ getNumberTranslate($my_refund_item->order->order_number) }}</p>
+                                    <h4 class="font_14 f_w_500 m-0 lh-base">{{__('common.order_id')}}: </h4> <p class="font_14 f_w_400 m-0 lh-base"> {{ getNumberTranslate($my_refund_item->order?->order_number ?? 'N/A') }}</p>
                                 </div>
                                 <div class="d-flex align-items-center flex-wrap gap_5">
-                                    <h4 class="font_14 f_w_500 m-0 lh-base">{{__('defaultTheme.order_date')}} : </h4> <p class="font_14 f_w_400 m-0 lh-base"> {{ getNumberTranslate($my_refund_item->order->created_at) }}</p>
+                                    <h4 class="font_14 f_w_500 m-0 lh-base">{{__('defaultTheme.order_date')}} : </h4> <p class="font_14 f_w_400 m-0 lh-base"> {{ getNumberTranslate($my_refund_item->order?->created_at ?? 'N/A') }}</p>
                                 </div>
                             </div>
                             <div class="d-flex flex-column ">
