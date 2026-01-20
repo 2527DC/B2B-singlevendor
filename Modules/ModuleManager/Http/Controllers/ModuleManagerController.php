@@ -58,96 +58,101 @@ class ModuleManagerController extends Controller
         $request->validate([
             'module' => 'required|mimes:zip',
         ]);
-
-
+    
         try {
-
+            Log::info('Module upload started.');
+    
+            // Store uploaded zip file
             $path = $request->module->store('updateFile');
-            $request->module->getClientOriginalName();
+            $originalName = $request->module->getClientOriginalName();
+            Log::info("Uploaded file stored at: $path, original name: $originalName");
+    
+            // Open zip file
             $zip = new ZipArchive;
             $res = $zip->open(storage_path('app/' . $path));
+    
             if ($res === true) {
                 $zip->extractTo(storage_path('app/tempUpdate'));
                 $zip->close();
+                Log::info('Zip file extracted successfully.');
             } else {
-                abort(500, 'Error! Could not open File');
+                Log::error('Error! Could not open zip file.');
+                abort(500, 'Error! Could not open file.');
             }
-
-
+    
+            // Read module directory
             $src = storage_path('app/tempUpdate');
-
             $dir = opendir($src);
-
             $module = '';
             while ($file = readdir($dir)) {
                 if ($file != "." && $file != "..") {
                     $module = $file;
                 }
             }
-
+            closedir($dir);
+            Log::info("Module folder found: $module");
+    
+            // Read module config JSON
             $dataPath = $src.'/'.$module . '/' . $module . '.json';
-            $strJsonFileContents = file_get_contents($dataPath);
-            $array = json_decode($strJsonFileContents, true);
-
-            if (!empty($array)) {
-                $json = $array[$module];
-                if (!empty($json['min_system_version']) && app('general_setting')->system_version < $json['min_system_version']) {
-                    if (storage_path('app/updateFile')) {
-                        $this->delete_directory(storage_path('app/updateFile'));
-                    }
-                    if (storage_path('app/tempUpdate')) {
-                        $this->delete_directory(storage_path('app/tempUpdate'));
-                    }
-                    Toastr::error($json['min_system_version'] . ' or greater system version is  required for this version', trans('common.operation_failed'));
-                    return redirect()->back();
-                }
-
-                if(empty($json['min_system_version'])){
-                    if (storage_path('app/updateFile')) {
-                        $this->delete_directory(storage_path('app/updateFile'));
-                    }
-                    if (storage_path('app/tempUpdate')) {
-                        $this->delete_directory(storage_path('app/tempUpdate'));
-                    }
-                    Toastr::error('This version is not suitable for current system version. Please check update log for minimum required version.', trans('common.operation_failed'));
-                    return redirect()->back();
-                }
-
-            } else {
-                if (storage_path('app/updateFile')) {
-                    $this->delete_directory(storage_path('app/updateFile'));
-                }
-                if (storage_path('app/tempUpdate')) {
-                    $this->delete_directory(storage_path('app/tempUpdate'));
-                }
+            if (!file_exists($dataPath)) {
+                Log::error('Config JSON missing: ' . $dataPath);
+                $this->cleanup();
                 Toastr::error('Config File Missing', trans('common.operation_failed'));
                 return redirect()->back();
             }
-
+    
+            $strJsonFileContents = file_get_contents($dataPath);
+            $array = json_decode($strJsonFileContents, true);
+    
+            if (!empty($array) && isset($array[$module])) {
+                $json = $array[$module];
+    
+                if (!empty($json['min_system_version']) && app('general_setting')->system_version < $json['min_system_version']) {
+                    Log::warning("System version too low. Required: " . $json['min_system_version'] . ", Current: " . app('general_setting')->system_version);
+                    $this->cleanup();
+                    Toastr::error($json['min_system_version'] . ' or greater system version is required for this version', trans('common.operation_failed'));
+                    return redirect()->back();
+                }
+    
+                if (empty($json['min_system_version'])) {
+                    Log::warning('Min system version not defined in module config.');
+                    $this->cleanup();
+                    Toastr::error('This version is not suitable for current system version. Please check update log for minimum required version.', trans('common.operation_failed'));
+                    return redirect()->back();
+                }
+    
+            } else {
+                Log::error('Module config JSON is empty or invalid.');
+                $this->cleanup();
+                Toastr::error('Config File Missing', trans('common.operation_failed'));
+                return redirect()->back();
+            }
+    
+            // Copy module to Modules folder
             $dst = base_path('/Modules/');
             $this->recurse_copy($src, $dst);
-
+            Log::info("Module $module copied to $dst");
+    
+            // Run migrations if module is active
             if (isModuleActive($module)) {
                 $this->moduleMigration($module);
+                Log::info("Migrations executed for module: $module");
             }
-
-            if (storage_path('app/updateFile')) {
-                $this->delete_directory(storage_path('app/updateFile'));
-            }
-            if (storage_path('app/tempUpdate')) {
-                $this->delete_directory(storage_path('app/tempUpdate'));
-            }
-
-
+    
+            // Cleanup temp files
+            $this->cleanup();
+    
             Toastr::success("Your module successfully uploaded", 'Success');
+            Log::info("Module upload completed successfully: $module");
+    
             return redirect()->back();
-
-
+    
         } catch (\Exception $e) {
-            LogActivity::errorLog($e->getMessage());
+            Log::error('Module upload failed: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            Toastr::error('Module upload failed. Check logs for details.', 'Error');
+            return redirect()->back();
         }
     }
-
 
     public function moduleAddOnsEnable($name)
     {

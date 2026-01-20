@@ -1,0 +1,1 @@
+<?php echo e(($products->is_physical == 1) ? __("product.physical_product") : __("product.digital_product")); ?><?php /**PATH /var/www/DhatriProduction/Modules/Product/Resources/views/products/components/_product_type_td.blade.php ENDPATH**/ ?>

@@ -1584,16 +1584,18 @@
                                                 </svg>
                                                 {{__('defaultTheme.add_to_cart')}}
                                             </a>
-                                            <p>
-                                                @if (getProductwitoutDiscountPrice(@$product) != single_price(0))
-                                                    <del>
-                                                        {{getProductwitoutDiscountPrice(@$product)}}
-                                                    </del>
-                                                    @endif
-                                                <strong>
-                                                    {{getProductDiscountedPrice(@$product)}}
-                                                </strong>
-                                            </p>
+                                     <p>
+                                        @if(isset($product->product->mrp) || isset($product->mrp))
+                                            <del>
+                                                {{ single_price($product->product->mrp ?? $product->mrp) }}
+                                            </del>
+                                        @endif
+
+                                        <strong>
+                                            {{ getProductDiscountedPrice(@$product) }}
+                                        </strong>
+                                    </p>
+
                                         </div>
                                     @else
                                         <div class="product_price d-flex align-items-center justify-content-between flex-wrap">
@@ -2132,16 +2134,20 @@
                                         </svg>
                                         {{__('defaultTheme.add_to_cart')}}
                                     </a>
-                                    <p>
-                                        @if (getProductwitoutDiscountPrice(@$product) != single_price(0))
-                                            <del>
-                                                {{getProductwitoutDiscountPrice(@$product)}}
-                                            </del>
-                                            @endif
-                                        <strong>
-                                            {{getProductDiscountedPrice(@$product)}}
-                                        </strong>
-                                    </p>
+                                                        <p>
+                                    {{-- MRP (strike-through) --}}
+                                    @if(!empty($product->product->mrp))
+                                        <del class="text-muted">
+                                            {{ single_price($product->product->mrp) }}
+                                        </del>
+                                    @endif
+
+                                    {{-- Selling / Discounted Price --}}
+                                    <strong>
+                                        {{ getProductDiscountedPrice(@$product) }}
+                                    </strong>
+                                </p>
+
                                 </div>
                                 @else
                                 <div class="product_price d-flex align-items-center justify-content-between flex-wrap">

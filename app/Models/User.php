@@ -63,6 +63,10 @@ class User extends Authenticatable
         'email',
         'role_id',
         'password',
+        'store_name',
+        'document_type',
+        'document',
+
         'avatar',
         'is_verified',
         'is_active',

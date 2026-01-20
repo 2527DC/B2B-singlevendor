@@ -146,39 +146,65 @@ class RefundController extends Controller
     }
     public function store(RefundCreateRequest $request)
     {
+        // 🔹 Log incoming refund request (safe logging)
+        \Log::info('Refund Store API called', [
+            'user_id'    => auth()->id(),
+            'ip'         => $request->ip(),
+            'url'        => $request->fullUrl(),
+            'method'     => $request->method(),
+            'payload'    => $request->except(['_token', 'product_images_']),
+            'has_images' => $request->hasFile('product_images_'),
+            'image_count'=> $request->hasFile('product_images_') 
+                                ? count($request->file('product_images_')) 
+                                : 0,
+        ]);
+    
         if ($request->product_images_) {
             foreach ($request->product_images_ as $product) {
-                $extenstions = [
-                    "jpeg",
-                    "png",
-                    "jpg",
-                    "gif"
-                ];
-
-                if(!in_array($product->extension(), $extenstions)) {
-                    Toastr::error("Invalid file ! only jpeg,png,jpg,gif are allow to upload",'error');
+                $extensions = ["jpeg", "png", "jpg", "gif"];
+    
+                if (!in_array($product->extension(), $extensions)) {
+                    Toastr::error(
+                        "Invalid file! Only jpeg, png, jpg, gif are allowed to upload",
+                        'error'
+                    );
                     return redirect()->back();
                 }
             }
         }
+    
         if (empty($request->product_ids)) {
             Toastr::error(__('common.select_product_first'));
             return back();
         }
+    
         DB::beginTransaction();
         try {
             $this->refundService->store($request->except("_token"), auth()->user());
+    
             DB::commit();
             Toastr::success(__('common.created_successfully'), __('common.success'));
-            LogActivity::successLog('refund store successful.');
+            LogActivity::successLog('Refund store successful.');
+    
             return redirect()->route('refund.frontend.index');
+    
         } catch (\Exception $e) {
-            LogActivity::errorLog($e->getMessage());
+    
+            // 🔴 Log error with request context
+            \Log::error('Refund Store Failed', [
+                'user_id' => auth()->id(),
+                'error'   => $e->getMessage(),
+                'file'    => $e->getFile(),
+                'line'    => $e->getLine(),
+                'payload' => $request->except(['_token', 'product_images_']),
+            ]);
+    
             DB::rollBack();
             Toastr::error(__('common.Something Went Wrong'));
             return back();
         }
     }
+    
     public function show($id)
     {
         $data['refund_request'] = $this->refundService->findByID($id);

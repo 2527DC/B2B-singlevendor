@@ -1,0 +1,13 @@
+{
+    "name": "CheckPincode",
+    "alias": "checkpincode",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\CheckPincode\\Providers\\CheckPincodeServiceProvider"
+    ],
+    "aliases": {},
+    "files": [],
+    "requires": []
+}

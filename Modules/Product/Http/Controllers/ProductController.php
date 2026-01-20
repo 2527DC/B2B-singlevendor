@@ -29,7 +29,7 @@ use Modules\Product\Http\Requests\CreateProductRequest;
 
 use Modules\GeneralSetting\Entities\NotificationSetting;
 use Modules\WholeSale\Repositories\WholesalePriceRepository;
-
+use Illuminate\Support\Facades\Log;
 class ProductController extends Controller
 {
     use Notification;
@@ -274,39 +274,53 @@ class ProductController extends Controller
         return view('product::products.create', $data);
     }
 
+    
     public function store(CreateProductRequest $request)
     {
-
         DB::beginTransaction();
+    
         try {
-            //dd($request->all());
+            // Create product
             $this->productService->create($request->except("_token"));
-            if(auth()->user()->role_id != 1)
-            {
-                $notificationSetting = DB::table('notification_settings')->where('slug','seller-product-create')->first();
-                if($notificationSetting)
-                {
+    
+            if (auth()->user()->role_id != 1) {
+                $notificationSetting = DB::table('notification_settings')
+                    ->where('slug', 'seller-product-create')
+                    ->first();
+    
+                if ($notificationSetting) {
                     $admin_notification = (array) json_decode($notificationSetting->admin_msg);
                     $langs = getLanguageList();
+    
                     $adminNot = new CustomerNotification();
-                    foreach($langs as $key => $lang)
-                    {
-                       if(isset($admin_notification[$lang->code]))
-                       {
-                           $adminNot->setTranslation('title',$lang->code,$admin_notification[$lang->code]);
-                       }
+    
+                    foreach ($langs as $lang) {
+                        if (isset($admin_notification[$lang->code])) {
+                            $adminNot->setTranslation(
+                                'title',
+                                $lang->code,
+                                $admin_notification[$lang->code]
+                            );
+                        }
                     }
+    
                     $adminNot->customer_id = 1;
                     $adminNot->url = "#";
                     $adminNot->save();
-
                 }
-
             }
-
+    
             DB::commit();
+    
             Toastr::success(__('common.added_successfully'), __('common.success'));
-            LogActivity::successLog('product upload successful.');
+    
+            // ✅ Normal Laravel success log
+            Log::info('Product created successfully', [
+                'user_id' => auth()->id(),
+                'request_from' => $request->request_from,
+                'payload' => $request->except('_token'),
+            ]);
+    
             if ($request->request_from == 'main_product_form') {
                 return redirect()->route('product.index');
             } elseif ($request->request_from == 'seller_product_form') {
@@ -314,14 +328,22 @@ class ProductController extends Controller
             } elseif ($request->request_from == 'inhouse_product_form') {
                 return redirect()->route('admin.my-product.index');
             }
+    
         } catch (\Exception $e) {
             DB::rollBack();
-            LogActivity::errorLog($e->getMessage());
+    
+            // ❌ Normal Laravel error log
+            Log::error('Product creation failed', [
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+    
             Toastr::error(__('common.error_message'));
             return back();
         }
     }
-
+    
     public function show(Request $request)
     {
         $data['product'] = $this->productService->findById($request->id);

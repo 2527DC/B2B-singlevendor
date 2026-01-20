@@ -122,7 +122,7 @@ $LanguageList = getLanguageList();
 
                 <div class="col-lg-12">
                     <div class="primary_input mb-25">
-                       <label class="primary_input_label" for="discount">{{ __('common.discount') }}</label>
+                       <label class="primary_input_labela" for="discount">{{ __('common.discount') }}</label>
                        <input class="primary_input_field" type="number" id="discount" value="0" step="{{step_decimal()}}" min="0" max="100" name="discount" autocomplete="off">
                        <span class="text-danger" id="error_discount_fee"></span>
                     </div>

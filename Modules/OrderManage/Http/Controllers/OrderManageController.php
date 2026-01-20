@@ -12,6 +12,7 @@ use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\DB;
 use Modules\OrderManage\Repositories\CancelReasonRepository;
 use Modules\UserActivityLog\Traits\LogActivity;
+use Illuminate\Support\Facades\Log;
 
 class OrderManageController extends Controller
 {
@@ -182,31 +183,58 @@ class OrderManageController extends Controller
 
     public function sales_info_update(Request $request, $id)
     {
+        Log::info('sales_info_update called', [
+            'order_id' => $id,
+            'request_data' => $request->except(['_token']),
+        ]);
+    
         $data = $request->all();
-        unset($data['cancel_reason_id']);
-        unset($data['_token']);
-         if(!empty($request->cancel_reason_id)){
+        unset($data['cancel_reason_id'], $data['_token']);
+    
+        if (!empty($request->cancel_reason_id)) {
             $data['cancel_reason_id'] = $request->cancel_reason_id;
-         }
-
+        }
+    
         try {
-
+    
+            Log::info('Calling orderInfoUpdate service', [
+                'order_id' => $id,
+                'payload' => $data,
+            ]);
+    
             $data['order'] = $this->ordermanageService->orderInfoUpdate($data, $id);
-            if ($data['order'] ==  false) {
-
+    
+            if ($data['order'] === false) {
+    
+                Log::warning('Order update failed in service', [
+                    'order_id' => $id,
+                ]);
+    
                 Toastr::warning(__('order.please_create_account_for_deposite_main_income_seller_income_product_wise_tax_and_gst_tax'));
                 return back();
             }
+    
+            Log::info('Sales info updated successfully', [
+                'order_id' => $id,
+            ]);
+    
             Toastr::success(__('common.updated_successfully'), __('common.success'));
-            LogActivity::successLog('sales info update successful.');
             return back();
+    
         } catch (\Exception $e) {
-            LogActivity::errorLog($e->getMessage());
+    
+            Log::error('Sales info update exception', [
+                'order_id' => $id,
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+    
             Toastr::error(__('common.operation_failed'));
-
             return back();
         }
     }
+    
 
     public function update_delivery(Request $request, $id)
     {

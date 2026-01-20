@@ -483,6 +483,19 @@ $LanguageList = getLanguageList();
 
                                         @endif
 
+                                        <div class="col-lg-6 mrp_div">
+                                            <div class="primary_input mb-15">
+                                                <label class="primary_input_label" for="">
+                                                    {{ __('product.mrp') }} <span
+                                                    class="text-danger">*</span></label>
+                                                <input class="primary_input_field mrp" name="mrp" id="mrp"
+                                                    placeholder="{{ __('product.mrp') }}" type="number" min="1"
+                                                    step="{{step_decimal()}}" value="{{@$product->skus->first()->mrp}}"
+                                                    required>
+                                                <span class="text-danger" id="error_mrp">{{ $errors->first('mrp') }}</span>
+                                            </div>
+                                        </div>
+
                                         <div class="col-lg-6 selling_price_div">
                                             <div class="primary_input mb-15">
                                                 <label class="primary_input_label" for="">
@@ -495,14 +508,14 @@ $LanguageList = getLanguageList();
                                                 <span class="text-danger" id="error_selling_price">{{ $errors->first('selling_price') }}</span>
                                             </div>
                                         </div>
-                                        <div class="col-lg-3">
-                                            <div class="primary_input mb-15">
+                                        <div class="col-lg-3"  style="display: none !important;">
+                                            <div class="primary_input mb-15"   style="display: none !important;">
                                                 <label class="primary_input_label" for="discount"> {{ __('product.discount') }}</label>
                                                 <input class="primary_input_field" name="discount" id="discount" placeholder="{{ __('product.discount') }}" type="number" min="0" step="{{step_decimal()}}" value="{{getNumberTranslate(@$product->discount)}}">
                                                 <span class="text-danger" id="error_discunt">{{ $errors->first('discount') }}</span>
                                             </div>
                                         </div>
-                                        <div class="col-lg-3">
+                                        <div class="col-lg-3 "  style="display: none !important;">
                                             <div class="primary_input mb-25">
                                                 <label class="primary_input_label" for="discount_type">{{ __('product.discount_type') }}</label>
                                                 <select class="primary_select mb-25" name="discount_type" id="discount_type">
