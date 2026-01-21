@@ -6,6 +6,34 @@
 @endsection
 
 @section('mainContent')
+<style>
+/* File input container fix */
+input[type="file"] {
+    height: 42px;                 /* match your input height */
+    display: flex;
+    align-items: center;          /* vertical center */
+}
+
+/* Inner "Choose File" button */
+input[type="file"]::file-selector-button {
+    margin-top: 6px;
+    height: 28px;
+    padding: 4px 12px;
+    font-size: 12px;
+    line-height: 1;
+}
+
+/* Chrome / Edge / Safari */
+input[type="file"]::-webkit-file-upload-button {
+    margin: 3;
+    height: 28px;
+    padding: 4px 12px;
+    font-size: 12px;
+    line-height: 1;
+}
+
+
+</style>
 
 <section class="admin-visitor-area up_st_admin_visitor">
     <div class="container-fluid p-0">
@@ -59,6 +87,63 @@
                                 <p class="text-danger user_id_row d-none">{{__('common.your_user_id_is')}} : <span
                                         class="generated_user_id"></span></p>
                             </div>
+                            <div class="col-xl-4">
+    <div class="primary_input mb-25">
+        <label class="primary_input_label">
+            Store Name <span class="text-danger">*</span>
+        </label>
+        <input
+            name="store_name"
+            class="primary_input_field"
+            placeholder="Store Name"
+            type="text"
+            value="{{ old('store_name') }}"
+            required
+        >
+        <span class="text-danger">{{ $errors->first('store_name') }}</span>
+    </div>
+</div>
+
+<!-- Store Image Upload -->
+<div class="col-xl-4">
+    <div class="primary_input mb-25">
+        <label class="primary_input_label">
+            Shop Image <span class="text-danger">*</span>
+            <small class="text-muted">(PNG, JPG, JPEG)</small>
+        </label>
+
+        <input
+            type="file"
+            name="store_image"
+            class="primary_input_field file_input_fix"
+            accept=".jpg,.jpeg,.png"
+            required
+        >
+
+        <span class="text-danger">{{ $errors->first('store_image') }}</span>
+    </div>
+</div>
+
+<div class="col-xl-4">
+    <div class="primary_input mb-25">
+        <label class="primary_input_label">
+            Upload Document 
+            <span class="text-danger">*</span>
+            <small class="text-muted">(GST, MSME, Store Document, Company PAN)</small>
+        </label>
+
+        <input
+            type="file"
+            name="document"
+            class="primary_input_field file_input_fix"
+            accept=".jpg,.jpeg,.png,.pdf"
+        >
+
+        <span class="text-danger">{{ $errors->first('document') }}</span>
+    </div>
+</div>
+
+
 
 
                             <div class="col-xl-4">

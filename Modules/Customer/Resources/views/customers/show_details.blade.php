@@ -42,8 +42,52 @@
                                         <td>: <span class="ml-1"></span>{{ dateConvert($customer->created_at) }}</td>
                                     </tr>
                                     <tr>
+    <td>Store Name</td>
+    <td>: <span class="ml-1"></span>{{ $customer->store_name ?? '—' }}</td>
+</tr>
+<!-- 
+<tr>
+    <td>Document Type</td>
+    <td>: <span class="ml-1"></span>{{ $customer->document_type ?? '—' }}</td>
+</tr> -->
+
+
+<!-- Store Image -->
+<tr>
+    <td>Shop Image</td>
+    <td>: <span class="ml-1"></span>
+        @if($customer->store_image)
+            <a href="{{ asset('public/'.$customer->store_image) }}"
+               target="_blank"
+               class="primary-btn small fix-gr-bg">
+                View Shop Image
+            </a>
+        @else
+            —
+        @endif
+    </td>
+</tr>
+
+
+<tr>
+    <td>Document</td>
+    <td>: <span class="ml-1"></span>
+        @if($customer->document)
+            <a href="{{ asset('public/'.$customer->document) }}"
+               target="_blank"
+               class="primary-btn small fix-gr-bg">
+                View Document
+            </a>
+        @else
+            —
+        @endif
+    </td>
+</tr>
+
+
+                                    <tr>
                                         <td>{{ __('common.active_status') }}</td>
-                                        <td>: <span class="ml-1"></span>
+                                        <td>: <span class="ml-1"></span>    
                                             @if ($customer->is_active == 1)
                                                 <span class="badge_1">{{__('common.active')}}</span>
                                             @elseif($customer->is_active == 0)

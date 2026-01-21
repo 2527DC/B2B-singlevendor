@@ -1,18 +1,12 @@
-# Driver table created
+Added the Registration fields and  update the  listing_paginate_data.blade.php or showing the strickoff for the amount 
 
-CREATE TABLE drivers (
-id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-name VARCHAR(255) NOT NULL,
-phone VARCHAR(20) NOT NULL UNIQUE,
-password VARCHAR(255) NOT NULL,
-address TEXT NULL,
-order_pick_location VARCHAR(255) NULL,
-is_active TINYINT(1) DEFAULT 1,
-created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
+added a column for shop image in  usertable
+store_name
+document
+store_name
+store_image
 
-
-ALTER TABLE orders
-ADD COLUMN photo_proof VARCHAR(255),
-ADD COLUMN signature_proof VARCHAR(255);
+ALTER TABLE users
+ADD store_name VARCHAR(191) NULL AFTER last_name,
+ADD document VARCHAR(191) NULL AFTER document_type;
+ADD store_image VARCHAR(191) 
