@@ -2088,7 +2088,7 @@
 <?php unset($__componentOriginal1fd0c6214335ac543ccaaf0de3ed891a); ?>
 <?php endif; ?>
                                 </div>
-                                <!-- <div class="product__meta px-3 text-center">
+                                <div class="product__meta px-3 text-center">
                                     <span class="product_banding "><?php echo e(@$product->brand->name ?? " "); ?></span>
                                     <a href="<?php echo e(singleProductURL(@$product->seller->slug, $product->slug)); ?>">
                                         <h4><?php if($product->product_name): ?> <?php echo e(textLimit(@$product->product_name, 50)); ?> <?php else: ?> <?php echo e(textLimit(@$product->product->product_name, 50)); ?> <?php endif; ?></h4>
@@ -2124,7 +2124,7 @@
                                             <?php echo e(__('defaultTheme.add_to_cart')); ?>
 
                                         </a>
-                                        <p>
+                                        <!-- <p>
                                             <?php if(getProductwitoutDiscountPrice(@$product) != single_price(0)): ?>
                                                 <del>
                                                     <?php echo e(getProductwitoutDiscountPrice(@$product)); ?>
@@ -2135,7 +2135,26 @@
                                                 <?php echo e(getProductDiscountedPrice(@$product)); ?>
 
                                             </strong>
+                                        </p> -->
+
+                                        <p class="d-flex flex-column text-end m-0">
+
+                                            
+                                            <strong class="text-dark">
+                                                <?php echo e(getProductDiscountedPrice(@$product)); ?>
+
+                                            </strong>
+
+                                            
+                                            <?php if(isset($product->product->mrp) || isset($product->mrp)): ?>
+                                                <del class="text-muted">
+                                                    <?php echo e(single_price($product->product->mrp ?? $product->mrp)); ?>
+
+                                                </del>
+                                            <?php endif; ?>
+
                                         </p>
+
                                     </div>
                                     <?php else: ?>
                                     <div class="product_price d-flex align-items-center justify-content-between flex-wrap">
@@ -2146,9 +2165,9 @@
                                         </a>
                                     </div>
                                     <?php endif; ?>
-                                </div> -->
+                                </div>
 
-                                <p class="d-flex flex-column text-end m-0">
+                                <!-- <p class="d-flex flex-column text-end m-0">
 
                                     
                                     <strong class="text-dark">
@@ -2164,7 +2183,7 @@
                                         </del>
                                     <?php endif; ?>
 
-                                </p>
+                                </p> -->
 
                             </div>
 
@@ -2318,7 +2337,7 @@
 
 
 
-                                    <!-- <div class="product__meta px-3 text-center">
+                                    <div class="product__meta px-3 text-center">
                                         <span class="product_banding "><?php echo e(@$product->brand->name ?? " "); ?></span>
                                         <a href="<?php echo e(singleProductURL(@$product->seller->slug, $product->slug)); ?>">
                                             <h4><?php if($product->product_name): ?> <?php echo e(textLimit(@$product->product_name, 50)); ?> <?php else: ?> <?php echo e(textLimit(@$product->product->product_name, 50)); ?> <?php endif; ?></h4>
@@ -2354,31 +2373,7 @@
                                                     <?php echo e(__('defaultTheme.add_to_cart')); ?>
 
                                                 </a>
-                                                <p>
-                                                    <?php if(getProductwitoutDiscountPrice(@$product) != single_price(0)): ?>
-                                                        <del>
-                                                            <?php echo e(getProductwitoutDiscountPrice(@$product)); ?>
-
-                                                        </del>
-                                                    <?php endif; ?>
-                                                    <strong>
-                                                        <?php echo e(getProductDiscountedPrice(@$product)); ?>
-
-                                                    </strong>
-                                                </p>
-                                            </div>
-                                        <?php else: ?>
-
-                                        <div class="product_price d-flex align-items-center justify-content-between flex-wrap">
-                                            <a class="amaz_primary_btn w-100"  style="text-indent: 0;" href="<?php echo e(url('/login')); ?>">
-                                                <?php echo e(__('defaultTheme.login_to_order')); ?>
-
-                                            </a>
-                                        </div>
-                                        <?php endif; ?>
-                                    </div> -->
-
-                                    <p class="d-flex flex-column text-end m-0">
+                                               <p class="d-flex flex-column text-end m-0">
 
                                         
                                         <strong class="text-dark">
@@ -2395,6 +2390,19 @@
                                         <?php endif; ?>
 
                                     </p>
+                                            </div>
+                                        <?php else: ?>
+
+                                        <div class="product_price d-flex align-items-center justify-content-between flex-wrap">
+                                            <a class="amaz_primary_btn w-100"  style="text-indent: 0;" href="<?php echo e(url('/login')); ?>">
+                                                <?php echo e(__('defaultTheme.login_to_order')); ?>
+
+                                            </a>
+                                        </div>
+                                        <?php endif; ?>
+                                    </div>
+
+                                   
 
                                 </div>
                             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>

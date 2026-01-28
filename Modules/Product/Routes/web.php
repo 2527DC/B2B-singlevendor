@@ -33,6 +33,11 @@ Route::prefix('products')->as('product.')->group(function() {
         Route::post('/get-attribute-values', 'AttributeController@attribute_values')->name('attribute.values');
         Route::post('/change-gst-group', 'ProductController@ChangeProductGroup')->name('change-gst-group');
         Route::get('/seller-products/get-by-ajax', 'ProductController@getSellerProductByAjax')->name('seller-products.get-by-ajax');
+        
+        // Stock Management Routes
+        Route::post('/stock/get-skus', 'ProductController@getProductSkus')->name('stock.get-skus');
+        Route::post('/stock/update', 'ProductController@updateStock')->name('stock.update')->middleware('prohibited_demo_mode');
+        Route::post('/stock/history', 'ProductController@getStockHistory')->name('stock.history');
     });
     Route::get('reported-products','ProductController@reportedProducts')->name('reportedProducts');
     Route::get('show-report/{report_id}','ProductController@showReport')->name('showReport');

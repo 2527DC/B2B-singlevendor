@@ -91,6 +91,9 @@
 
                 <div class="col-lg-12">
                     <div class="QA_section QA_section_heading_custom check_box_table mt-80">
+                        <button class="primary-btn fix-gr-bg" id="bulk_import_invoice">
+    Import Invoice
+</button>
                         <div class="QA_table ">
                             <!-- table-responsive -->
                             <div class="">
@@ -98,6 +101,12 @@
                                     <thead>
                                     <tr>
                                         <th>{{__('common.sl')}}</th>
+                                        <th>
+                                              <label class="primary_checkbox">
+                                                <input type="checkbox" id="select_all">
+                                                <span class="checkmark"></span>
+                                            </label>
+                                        </th>
                                         <th>{{__('common.date')}}</th>
                                         <th>{{__('common.order_id')}}</th>
                                         <th>{{__('shipping.tracking_id')}}</th>
@@ -112,6 +121,15 @@
                                         <tr>
 
                                             <td>{{ getNumberTranslate($key+1) }}</td>
+                                            <td>
+                                                <label class="primary_checkbox">
+                                                    <input type="checkbox"
+                                                        class="invoice_checkbox"
+                                                        value="{{ $row->id }}">
+                                                    <span class="checkmark"></span>
+                                                </label>
+                                            </td>
+
                                             <td>{{ dateConvert($row->created_at) }}</td>
                                             <td>{{ getNumberTranslate($row->order->order_number) }}</td>
                                             <td>{{ getNumberTranslate($row->package_code) }}</td>
@@ -182,6 +200,7 @@
         <input type="hidden" value="{{route('shipping.customer_address_edit',':id')}}" id="customer_address_edit">
         <input type="hidden" value="{{route('shipping.customer_address_update')}}" id="customer_address_update">
         <input type="hidden" value="{{route('shipping.carrier_status',':id')}}" id="carrier_status_url">
+        <input type="hidden" id="bulk_invoice_import_url" value="{{ route('shipping.bulk_invoice_import') }}">
     </section>
 @endsection
 @push('scripts')
@@ -410,6 +429,84 @@
                 }
             });
         })(jQuery);
+
+
+
+        // Select / Unselect all invoices
+$(document).on('change', '#select_all', function () {
+    $('.invoice_checkbox').prop('checked', this.checked);
+});
+
+// If any checkbox unchecked → uncheck select_all
+$(document).on('change', '.invoice_checkbox', function () {
+    if ($('.invoice_checkbox:checked').length !== $('.invoice_checkbox').length) {
+        $('#select_all').prop('checked', false);
+    } else {
+        $('#select_all').prop('checked', true);
+    }
+});
+
+
+// Select / Unselect all invoices
+$(document).on('change', '#select_all', function () {
+    $('.invoice_checkbox').prop('checked', this.checked);
+});
+
+// If any checkbox unchecked → uncheck select_all
+$(document).on('change', '.invoice_checkbox', function () {
+    if ($('.invoice_checkbox:checked').length !== $('.invoice_checkbox').length) {
+        $('#select_all').prop('checked', false);
+    } else {
+        $('#select_all').prop('checked', true);
+    }
+});
+
+
+// Bulk Import Invoice
+$(document).on('click', '#bulk_import_invoice', function (e) {
+    e.preventDefault();
+
+    let invoiceIds = [];
+
+    $('.invoice_checkbox:checked').each(function () {
+        invoiceIds.push($(this).val());
+    });
+
+    if (invoiceIds.length === 0) {
+        toastr.warning('Please select at least one invoice');
+        return;
+    }
+
+    let url = $('#bulk_invoice_import_url').val();
+
+    $('#pre-loader').removeClass('d-none');
+
+    $.ajax({
+        url: url,
+        type: 'POST',
+        data: {
+            // _token: $('meta[name="csrf-token"]').attr('content'),
+            _token: '{{ csrf_token() }}',
+            invoice_ids: invoiceIds
+        },
+        success: function (response) {
+            $('#pre-loader').addClass('d-none');
+
+            if (response.success) {
+                toastr.success(response.message);
+            } else {
+                toastr.error(response.message || 'Invoice import failed');
+            }
+        },
+        error: function (xhr) {
+            $('#pre-loader').addClass('d-none');
+            console.error(xhr.responseText);
+            toastr.error('Invoice import failed');
+        }
+    });
+});
+
+
     </script>
 
 @endpush

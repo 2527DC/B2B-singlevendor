@@ -201,7 +201,25 @@ unset($__errorArgs, $__bag); ?>
         <span class="text-danger"><?php echo e($errors->first('store_name')); ?></span>
     </div>
 
-    <div class="col-12 mb_20">
+    <!-- Store Image Upload -->
+<div class="col-12 mb_20">
+    <label class="primary_label2">
+        Shop Image <span>*</span>
+        <small class="text-muted">(PNG, JPG, JPEG)</small>
+    </label>
+
+    <input
+        type="file"
+        name="store_image"
+        class="primary_input3 radius_5px"
+        accept=".jpg,.jpeg,.png"
+        required
+    >
+
+    <span class="text-danger"><?php echo e($errors->first('store_image')); ?></span>
+</div>
+
+    <!-- <div class="col-12 mb_20">
         <label class="primary_label2">Document Type <span>*</span></label>
         <select name="document_type" class="primary_input3 radius_5px" required>
             <option value="">Select Document</option>
@@ -209,13 +227,31 @@ unset($__errorArgs, $__bag); ?>
             <option value="MSME" <?php echo e(old('document_type') == 'MSME' ? 'selected' : ''); ?>>MSME</option>
         </select>
         <span class="text-danger"><?php echo e($errors->first('document_type')); ?></span>
-    </div>
-
+    </div> -->
+<!-- 
     <div class="col-12 mb_20">
         <label class="primary_label2">Upload Document <span>*</span></label>
         <input type="file" name="document" class="primary_input3 radius_5px" accept=".jpg,.jpeg,.png,.pdf" required>
         <span class="text-danger"><?php echo e($errors->first('document')); ?></span>
-    </div>
+    </div> -->
+<div class="col-12 mb_20">
+    <label class="primary_label2">
+        Upload Document <span>*</span>
+        <small class="text-muted">
+            (GST, MSME, Store Documents, Company PAN)
+        </small>
+    </label>
+
+    <input
+        type="file"
+        name="document"
+        class="primary_input3 radius_5px"
+        accept=".jpg,.jpeg,.png,.pdf"
+        required
+    >
+
+    <span class="text-danger"><?php echo e($errors->first('document')); ?></span>
+</div>
 
 
                         <?php if(isModuleActive('Otp') && otp_configuration('otp_activation_for_customer') || app('business_settings')->where('type', 'email_verification')->first()->status == 0): ?>

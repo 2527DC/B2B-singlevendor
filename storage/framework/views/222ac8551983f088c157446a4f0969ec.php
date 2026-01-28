@@ -260,7 +260,14 @@
                                 <a href="<?php echo e(singleProductURL(@$product->seller->slug, $product->slug)); ?>">
                                     <h4><?php if($product->product_name): ?> <?php echo e(textLimit(@$product->product_name, 50)); ?> <?php else: ?> <?php echo e(textLimit(@$product->product->product_name, 50)); ?> <?php endif; ?></h4>
                                 </a>
-                                <?php if(isGuestAddtoCart()): ?>
+
+
+
+
+
+
+
+                                <!-- <?php if(isGuestAddtoCart()): ?>
                                 <div class="product_price d-flex align-items-center justify-content-between flex-wrap">
                                     <a class="amaz_primary_btn addToCartFromThumnail" data-producttype="<?php echo e(@$product->product->product_type); ?>" data-seller=<?php echo e($product->user_id); ?> data-product-sku=<?php echo e(@$product->skus->first()->id); ?>
 
@@ -310,7 +317,34 @@
 
                                     </a>
                                 </div>
-                                <?php endif; ?>
+                                <?php endif; ?> -->
+                                <p class="d-flex flex-column text-end m-0">
+
+                                    
+                                    <strong class="text-dark">
+                                        <?php echo e(getProductDiscountedPrice(@$product)); ?>
+
+                                    </strong>
+
+                                    
+                                    <?php if(isset($product->product->mrp) || isset($product->mrp)): ?>
+                                        <del class="text-muted">
+                                            <?php echo e(single_price($product->product->mrp ?? $product->mrp)); ?>
+
+                                        </del>
+                                    <?php endif; ?>
+
+                                </p>
+
+
+
+
+
+
+
+
+
+                                
                             </div>
                         </div>
                     </div>

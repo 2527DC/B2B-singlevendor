@@ -374,124 +374,217 @@ class AuthController extends Controller
     //     }
     // }
 
+public function register(Request $request)
+{
+    // 🔹 Log incoming request (hide sensitive fields)
+    Log::info('Register API called', [
+        'ip'      => $request->ip(),
+        'headers' => $request->headers->all(),
+        'payload' => $request->except(['password', 'password_confirmation', 'document', 'store_image']),
+    ]);
 
-    public function register(Request $request)
-    {
-        // 🔹 Log incoming request (hide password fields)
-        Log::info('Register API called', [
-            'ip'      => $request->ip(),
-            'headers' => $request->headers->all(),
-            'payload' => $request->except(['password', 'password_confirmation']),
-        ]);
-    
-        try {
-            // Validation rules
-            $rules = [
-                'first_name'   => 'required|string|max:255',
-                'phone'        => 'nullable|string|max:15|unique:users,phone',
-                'email'        => 'nullable|email|max:255|unique:users,email',
-                'password'     => 'required|min:8|confirmed',
-                'user_type'    => 'required|in:customer',
-                'device_token' => 'required',
-            ];
-    
-            $messages = [
-                'required'     => 'The :attribute field is required.',
-                'password.min' => 'The password field must be at least 8 characters.',
-                'user_type.in' => 'Invalid user type provided.',
-                'phone.unique' => 'This phone number is already registered.',
-                'email.unique' => 'This email is already registered.',
-                'email.email'  => 'The email must be a valid email address.',
-            ];
-    
+    try {
+        // Validation rules
+        $rules = [
+            'first_name'    => 'required|string|max:255',
+            'phone'         => 'nullable|string|max:15|unique:users,phone',
+            'email'         => 'nullable|email|max:255|unique:users,email',
+            'password'      => 'required|min:8|confirmed',
+            'user_type'     => 'required|in:customer',
+            'device_token'  => 'required',
+            'store_name'    => 'nullable|string|max:191',
+            'store_image'   => 'required|file|mimes:jpeg,png,jpg,gif|max:5120', // Max 5MB, required
+            'document'      => 'nullable|file|mimes:jpeg,png,jpg,gif,pdf|max:5120', // Max 5MB
+        ];
+
+        $messages = [
+            'required'          => 'The :attribute field is required.',
+            'password.min'      => 'The password field must be at least 8 characters.',
+            'user_type.in'      => 'Invalid user type provided.',
+            'phone.unique'      => 'This phone number is already registered.',
+            'email.unique'      => 'This email is already registered.',
+            'email.email'       => 'The email must be a valid email address.',
+            'store_image.required' => 'Store image is required.',
+            'store_image.file'   => 'Store image must be a file.',
+            'store_image.mimes'  => 'Store image must be a jpeg, png, jpg, or gif file.',
+            'store_image.max'    => 'Store image must not exceed 5MB.',
+            'document.file'     => 'The document must be a file.',
+            'document.mimes'    => 'The document must be a jpeg, png, jpg, gif, or pdf file.',
+            'document.max'      => 'The document must not exceed 5MB.',
+        ];
+
+        // Create validator
+        $validator = \Validator::make($request->all(), $rules, $messages);
+        
+        // Add custom validation rules
+        $validator->after(function ($validator) use ($request) {
             // Custom validation: at least one of phone or email must be provided
-            $validator = \Validator::make($request->all(), $rules, $messages);
-            $validator->after(function ($validator) use ($request) {
-                if (!$request->filled('phone') && !$request->filled('email')) {
-                    $validator->errors()->add('phone', 'Either phone or email must be provided.');
-                    $validator->errors()->add('email', 'Either phone or email must be provided.');
-                }
-            });
-    
-            if ($validator->fails()) {
-                Log::warning('Register API validation failed', [
-                    'errors' => $validator->errors()->toArray(),
-                    'payload' => $request->except(['password', 'password_confirmation']),
-                ]);
-    
-                return response()->json([
-                    'message' => 'Validation failed',
-                    'errors'  => $validator->errors(),
-                ], 422);
+            if (!$request->filled('phone') && !$request->filled('email')) {
+                $validator->errors()->add('phone', 'Either phone or email must be provided.');
+                $validator->errors()->add('email', 'Either phone or email must be provided.');
             }
-    
-            // Check if user already exists by phone or email
-            $existingUser = $this->authService->getRegister($request->all());
-            if ($existingUser) {
-                $response = $this->registerCustomerResponse($existingUser);
-    
-                Log::info('Register API response - existing user', [
-                    'user_id'  => $existingUser->id ?? null,
-                    'response' => $response->getData(true),
-                    'status'   => $response->status(),
-                ]);
-    
-                return $response;
-            }
-    
-            // Register new user
-            $user = $this->authService->register($request->all());
-    
-            // Attach guest cart to user
-            Cart::where('session_id', $request->device_token)->update([
-                'user_id'    => $user->id,
-                'session_id' => ''
+            
+            // Removed document_type related custom validations
+            // Users can now upload documents without specifying a type
+        });
+
+        // Check if validation fails
+        if ($validator->fails()) {
+            Log::warning('Register API validation failed', [
+                'errors' => $validator->errors()->toArray(),
+                'payload' => $request->except(['password', 'password_confirmation', 'document', 'store_image']),
             ]);
-    
-            $response = $this->registerCustomerResponse($user);
-    
-            Log::info('Register API response - success', [
-                'user_id'  => $user->id,
+
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors'  => $validator->errors(),
+            ], 422);
+        }
+
+        // ✅ Handle store image upload (required)
+        $storeImagePath = null;
+        if ($request->hasFile('store_image')) {
+            $storeImageFile = $request->file('store_image');
+            $storeUploadPath = 'uploads/images/store_images';
+            $storeFullPath = public_path($storeUploadPath);
+
+            if (!file_exists($storeFullPath)) {
+                mkdir($storeFullPath, 0755, true);
+            }
+
+            // Get extension
+            $storeExtension = $storeImageFile->getClientOriginalExtension();
+            $storeFileName = time() . '_store_' . uniqid() . '.' . $storeExtension;
+
+            // Move file
+            $storeImageFile->move($storeFullPath, $storeFileName);
+            $storeImagePath = $storeUploadPath . '/' . $storeFileName;
+
+            Log::info('Store image uploaded', [
+                'path' => $storeImagePath,
+                'full_path' => $storeFullPath . '/' . $storeFileName,
+            ]);
+        }
+
+        // ✅ Handle document upload (optional)
+        $documentPath = null;
+        if ($request->hasFile('document')) {
+            $file = $request->file('document');
+            $uploadPath = 'uploads/images/user_documents';
+            $fullPath = public_path($uploadPath);
+
+            if (!file_exists($fullPath)) {
+                mkdir($fullPath, 0755, true);
+            }
+
+            // Get extension
+            $extension = $file->getClientOriginalExtension();
+            $fileName = time() . '_' . uniqid() . '.' . $extension;
+
+            // Move file
+            $file->move($fullPath, $fileName);
+            $documentPath = $uploadPath . '/' . $fileName;
+
+            Log::info('Document uploaded', [
+                'path' => $documentPath,
+                'full_path' => $fullPath . '/' . $fileName,
+            ]);
+        }
+
+        // ✅ Prepare array data for repository (match repository method signature)
+        $userData = [
+            'first_name'    => $request->input('first_name'),
+            'last_name'     => $request->input('last_name'),
+            'phone'         => $request->input('phone'),
+            'email'         => $request->input('email'),
+            'password'      => $request->input('password'),
+            'user_type'     => $request->input('user_type'),
+            'device_token'  => $request->input('device_token'),
+            'store_name'    => $request->input('store_name'),
+            'store_image'   => $storeImagePath, // Add store image path
+            'document_path' => $documentPath, // Add the document path
+            'referral_code' => $request->input('referral_code'),
+        ];
+
+        // Check if user already exists by phone or email
+        $existingUser = $this->authService->getRegister($userData);
+        if ($existingUser) {
+            $response = $this->registerCustomerResponse($existingUser);
+
+            Log::info('Register API response - existing user', [
+                'user_id'  => $existingUser->id ?? null,
                 'response' => $response->getData(true),
                 'status'   => $response->status(),
             ]);
-    
+
             return $response;
-    
-        } catch (\Illuminate\Database\QueryException $e) {
-            // Handle duplicate entry for unique fields (like phone or email)
-            if ($e->errorInfo[1] == 1062) { // MySQL duplicate entry code
-                return response()->json([
-                    'message' => 'Duplicate data found: '.$e->errorInfo[2]
-                ], 409);
-            }
-    
-            Log::error('Register API failed', [
-                'error' => $e->getMessage(),
-                'file'  => $e->getFile(),
-                'line'  => $e->getLine(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-    
-            return response()->json([
-                'message' => 'Something went wrong'
-            ], 500);
-    
-        } catch (\Throwable $e) {
-            Log::error('Register API failed', [
-                'error' => $e->getMessage(),
-                'file'  => $e->getFile(),
-                'line'  => $e->getLine(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-    
-            return response()->json([
-                'message' => 'Something went wrong'
-            ], 500);
         }
+
+        // ✅ Register new user - pass array to repository
+        $user = $this->authService->register($userData);
+
+        // Attach guest cart to user
+        Cart::where('session_id', $request->device_token)->update([
+            'user_id'    => $user->id,
+            'session_id' => ''
+        ]);
+
+        $response = $this->registerCustomerResponse($user);
+
+        Log::info('Register API response - success', [
+            'user_id'  => $user->id,
+            'response' => $response->getData(true),
+            'status'   => $response->status(),
+        ]);
+
+        return $response;
+
+    } catch (\Illuminate\Database\QueryException $e) {
+        // Handle duplicate entry for unique fields (like phone or email)
+        if ($e->errorInfo[1] == 1062) { // MySQL duplicate entry code
+            Log::error('Register API - duplicate entry', [
+                'error' => $e->getMessage(),
+                'error_info' => $e->errorInfo,
+            ]);
+            
+            return response()->json([
+                'message' => 'Duplicate data found: A user with this phone or email already exists.'
+            ], 409);
+        }
+
+        Log::error('Register API - database error', [
+            'error' => $e->getMessage(),
+            'file'  => $e->getFile(),
+            'line'  => $e->getLine(),
+            'trace' => $e->getTraceAsString(),
+        ]);
+
+        return response()->json([
+            'message' => 'Database error occurred. Please try again.'
+        ], 500);
+
+    } catch (\Illuminate\Http\Exceptions\PostTooLargeException $e) {
+        Log::error('Register API - file too large', [
+            'error' => $e->getMessage(),
+        ]);
+
+        return response()->json([
+            'message' => 'File too large. Maximum file size is 5MB.'
+        ], 413);
+
+    } catch (\Throwable $e) {
+        Log::error('Register API failed', [
+            'error' => $e->getMessage(),
+            'file'  => $e->getFile(),
+            'line'  => $e->getLine(),
+            'trace' => $e->getTraceAsString(),
+        ]);
+
+        return response()->json([
+            'message' => 'Something went wrong. Please try again later.'
+        ], 500);
     }
-    
-    
+}
     /**
      * Change Password
      * @bodyParam old_password string required old password
@@ -507,7 +600,7 @@ class AuthController extends Controller
     {
         $request->validate([
             'old_password' => 'required',
-            'password' => 'required|min:8|confirmed',
+            'password' => 'required|min:8|confirmed',̦̈̈̈̈
         ]);
         $user = $request->user();
         if ($user) {

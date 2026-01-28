@@ -1,4 +1,4 @@
-Added the Registration fields and  update the  listing_paginate_data.blade.php or showing the strickoff for the amount 
+Added the Registration fields  to table and code and  update the  listing_paginate_data.blade.php or showing the strickoff for the amount 
 
 added a column for shop image in  usertable
 store_name

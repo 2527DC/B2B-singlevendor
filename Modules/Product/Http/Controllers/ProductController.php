@@ -411,36 +411,119 @@ class ProductController extends Controller
         }
     }
 
+    
     public function update(CreateProductRequest $request, $id)
     {
         DB::beginTransaction();
+        
+        Log::debug("=== PRODUCT UPDATE METHOD STARTED ===");
+        Log::debug("Product ID: {$id}");
+        Log::debug("Request Method: " . $request->method());
+        Log::debug("User Role: " . (auth()->user()->role->type ?? 'Unknown'));
+        Log::debug("User ID: " . auth()->id());
+        
         try {
+            // Check if user is seller
             if(auth()->user()->role->type == 'seller'){
+                Log::debug("User is SELLER - Checking product approval status...");
                 $product_for_req = $this->productService->findById($id);
+                
                 if($product_for_req->is_approved){
+                    Log::warning("Seller attempted to edit already approved product ID: {$id}");
+                    Log::debug("Product Name: " . ($product_for_req->name ?? 'N/A'));
+                    Log::debug("Product Approval Status: " . ($product_for_req->is_approved ? 'Approved' : 'Not Approved'));
+                    
                     Toastr::error('Product already Approved. You Dont have Permission To Edit.');
                     return redirect()->route('seller.product.index');
                 }
+                Log::debug("Product is NOT approved - seller can edit");
             }
-            if(product_attribute_editable($id) === false && $request->new_attribute_added == 1){
+            
+            // Check if product attributes are editable
+            Log::debug("Checking if product attributes are editable...");
+            $attributeEditable = product_attribute_editable($id);
+            Log::debug("Product attribute editable check: " . ($attributeEditable ? 'Editable' : 'Not Editable'));
+            
+            if($attributeEditable === false && $request->new_attribute_added == 1){
+                Log::warning("Product attribute editing not possible for product ID: {$id}");
+                Log::debug("new_attribute_added value: " . $request->new_attribute_added);
+                Log::debug("Product already used - cannot add new attributes");
+                
                 Toastr::error(__('Product Already Used. Atrribute Add Not Posible.'),__('common.error'));
                 return back();
             }
+            
+            Log::debug("Product can be updated. Processing update...");
+            
+            // Log request data (excluding sensitive info)
+            Log::debug("=== REQUEST DATA SUMMARY ===");
+            Log::debug("Request keys: " . implode(', ', array_keys($request->except('_token', 'password', 'password_confirmation'))));
+            Log::debug("Has files: " . ($request->hasFile('images') ? 'Yes' : 'No'));
+            Log::debug("New attribute added flag: " . ($request->new_attribute_added ?? 'Not set'));
+            
+            // Perform the update
+            $startTime = microtime(true);
+            Log::debug("Calling productService->update()...");
+            
             $this->productService->update($request->except("_token"), $id);
+            
+            $updateTime = round((microtime(true) - $startTime) * 1000, 2);
+            Log::debug("Product service update completed in: {$updateTime}ms");
+            
+            // Commit transaction
             DB::commit();
-            LogActivity::successLog('Product updated.');
+            Log::debug("Database transaction COMMITTED");
+            
+            // Log success
+            Log::info("Product updated successfully - ID: {$id}");
+            LogActivity::successLog("Product updated - ID: {$id} by User: " . auth()->user()->name);
+            
             Toastr::success(__('common.updated_successfully'), __('common.success'));
+            
+            // Redirect based on user role
             $user = auth()->user();
-            if ($user->role->type == 'superadmin' || $user->role->type == 'admin' || $user->role->type == 'staff') {
-                return redirect()->route('product.index');
-            } else {
-                return redirect()->route('seller.product.index');
-            }
+            $redirectRoute = match($user->role->type) {
+                'superadmin', 'admin', 'staff' => 'product.index',
+                default => 'seller.product.index',
+            };
+            
+            Log::debug("Redirecting user to route: {$redirectRoute}");
+            Log::debug("User role for redirect: " . $user->role->type);
+            
+            return redirect()->route($redirectRoute);
+            
         } catch (\Exception $e) {
+            Log::error("=== PRODUCT UPDATE ERROR ===");
+            Log::error("Error updating product ID: {$id}");
+            Log::error("Error Message: " . $e->getMessage());
+            Log::error("Error File: " . $e->getFile());
+            Log::error("Error Line: " . $e->getLine());
+            Log::error("Error Code: " . $e->getCode());
+            
+            // Log request data on error for debugging
+            Log::error("Request Data on Error: " . json_encode($request->except(['_token', 'password', 'password_confirmation', 'card_number', 'cvv'])));
+            
+            // Rollback transaction
             DB::rollBack();
-            LogActivity::errorLog($e->getMessage());
+            Log::error("Database transaction ROLLED BACK");
+            
+            // Log to UserActivityLog
+            try {
+                $errorContext = [
+                    'product_id' => $id,
+                    'user_id' => auth()->id(),
+                    'user_role' => auth()->user()->role->type ?? 'Unknown',
+                    'error_file' => $e->getFile(),
+                    'error_line' => $e->getLine()
+                ];
+                
+                LogActivity::errorLog("Product update failed: " . $e->getMessage() . " | Context: " . json_encode($errorContext));
+            } catch (\Exception $logException) {
+                Log::warning("Failed to log to UserActivityLog: " . $logException->getMessage());
+            }
+            
             Toastr::error(__('common.error_message'));
-            return back();
+            return back()->withInput();
         }
     }
 
@@ -732,4 +815,149 @@ class ProductController extends Controller
         return response()->json($products);
     }
 
+    /**
+     * Get all SKUs for a product with current stock
+     */
+    public function getProductSkus(Request $request)
+    {
+        try {
+            $product = $this->productService->findById($request->product_id);
+            $skus = $product->skus->map(function($sku) use ($product) {
+                $variation = '';
+                if ($product->product_type == 2) {
+                    $variations = $sku->product_variations->map(function($var) {
+                        return $var->attribute->name . ': ' . $var->attribute_value->name;
+                    });
+                    $variation = $variations->implode(', ');
+                }
+                
+                return [
+                    'id' => $sku->id,
+                    'sku' => $sku->sku,
+                    'variation' => $variation,
+                    'current_stock' => $sku->product_stock ?? 0,
+                    'selling_price' => $sku->selling_price,
+                ];
+            });
+            
+            return response()->json([
+                'success' => true,
+                'product_name' => $product->product_name,
+                'product_type' => $product->product_type,
+                'skus' => $skus
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update stock for a product SKU (IN/OUT)
+     */
+    public function updateStock(Request $request)
+    {
+        $request->validate([
+            'sku_id' => 'required|integer',
+            'stock_type' => 'required|in:add,subtract,set',
+            'quantity' => 'required|integer|min:1',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $sku = $this->productService->findProductSkuById($request->sku_id);
+            $previousStock = $sku->product_stock ?? 0;
+            
+            // Calculate new stock based on type
+            switch ($request->stock_type) {
+                case 'add':
+                    $newStock = $previousStock + $request->quantity;
+                    $historyType = 'in';
+                    break;
+                case 'subtract':
+                    $newStock = max(0, $previousStock - $request->quantity);
+                    $historyType = 'out';
+                    break;
+                case 'set':
+                    $newStock = $request->quantity;
+                    $historyType = 'set';
+                    break;
+            }
+            
+            // Update SKU stock
+            $sku->product_stock = $newStock;
+            $sku->save();
+            
+            // Create stock history record
+            \Modules\Product\Entities\StockHistory::create([
+                'product_sku_id' => $sku->id,
+                'type' => $historyType,
+                'quantity' => $request->quantity,
+                'previous_stock' => $previousStock,
+                'new_stock' => $newStock,
+                'note' => $request->note ?? null,
+                'user_id' => auth()->id(),
+            ]);
+            
+            DB::commit();
+            
+            LogActivity::successLog('Stock updated for SKU: ' . $sku->sku);
+            
+            return response()->json([
+                'success' => true,
+                'message' => __('common.updated_successfully'),
+                'new_stock' => $newStock
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            LogActivity::errorLog($e->getMessage());
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get stock history for a product SKU
+     */
+    public function getStockHistory(Request $request)
+    {
+        try {
+            $sku = $this->productService->findProductSkuById($request->sku_id);
+            $history = \Modules\Product\Entities\StockHistory::where('product_sku_id', $sku->id)
+                ->with('user')
+                ->orderBy('created_at', 'desc')
+                ->limit(50)
+                ->get()
+                ->map(function($record) {
+                    return [
+                        'date' => $record->created_at->format('Y-m-d H:i'),
+                        'type' => $record->type,
+                        'quantity' => $record->quantity,
+                        'previous_stock' => $record->previous_stock,
+                        'new_stock' => $record->new_stock,
+                        'note' => $record->note,
+                        'user' => $record->user->name ?? 'System',
+                    ];
+                });
+            
+            return response()->json([
+                'success' => true,
+                'sku' => $sku->sku,
+                'current_stock' => $sku->product_stock ?? 0,
+                'product_name' => $sku->product->product_name,
+                'history' => $history
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
 }
+

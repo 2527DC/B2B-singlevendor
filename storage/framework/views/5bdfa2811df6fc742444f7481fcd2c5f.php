@@ -230,70 +230,63 @@
                                     <?php endif; ?>
                                 </div>
                                 <div class="destils_prise_information_box mb_20">
-                                    <?php if(isGuestAddtoCart() == true): ?>
-                                    <h2 class="pro_details_prise d-flex align-items-center  m-0">
-                                        <span>
-                                            <?php echo e(getProductDiscountedPrice($product)); ?>
+    <?php if(isGuestAddtoCart()): ?>
+        
+        <h2 class="pro_details_prise m-0">
+            <?php echo e(getProductDiscountedPrice($product)); ?>
 
-                                        </span>
-                                    </h2>
-                                    <?php endif; ?>
-                                    <div class="pro_details_disPrise d-flex align-items-center gap_15">
-                                        <?php if(isGuestAddtoCart() == true): ?>
-                                            <h4 class="discount_prise  m-0  ">
-                                                <span class="text-decoration-line-through">
-                                                    <?php if($product->hasDeal || $product->hasDiscount == 'yes'): ?>
-                                                        <span><?php echo e(single_price($product->skus->max('sell_price'))); ?></span>
-                                                    <?php endif; ?>
-                                                </span>
-                                            </h4>
-                                        <?php endif; ?>
-                                        <?php if(isGuestAddtoCart() == true): ?>
-                                            <?php if(@$product->hasDeal): ?>
-                                                <?php if(@$product->hasDeal->discount > 0): ?>
-                                                    <?php if(@$product->hasDeal->discount_type == 0): ?>
-                                                        <span class="diccount_percents">
-                                                            -<?php echo e(getNumberTranslate(@$product->hasDeal->discount)); ?>%
-                                                        </span>
-                                                    <?php else: ?>
-                                                        <span class="diccount_percents">
-                                                            -<?php echo e(single_price(@$product->hasDeal->discount)); ?>
+        </h2>
 
-                                                        </span>
-                                                    <?php endif; ?>
-                                                <?php endif; ?>
-                                            <?php else: ?>
-                                                <?php if(@$product->hasDiscount == 'yes'): ?>
-                                                    <?php if($product->discount > 0): ?>
-                                                        <?php if($product->discount_type == 0): ?>
-                                                        <span class="diccount_percents">
-                                                            -<?php echo e(getNumberTranslate($product->discount)); ?>%
-                                                        </span>
-                                                        <?php else: ?>
-                                                        <span class="diccount_percents">
-                                                            -<?php echo e(single_price($product->discount)); ?>
+        
+        <?php if(isset($product->product->mrp) || optional($product->skus->first())->mrp): ?>
+            <h4 class="discount_prise m-0">
+                <del class="text-muted">
+                    <?php echo e(single_price($product->product->mrp ?? optional($product->skus->first())->mrp)); ?>
 
-                                                        </span>
-                                                        <?php endif; ?>
-                                                    <?php endif; ?>
-                                                <?php endif; ?>
-                                            <?php endif; ?>
-                                        <?php endif; ?>
-                                    </div>
-                                    <input type="hidden" name="product_sku_id" id="product_sku_id" value="<?php echo e($product->product->product_type == 1?$product->skus->where('status',1)->first()->id : $product->skus->where('status',1)->first()->id); ?>">
-                                    <input type="hidden" name="seller_id" id="seller_id" value="<?php echo e($product->user_id); ?>">
-                                    <input type="hidden" id="owner" value="<?php echo e(encrypt($product->user_id)); ?>">
-                                    <input type="hidden" name="stock_manage_status" id="stock_manage_status" value="<?php echo e($product->stock_manage); ?>">
-                                    <p class="pro_details_text">
-                                        <span class="text-uppercase"><?php echo e(__('common.tag')); ?>:</span>
-                                        <?php
-                                            $total_tag = count($product->product->tags);
-                                        ?>
-                                        <?php $__currentLoopData = $product->product->tags; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $key => $tag): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                            <a class="tag_link" href="<?php echo e(route('frontend.category-product',['slug' => $tag->name, 'item' =>'tag'])); ?>"><?php echo e($tag->name); ?></a>
-                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                                    </p>
-                                </div>
+                </del>
+            </h4>
+        <?php endif; ?>
+
+        
+        <div class="pro_details_disPrise d-flex align-items-center gap_15">
+            <?php if($product->hasDeal && $product->hasDeal->discount > 0): ?>
+                <span class="diccount_percents">
+                    <?php if($product->hasDeal->discount_type == 0): ?>
+                        -<?php echo e(getNumberTranslate($product->hasDeal->discount)); ?>%
+                    <?php else: ?>
+                        -<?php echo e(single_price($product->hasDeal->discount)); ?>
+
+                    <?php endif; ?>
+                </span>
+            <?php elseif($product->hasDiscount == 'yes' && $product->discount > 0): ?>
+                <span class="diccount_percents">
+                    <?php if($product->discount_type == 0): ?>
+                        -<?php echo e(getNumberTranslate($product->discount)); ?>%
+                    <?php else: ?>
+                        -<?php echo e(single_price($product->discount)); ?>
+
+                    <?php endif; ?>
+                </span>
+            <?php endif; ?>
+        </div>
+    <?php endif; ?>
+    
+    
+    <input type="hidden" name="product_sku_id" id="product_sku_id" value="<?php echo e($product->product->product_type == 1?$product->skus->where('status',1)->first()->id : $product->skus->where('status',1)->first()->id); ?>">
+    <input type="hidden" name="seller_id" id="seller_id" value="<?php echo e($product->user_id); ?>">
+    <input type="hidden" id="owner" value="<?php echo e(encrypt($product->user_id)); ?>">
+    <input type="hidden" name="stock_manage_status" id="stock_manage_status" value="<?php echo e($product->stock_manage); ?>">
+    
+    <p class="pro_details_text">
+        <span class="text-uppercase"><?php echo e(__('common.tag')); ?>:</span>
+        <?php
+            $total_tag = count($product->product->tags);
+        ?>
+        <?php $__currentLoopData = $product->product->tags; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $key => $tag): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+            <a class="tag_link" href="<?php echo e(route('frontend.category-product',['slug' => $tag->name, 'item' =>'tag'])); ?>"><?php echo e($tag->name); ?></a>
+        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+    </p>
+</div>
                                 <input type="hidden" name="product_type" class="product_type" value="<?php echo e($product->product->product_type); ?>">
 
                                 <?php if($product->product->product_type == 2 && session()->get('item_details') != ''): ?>
