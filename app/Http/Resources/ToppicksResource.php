@@ -78,6 +78,7 @@ class ToppicksResource extends JsonResource
 
                 $allProductsSkus[] = [
                     "id" => $allProductsku->id,
+                    "mrp" => $allProductsku->mrp,
                     "user_id" => $allProductsku->user_id,
                     "product_id" => $allProductsku->product_id,
                     "product_sku_id" => $allProductsku->product_sku_id,

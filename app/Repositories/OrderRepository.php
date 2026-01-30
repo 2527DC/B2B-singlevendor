@@ -1634,4 +1634,12 @@ class OrderRepository
     public function getOrderPackage($data){
         return OrderPackageDetail::with(['order.address','order.order_payment','products.seller_product_sku.product','products.giftCard','carrier'])->where('id', $data['order_id'])->first();
     }
+
+    public function updateCarrierOrderId($packageId, $carrierOrderId)
+{
+    return ShippingPackage::where('id', $packageId)->update([
+        'carrier_order_id' => $carrierOrderId,
+        'updated_at' => now()
+    ]);
+}
 }

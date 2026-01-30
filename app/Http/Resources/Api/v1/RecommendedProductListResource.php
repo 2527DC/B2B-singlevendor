@@ -53,6 +53,7 @@ class RecommendedProductListResource extends JsonResource
             foreach ($this->skus as $sku) {
                 $skus[] = [
                     "id" => $sku->id,
+                    "mrp" => $sku->mrp,
                     "user_id" => $sku->user_id,
                     "product_id" => $sku->product_id,
                     "product_sku_id" => $sku->product_sku_id,
@@ -88,6 +89,7 @@ class RecommendedProductListResource extends JsonResource
 
             $product = [
                 "id" => $pdct->id,
+                "mrp" => $pdct->mrp,
                 "product_name" => $pdct->product_name,
                 "product_type" => $pdct->product_type,
                 "variant_sku_prefix" => $pdct->variant_sku_prefix,

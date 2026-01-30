@@ -9,6 +9,7 @@ use Modules\Product\Services\BrandService;
 use Illuminate\Contracts\Support\Renderable;
 use Modules\Product\Transformers\BrandResource;
 use Modules\Product\Repositories\AttributeRepository;
+use Illuminate\Support\Facades\Log;
 
 /**
 * @group Brands
@@ -156,37 +157,44 @@ class BrandController extends Controller
      * }
      */
 
-    public function show($id)
-    {
+ public function show($id)
+{
+    $brand = $this->brandService->findById($id);
+    $attributeRepo = new AttributeRepository;
+    $attributes = $attributeRepo->getAttributeForSpecificBrand($id);
+    $color = $attributeRepo->getColorAttributeForSpecificBrand($id);
+    $filterRepo = new FilterRepository();
+    $categories = $filterRepo->filterCategoryBrandWise($id);
 
-
-        $brand = $this->brandService->findById($id);
-        $attributeRepo = new AttributeRepository;
-        $attributes = $attributeRepo->getAttributeForSpecificBrand($id);
-        $color = $attributeRepo->getColorAttributeForSpecificBrand($id);
-        $filterRepo = new FilterRepository();
-        $categories = $filterRepo->filterCategoryBrandWise($id);
-        $products = $brand->sellerProductsAll()->pluck('id')->toArray();
-        $lowest_price = $filterRepo->filterProductMinPrice($products);
-        $height_price = $filterRepo->filterProductMaxPrice($products);
-        if($brand){
-            $brand = new BrandResource($brand);
-
-            return response()->json([
-                'data' => $brand,
-                'attributes' => \Modules\Product\Transformers\AttributeResource::collection($attributes),
-                'color' => !empty($color) ? new \Modules\Product\Transformers\ColorResource($color):null,
-                'categories' => \Modules\Product\Transformers\CategoryResource::collection($categories),
-                'lowest_price' => $lowest_price,
-                'height_price' => $height_price
-            ]);
-        }else{
-            return response()->json([
-                'message' => trans('app.Brand Not Found')
-            ],404);
-        }
+    if (!$brand) {
+        return response()->json([
+            'message' => trans('app.Brand Not Found')
+        ], 404);
     }
 
+    $products = $brand->sellerProductsAll()->pluck('id')->toArray();
+    $lowest_price = $filterRepo->filterProductMinPrice($products);
+    $height_price = $filterRepo->filterProductMaxPrice($products);
+
+    $responseData = [
+        'data' => new BrandResource($brand),
+        'attributes' => \Modules\Product\Transformers\AttributeResource::collection($attributes),
+        'color' => !empty($color)
+            ? new \Modules\Product\Transformers\ColorResource($color)
+            : null,
+        'categories' => \Modules\Product\Transformers\CategoryResource::collection($categories),
+        'lowest_price' => $lowest_price,
+        'height_price' => $height_price,
+    ];
+
+    /// 🔹 LOG THE RETURN DATA
+    Log::info('Brand show API response', [
+        'brand_id' => $id,
+        'response' => $responseData,
+    ]);
+
+    return response()->json($responseData);
+}
 
 
 }

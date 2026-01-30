@@ -21,9 +21,9 @@
                                 <ul class="w-100">
                                     <li>
                                         <p><span>{{__('common.order_id')}}</span>: {{
-                                            $my_refund_item->order->order_number }}</p>
+                                            $my_refund_item->order?->order_number ?? 'N/A' }}</p>
                                         <p><span>{{__('defaultTheme.order_date')}}</span>: {{
-                                            $my_refund_item->order->created_at }}</p>
+                                            $my_refund_item->order?->created_at ?? 'N/A' }}</p>
                                     </li>
                                     <li>
                                         <p><span>{{__('common.status')}}</span>: {{ $my_refund_item->CheckConfirmed }}

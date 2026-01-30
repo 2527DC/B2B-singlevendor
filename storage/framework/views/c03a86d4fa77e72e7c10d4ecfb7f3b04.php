@@ -1,0 +1,1 @@
+<?php /**PATH /var/www/html/Production_dev/resources/views/frontend/amazy/pages/shipping_step.blade.php ENDPATH**/ ?>

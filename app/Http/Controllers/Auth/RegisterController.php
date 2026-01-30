@@ -75,9 +75,10 @@ class RegisterController extends Controller
             'first_name' => ['required', 'string', 'max:255'],
             'email' => $email,
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-            // 'store_name' => ['required', 'string', 'max:191'],
+            'store_name' => ['required', 'string', 'max:191'],
             // 'document_type' => ['required', Rule::in(['GST','MSME'])],
-            // 'document' => ['required','file','mimes:jpg,jpeg,png,pdf','max:2048'],
+            'store_image' => ['required', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
+            'document' => ['required','file','mimes:jpg,jpeg,png,pdf','max:2048'],
 
             'g-recaptcha-response' =>$g_recaptcha,
             'referral_code' => ['sometimes', 'nullable', Rule::exists('referral_codes', 'referral_code')->where('status', 1)]
@@ -101,6 +102,46 @@ class RegisterController extends Controller
     // if ($data->hasFile('document')) {
     //     $documentPath = $data->file('document')->store('user_documents', 'public');
     // }
+    // 📎 Handle GST / MSME document upload
+// 📎 Handle document upload (public/uploads)
+$documentPath = null;
+
+if ($data->hasFile('document')) {
+    $file = $data->file('document');
+
+    $uploadPath = public_path('uploads/images/user_documents');
+
+    if (!file_exists($uploadPath)) {
+        mkdir($uploadPath, 0755, true);
+    }
+
+    $fileName = time().'_'.uniqid().'.'.$file->getClientOriginalExtension();
+    $file->move($uploadPath, $fileName);
+
+    $documentPath = 'uploads/images/user_documents/'.$fileName;
+}
+
+// 🖼 Handle Store Image Upload
+$storeImagePath = null;
+
+if ($data->hasFile('store_image')) {
+    $file = $data->file('store_image');
+
+    $uploadPath = public_path('uploads/images/store_images');
+
+    if (!file_exists($uploadPath)) {
+        mkdir($uploadPath, 0755, true);
+    }
+
+    $fileName = time().'_store_'.uniqid().'.'.$file->getClientOriginalExtension();
+    $file->move($uploadPath, $fileName);
+
+    
+
+    $storeImagePath = 'uploads/images/store_images/'.$fileName;
+}
+
+
         $c_data = [];
         if($data->has('custom_field')){
             foreach (json_decode($data['custom_field']) as  $key => $f){
@@ -130,9 +171,10 @@ class RegisterController extends Controller
             'password' => Hash::make($data['password']),
             'role_id' => 4,
             'phone' => isset($phone) ? $phone : NULL,
-//             'store_name' => $data['store_name'],
+            'store_name' => $data['store_name'],
+            'store_image' => $storeImagePath,
 // 'document_type' => $data['document_type'],
-// 'document' => $documentPath,
+'document' => $documentPath,
 
             'others' => $this->othersFieldValue($c_data),
             'currency_id' => app('general_setting')->currency,
@@ -197,9 +239,10 @@ class RegisterController extends Controller
             'first_name' => ['required', 'string', 'max:255'],
             'email' => $email,
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-//             'store_name' => ['required', 'string', 'max:191'],
-// 'document_type' => ['required', Rule::in(['GST','MSME'])],
-// 'document' => ['required','file','mimes:jpg,jpeg,png,pdf','max:2048'],
+            'store_name' => ['required', 'string', 'max:191'],
+            'store_image' => ['required', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
+            // 'document_type' => ['required', Rule::in(['GST','MSME'])],
+            'document' => ['required','file','mimes:jpg,jpeg,png,pdf','max:2048'],
 
             'referral_code' => ['sometimes', 'nullable', Rule::exists('referral_codes', 'referral_code')->where('status', 1)]
         ], [

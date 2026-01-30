@@ -18,7 +18,7 @@ use Modules\Refund\Entities\ImageRefundRequest;
 use Modules\Refund\Entities\RefundProcess;
 use App\Traits\ImageStore;
 use Modules\Shipping\Entities\ShippingConfiguration;
-
+use App\Models\Order;
 class RefundRepository
 {
     use SendMail,GoogleAnalytics4;
@@ -143,6 +143,128 @@ class RefundRepository
         return true;
     }
 
+
+    public function driverAppStore($data, $user)
+    {
+        $package = OrderPackageDetail::find($data['package_id']);
+        $shippingMethod = null;
+        
+        if($package){
+            $shippingMethod = ShippingMethod::find($package->shipping_method);
+        } else {
+            Toastr::error('Invalid Request.');
+            return redirect()->back();
+        }
+        
+        //ga4
+        if(isset($data['e_items'])){
+            if(app('business_settings')->where('type', 'google_analytics')->first()->status == 1){
+                $eData = [
+                    'name' => 'refund',
+                    'params' => [
+                        "currency" => currencyCode(),
+                        "value"=> 1,
+                        "transaction_id"=> $data['order_id'],
+                        "items" => json_decode($data['e_items']),
+                    ],
+                ];
+                $this->postEvent($eData);
+            }
+            //end ga4
+        }
+    
+        $total_return_amount = 0;
+        $refund_request = new RefundRequest;
+        $refund_request->customer_id = $user->id;
+        $refund_request->order_id = $data['order_id'];
+        $refund_request->refund_method = $data['money_get_method']; // Will always be "wallet"
+        $refund_request->shipping_method = $data['shipping_way'];
+        
+        if ($data['shipping_way'] == "courier") {
+            $refund_request->shipping_method_id = $shippingMethod->id;
+            $refund_request->pick_up_address_id = isset($data['pick_up_address_id']) ? $data['pick_up_address_id'] : 1;
+        } else {
+            $refund_request->shipping_method_id = $shippingMethod->id;
+            $refund_request->drop_off_address = isset($data['drop_off_courier_address']) ? $data['drop_off_courier_address'] : '';
+        }
+        
+        $refund_request->additional_info = isset($data['additional_info']) ? $data['additional_info'] : '';
+        $refund_request->save();
+        
+
+        // Product images
+        if (@$data['product_images_']) {
+            foreach ($data['product_images_'] as $image) {
+                if ($image) {
+                    $imagename = ImageStore::saveImage($image);
+                    ImageRefundRequest::create([
+                        'refund_request_id' => $refund_request->id,
+                        'image' => $imagename,
+                    ]);
+                }
+            }
+        }
+        
+        // Bank transfer logic removed - only wallet is supported
+        
+        // Process products
+        foreach ($data['product_ids'] as $key => $send_product_id) {
+            $split = explode('-', $send_product_id);
+            $package[$key] = $split[0];
+            $product[$key] = $split[1];
+            $seller[$key] = $split[2];
+            $amount[$key] = $split[3];
+            
+            $request_detail_info = [
+                "refund_request_id" => $refund_request->id,
+                "order_package_id" => $package->id,
+                "seller_id" => $package->seller->id
+            ];
+            
+            $refund_request_details = RefundRequestDetail::updateOrCreate($request_detail_info);
+            
+            $qty = isset($data['qty_' . $split[1]]) ? $data['qty_' . $split[1]] : 1;
+            
+            $request_product_info = [
+                'refund_request_detail_id' => $refund_request_details->id,
+                'seller_product_sku_id' => $product[$key],
+                'refund_reason_id' => isset($data['reason_' . $split[1]]) ? $data['reason_' . $split[1]] : 1,
+                'return_qty' => $qty,
+                'return_amount' => $amount[$key] * $qty,
+            ];
+            
+            $request_product = RefundProduct::Create($request_product_info);
+            $total_return_amount += $request_product->return_amount;
+        }
+        
+        $shipping_configuration = ShippingConfiguration::where('seller_id', $package->seller->id)->first();
+        $refund_quantity = $refund_request_details->refund_products->sum('return_qty');
+        $package_product_qty = $package->products->sum('qty');
+        
+        if($refund_quantity == $package_product_qty){
+            if ($shipping_configuration->shipping_amount_back_refund_complete) {
+                $shipping_cost = $package->shipping_cost;
+            } else {
+                $shipping_cost = 0;
+            }
+            
+            if (app('general_setting')->price_with_vat){
+                $refund_request->update([
+                    'total_return_amount' => $total_return_amount + $shipping_cost
+                ]);
+            } else {
+                $refund_request->update([
+                    'total_return_amount' => $total_return_amount + $shipping_cost + $package->tax_amount
+                ]);
+            }
+        } else {
+            $refund_request->update([
+                'total_return_amount' => $total_return_amount
+            ]);
+        }
+        
+        return true;
+    }
     public function appStore($data, $user)
     {
 

@@ -18,7 +18,7 @@ Route::prefix('drivers')->group(function () {
     Route::middleware(['driver.auth'])->group(function () {
         Route::get('profile', [DriverAuthController::class, 'profile']);
         Route::post('upload-photo-proof', [DriverOrdersApiController::class, 'uploadPhotoProof']);
-        Route::post('order-refund/store', [OrderController::class, 'refundStore']);
+        Route::post('order-refund/store', [OrderController::class, 'driverRefundStore']);
 
         Route::get( 'photo-proof', [DriverOrdersApiController::class, 'getPhotoProof']);
         Route::get('orders-details/{id}', [DriverOrdersApiController::class, 'orderDetails']);

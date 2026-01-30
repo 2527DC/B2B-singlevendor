@@ -64,7 +64,8 @@ class User extends Authenticatable
         'role_id',
         'password',
         'store_name',
-        'document_type',
+        'store_image',
+        // 'document_type',
         'document',
 
         'avatar',

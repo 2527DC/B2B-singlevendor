@@ -1555,7 +1555,13 @@
                                     @endphp
                                     <x-rating :rating="$rating" />
                                 </div>
-                                <div class="product__meta px-3 text-center">
+                                
+
+
+
+
+
+<div class="product__meta px-3 text-center">
                                     <span class="product_banding ">{{ @$product->brand->name ?? " " }}</span>
                                     <a href="{{singleProductURL(@$product->seller->slug, $product->slug)}}">
                                         <h4>@if ($product->product_name) {{ textLimit(@$product->product_name, 50) }} @else {{ textLimit(@$product->product->product_name, 50) }} @endif</h4>
@@ -1584,16 +1590,18 @@
                                                 </svg>
                                                 {{__('defaultTheme.add_to_cart')}}
                                             </a>
-                                            <p>
-                                                @if (getProductwitoutDiscountPrice(@$product) != single_price(0))
-                                                    <del>
-                                                        {{getProductwitoutDiscountPrice(@$product)}}
-                                                    </del>
-                                                    @endif
-                                                <strong>
-                                                    {{getProductDiscountedPrice(@$product)}}
-                                                </strong>
-                                            </p>
+                                     <p>
+                                        @if(isset($product->product->mrp) || isset($product->mrp))
+                                            <del>
+                                                {{ single_price($product->product->mrp ?? $product->mrp) }}
+                                            </del>
+                                        @endif
+
+                                        <strong>
+                                            {{ getProductDiscountedPrice(@$product) }}
+                                        </strong>
+                                    </p>
+
                                         </div>
                                     @else
                                         <div class="product_price d-flex align-items-center justify-content-between flex-wrap">
@@ -1604,6 +1612,18 @@
                                         </div>
                                     @endif
                                 </div>
+
+
+
+
+
+
+
+
+
+
+
+
                             </div>
 
                             @endforeach
@@ -1756,7 +1776,7 @@
                                             </svg>
                                             {{__('defaultTheme.add_to_cart')}}
                                         </a>
-                                        <p>
+                                        <!-- <p>
                                             @if (getProductwitoutDiscountPrice(@$product) != single_price(0))
                                                 <del>
                                                     {{getProductwitoutDiscountPrice(@$product)}}
@@ -1765,7 +1785,24 @@
                                             <strong>
                                                 {{getProductDiscountedPrice(@$product)}}
                                             </strong>
+                                        </p> -->
+
+                                        <p class="d-flex flex-column text-end m-0">
+
+                                            {{-- Selling / Discounted Price --}}
+                                            <strong class="text-dark">
+                                                {{ getProductDiscountedPrice(@$product) }}
+                                            </strong>
+
+                                            {{-- MRP (Striked) --}}
+                                            @if(isset($product->product->mrp) || isset($product->mrp))
+                                                <del class="text-muted">
+                                                    {{ single_price($product->product->mrp ?? $product->mrp) }}
+                                                </del>
+                                            @endif
+
                                         </p>
+
                                     </div>
                                     @else
                                     <div class="product_price d-flex align-items-center justify-content-between flex-wrap">
@@ -1776,6 +1813,23 @@
                                     </div>
                                     @endif
                                 </div>
+
+                                <!-- <p class="d-flex flex-column text-end m-0">
+
+                                    {{-- Selling / Discounted Price --}}
+                                    <strong class="text-dark">
+                                        {{ getProductDiscountedPrice(@$product) }}
+                                    </strong>
+
+                                    {{-- MRP (Striked) --}}
+                                    @if(isset($product->product->mrp) || isset($product->mrp))
+                                        <del class="text-muted">
+                                            {{ single_price($product->product->mrp ?? $product->mrp) }}
+                                        </del>
+                                    @endif
+
+                                </p> -->
+
                             </div>
 
                             @endforeach
@@ -1894,6 +1948,14 @@
                                         @endphp
                                         <x-rating :rating="$rating" />
                                     </div>
+
+
+
+
+
+
+
+
                                     <div class="product__meta px-3 text-center">
                                         <span class="product_banding ">{{ @$product->brand->name ?? " " }}</span>
                                         <a href="{{singleProductURL(@$product->seller->slug, $product->slug)}}">
@@ -1924,16 +1986,21 @@
                                                     </svg>
                                                     {{__('defaultTheme.add_to_cart')}}
                                                 </a>
-                                                <p>
-                                                    @if (getProductwitoutDiscountPrice(@$product) != single_price(0))
-                                                        <del>
-                                                            {{getProductwitoutDiscountPrice(@$product)}}
-                                                        </del>
-                                                    @endif
-                                                    <strong>
-                                                        {{getProductDiscountedPrice(@$product)}}
-                                                    </strong>
-                                                </p>
+                                               <p class="d-flex flex-column text-end m-0">
+
+                                        {{-- Selling / Discounted Price --}}
+                                        <strong class="text-dark">
+                                            {{ getProductDiscountedPrice(@$product) }}
+                                        </strong>
+
+                                        {{-- MRP (Striked) --}}
+                                        @if(isset($product->product->mrp) || isset($product->mrp))
+                                            <del class="text-muted">
+                                                {{ single_price($product->product->mrp ?? $product->mrp) }}
+                                            </del>
+                                        @endif
+
+                                    </p>
                                             </div>
                                         @else
 
@@ -1944,6 +2011,9 @@
                                         </div>
                                         @endif
                                     </div>
+
+                                   
+
                                 </div>
                             @endforeach
                         </div>
@@ -2132,16 +2202,20 @@
                                         </svg>
                                         {{__('defaultTheme.add_to_cart')}}
                                     </a>
-                                    <p>
-                                        @if (getProductwitoutDiscountPrice(@$product) != single_price(0))
-                                            <del>
-                                                {{getProductwitoutDiscountPrice(@$product)}}
-                                            </del>
-                                            @endif
-                                        <strong>
-                                            {{getProductDiscountedPrice(@$product)}}
-                                        </strong>
-                                    </p>
+                                                        <p>
+                                    {{-- MRP (strike-through) --}}
+                                    @if(!empty($product->product->mrp))
+                                        <del class="text-muted">
+                                            {{ single_price($product->product->mrp) }}
+                                        </del>
+                                    @endif
+
+                                    {{-- Selling / Discounted Price --}}
+                                    <strong>
+                                        {{ getProductDiscountedPrice(@$product) }}
+                                    </strong>
+                                </p>
+
                                 </div>
                                 @else
                                 <div class="product_price d-flex align-items-center justify-content-between flex-wrap">

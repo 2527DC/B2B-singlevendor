@@ -226,7 +226,14 @@
                                 <a href="{{singleProductURL(@$product->seller->slug, $product->slug)}}">
                                     <h4>@if ($product->product_name) {{ textLimit(@$product->product_name, 50) }} @else {{ textLimit(@$product->product->product_name, 50) }} @endif</h4>
                                 </a>
-                                @if(isGuestAddtoCart())
+
+
+
+
+
+
+
+                                <!-- @if(isGuestAddtoCart())
                                 <div class="product_price d-flex align-items-center justify-content-between flex-wrap">
                                     <a class="amaz_primary_btn addToCartFromThumnail" data-producttype="{{ @$product->product->product_type }}" data-seller={{ $product->user_id }} data-product-sku={{ @$product->skus->first()->id }}
                                         @if (@$product->hasDeal)
@@ -267,7 +274,32 @@
                                         {{__("defaultTheme.login_to_order")}}
                                     </a>
                                 </div>
-                                @endif
+                                @endif -->
+                                <p class="d-flex flex-column text-end m-0">
+
+                                    {{-- Selling / Discounted Price --}}
+                                    <strong class="text-dark">
+                                        {{ getProductDiscountedPrice(@$product) }}
+                                    </strong>
+
+                                    {{-- MRP (Striked) --}}
+                                    @if(isset($product->product->mrp) || isset($product->mrp))
+                                        <del class="text-muted">
+                                            {{ single_price($product->product->mrp ?? $product->mrp) }}
+                                        </del>
+                                    @endif
+
+                                </p>
+
+
+
+
+
+
+
+
+
+                                
                             </div>
                         </div>
                     </div>

@@ -409,9 +409,23 @@ public function orderDetails($id)
             ]);
         }
         
+        // Determine order status
+        $orderStatus = 'pending'; // default
+        
+        if ($order->is_cancelled == 1 && $order->is_paid == 0 && $order->is_confirmed == 0 && $order->is_completed == 0) {
+            $orderStatus = 'cancelled';
+        } elseif ($order->is_completed == 1 && $order->is_paid == 1 && $order->is_confirmed == 1) {
+            $orderStatus = 'completed';
+        } elseif ($order->is_confirmed == 1 && $order->is_paid == 0 && $order->is_completed == 0) {
+            $orderStatus = 'pending';
+        }
+        
         $formattedOrder = [
             'order_details' => [
-                'basic_info' => $order->only(['id', 'order_number', 'order_type', 'payment_type', 'grand_total', 'sub_total']),
+                'basic_info' => array_merge(
+                    $order->only(['id', 'order_number', 'order_type', 'payment_type', 'grand_total', 'sub_total']),
+                    ['order_status' => $orderStatus]
+                ),
                 'customer_info' => $order->customer ? [
                     'name' => $order->customer->first_name . ' ' . $order->customer->last_name,
                     'email' => $order->customer->email,

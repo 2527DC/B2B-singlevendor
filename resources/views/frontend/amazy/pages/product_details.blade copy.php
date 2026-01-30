@@ -206,7 +206,18 @@
                                     </div>
                                     @endif
                                 </div>
-                                <div class="destils_prise_information_box mb_20">
+
+
+
+
+
+
+
+
+
+
+                                
+                                <!-- <div class="destils_prise_information_box mb_20">
                                     @if(isGuestAddtoCart() == true)
                                     <h2 class="pro_details_prise d-flex align-items-center  m-0">
                                         <span>
@@ -267,7 +278,66 @@
                                             <a class="tag_link" href="{{route('frontend.category-product',['slug' => $tag->name, 'item' =>'tag'])}}">{{$tag->name}}</a>
                                         @endforeach
                                     </p>
-                                </div>
+                                </div> -->
+                                <div class="destils_prise_information_box mb_20">
+    @if(isGuestAddtoCart())
+
+        {{-- Selling Price --}}
+        <h2 class="pro_details_prise m-0">
+            {{ getProductDiscountedPrice($product) }}
+        </h2>
+
+        {{-- MRP (Strikethrough) --}}
+        @if(isset($product->product->mrp) || optional($product->skus->first())->mrp)
+            <h4 class="discount_prise m-0">
+                <del class="text-muted">
+                    {{ single_price($product->product->mrp ?? optional($product->skus->first())->mrp) }}
+                </del>
+            </h4>
+        @endif
+
+        {{-- Discount Percentage --}}
+        <div class="pro_details_disPrise d-flex align-items-center gap_15">
+            @if($product->hasDeal && $product->hasDeal->discount > 0)
+                <span class="diccount_percents">
+                    @if($product->hasDeal->discount_type == 0)
+                        -{{ getNumberTranslate($product->hasDeal->discount) }}%
+                    @else
+                        -{{ single_price($product->hasDeal->discount) }}
+                    @endif
+                </span>
+            @elseif($product->hasDiscount == 'yes' && $product->discount > 0)
+                <span class="diccount_percents">
+                    @if($product->discount_type == 0)
+                        -{{ getNumberTranslate($product->discount) }}%
+                    @else
+                        -{{ single_price($product->discount) }}
+                    @endif
+                </span>
+            @endif
+        </div>
+
+    @endif
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                                 <input type="hidden" name="product_type" class="product_type" value="{{ $product->product->product_type }}">
 
                                 @if($product->product->product_type == 2 && session()->get('item_details') != '')
@@ -590,7 +660,7 @@
                                         <div class="product_details_dec_body">
                                             <div class="single_desc style2 mb_20">
                                                 <p class="f_w_500 m-0">{{ __('common.brand') }}: {{@$product->product->brand->name}}</p>
-                                                <p class="f_w_500 m-0">{{ __('common.model_number') }}: {{@$product->product->model_number}}</p>
+                                                <!-- <p class="f_w_500 m-0">{{ __('common.model_number') }}: {{@$product->product->model_number}}</p> -->
                                                 <p class="f_w_500 m-0">{{ __('common.availability') }}:
                                                     @if ($product->stock_manage == 1 && $product->skus->where('status',1)->first()->product_stock >= $product->product->minimum_order_qty)
                                                         {{ __('common.in_stock') }}
@@ -1881,24 +1951,240 @@
                 $('#base_sku_price').val(total_price);
                 $('#final_price').val(total_price);
             }
+            // function appendWholeSaleP(){
+            //     $('#append_w_s_p_all').empty();
+            //     $.each(getWholesalePrice, function(index, value) {
+            //         $('#append_w_s_p_all').append(`
+            //         <tr class="border-bottom">
+            //             <td class="text-left">
+            //                 <span>${numbertrans(value.min_qty)}</span>
+            //             </td>
+            //             <td class="text-left">
+            //                 <span>${numbertrans(value.max_qty)}</span>
+            //             </td>
+            //             <td class="text-left">
+            //                 <span>${currency_format(value.selling_price)}</span>
+            //             </td>
+            //         </tr>
+            //     `);
+            //     });
+            // }
+
+
+
+
             function appendWholeSaleP(){
                 $('#append_w_s_p_all').empty();
+                
+                // Store original price in a data attribute (only once)
+                if(!$('.pro_details_prise span').data('original-price')) {
+                    var originalPrice = $('.pro_details_prise span').text().trim();
+                    $('.pro_details_prise span').data('original-price', originalPrice);
+                }
+                
                 $.each(getWholesalePrice, function(index, value) {
                     $('#append_w_s_p_all').append(`
-                    <tr class="border-bottom">
-                        <td class="text-left">
-                            <span>${numbertrans(value.min_qty)}</span>
-                        </td>
-                        <td class="text-left">
-                            <span>${numbertrans(value.max_qty)}</span>
-                        </td>
-                        <td class="text-left">
-                            <span>${currency_format(value.selling_price)}</span>
-                        </td>
-                    </tr>
-                `);
+                        <tr class="border-bottom wholesale-price-row" data-price="${value.selling_price}">
+                            <td class="text-left">
+                                <span>${numbertrans(value.min_qty)}</span>
+                            </td>
+                            <td class="text-left">
+                                <span>${numbertrans(value.max_qty)}</span>
+                            </td>
+                            <td class="text-left">
+                                <span>${currency_format(value.selling_price)}</span>
+                            </td>
+                        </tr>
+                    `);
                 });
+                
+                $(document).on('click', '.wholesale-price-row', function(){
+                    var selectedPrice = $(this).data('price');
+                    
+                    // Update displayed price
+                    $('.pro_details_prise span').text(currency_format(selectedPrice));
+                    
+                    // Store the new price for calculations
+                    $('.pro_details_prise span').data('current-price', selectedPrice);
+                    
+                    // Update the base price input
+                    $('#base_sku_price').val(selectedPrice);
+                    
+                    // Recalculate total
+                    let qty = $('.qty').data('value');
+                    totalValue(qty, '#base_price','#total_price', getWholesalePrice);
+                    
+                    // Update active state
+                    $('.wholesale-price-row').removeClass('active');
+                    $(this).addClass('active');
+                    
+                    // Update MRP display
+                    updateMRPDisplay();
+                });
+                
+                if(getWholesalePrice.length > 0){
+                    var firstPrice = getWholesalePrice[0].selling_price;
+                    $('.pro_details_prise span').text(currency_format(firstPrice));
+                    $('.pro_details_prise span').data('current-price', firstPrice);
+                    $('#base_sku_price').val(firstPrice);
+                    $('.wholesale-price-row').first().addClass('active');
+                    
+                    // Initialize MRP display
+                    updateMRPDisplay();
+                    
+                    // Recalculate with first wholesale price
+                    let qty = $('.qty').data('value');
+                    totalValue(qty, '#base_price','#total_price', getWholesalePrice);
+                }
             }
+    
+            // Function to update MRP display above tag
+            function updateMRPDisplay() {
+                var currentPrice = parseFloat($('#base_sku_price').val());
+                var originalPrice = $('.pro_details_prise span').data('original-price');
+                
+                // If we have original price, show it in MRP
+                if(originalPrice) {
+                    // Parse original price to get numeric value
+                    var originalPriceNumeric = parseFloat(originalPrice.replace(/[^0-9.-]+/g,""));
+                    
+                    // Update the discount price element (MRP)
+                    $('.discount_prise span').text(currency_format(originalPriceNumeric));
+                    
+                    // Show discount percentage if applicable
+                    if(currentPrice < originalPriceNumeric) {
+                        var discountPercent = Math.round(((originalPriceNumeric - currentPrice) / originalPriceNumeric) * 100);
+                        $('.diccount_percents').text('-' + discountPercent + '%').show();
+                    }
+                }
+            }
+
+
+
+
+
+
+
+
+
+
+
+            
+
+// Update the totalValue function to use wholesale price correctly
+function totalValue(qty, main_price, total_price, getWholesalePrice){
+    var base_sku_price = 0;
+    
+    if($('#isWholeSaleActive').val() == 1 && getWholesalePrice != null){
+        var max_qty='', min_qty='', selling_price='';
+        var foundPrice = false;
+        
+        for (let i = 0; i < getWholesalePrice.length; ++i) {
+            max_qty = getWholesalePrice[i].max_qty;
+            min_qty = getWholesalePrice[i].min_qty;
+            selling_price = getWholesalePrice[i].selling_price;
+            
+            if ((min_qty <= qty) && (max_qty >= qty)){
+                base_sku_price = selling_price;
+                foundPrice = true;
+                break;
+            }
+        }
+        
+        // If no matching wholesale price found, use the currently selected price
+        if(!foundPrice) {
+            base_sku_price = parseFloat($('#base_sku_price').val());
+        }
+        
+        // Update the price display with wholesale price
+        $('.pro_details_prise span').text(currency_format(base_sku_price));
+        $('.pro_details_prise span').data('current-price', base_sku_price);
+        $('#base_sku_price').val(base_sku_price);
+        
+    } else {
+        base_sku_price = parseFloat($('#base_sku_price').val());
+    }
+    
+    // Calculate final total
+    let value = parseInt(qty) * parseFloat(base_sku_price);
+    $(total_price).html(currency_format(value));
+    both_buy_price(base_sku_price);
+    $('#final_price').val(value);
+    
+    // Update MRP display
+    updateMRPDisplay();
+    
+    // Update Tabby amount if exists
+    if(typeof changeTabbyAmount === 'function') {
+        changeTabbyAmount();
+    }
+}
+
+// Also update the calculatePrice function similarly
+function calculatePrice(main_price, discount, discount_type, qty){
+    var base_price = parseFloat(main_price);
+    
+    // Apply discount if any
+    if (discount_type == 0) {
+        discount = (base_price * discount) / 100;
+    }
+    var discounted_price = (base_price - discount);
+    
+    // Check for wholesale price
+    if($('#isWholeSaleActive').val() == 1 && getWholesalePrice != null){
+        var max_qty='', min_qty='', selling_price='';
+        var foundWholesalePrice = false;
+        
+        for (let i = 0; i < getWholesalePrice.length; ++i) {
+            max_qty = getWholesalePrice[i].max_qty;
+            min_qty = getWholesalePrice[i].min_qty;
+            selling_price = getWholesalePrice[i].selling_price;
+            
+            if ((min_qty <= qty) && (max_qty >= qty)){
+                base_price = selling_price;
+                foundWholesalePrice = true;
+                break;
+            }
+        }
+        
+        // Apply discount to wholesale price if needed
+        if(foundWholesalePrice) {
+            if (discount_type == 0) {
+                discount = (base_price * discount) / 100;
+            }
+            discounted_price = (base_price - discount);
+        }
+    }
+    
+    // Update price displays
+    $('#total_price').text(currency_format((discounted_price * qty)));
+    $('.pro_details_prise span').text(currency_format(discounted_price));
+    $('.pro_details_prise span').data('current-price', discounted_price);
+    $('#base_sku_price').val(discounted_price);
+    $('#final_price').val(discounted_price);
+    
+    // Update MRP display
+    updateMRPDisplay();
+    
+    // Update both buy price
+    both_buy_price(discounted_price);
+    
+    // Update Tabby amount if exists
+    if(typeof changeTabbyAmount === 'function') {
+        changeTabbyAmount();
+    }
+}
+
+                
+
+// Function to reset to original price if needed
+function resetToOriginalPrice(){
+    var originalPrice = $('.pro_details_prise span').data('original-price');
+    if(originalPrice){
+        $('.pro_details_prise span').text(originalPrice);
+    }
+}
+              
             $(document).on('change', '#select_city', function(event){
                 let id = $(this).val();
                 let data = {

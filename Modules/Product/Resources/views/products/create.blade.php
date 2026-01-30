@@ -452,6 +452,14 @@
                                         </div>
                                     @endif
 
+                                    <div class="col-lg-6 mrp_div">
+                                        <div class="primary_input mb-15">
+                                            <label class="primary_input_label" for=""> {{ __('product.mrp') }} <span class="text-danger">*</span></label>
+                                            <input class="primary_input_field mrp" name="mrp" id="mrp" placeholder="{{ __('product.mrp') }}" type="number" min="1" step="{{step_decimal()}}" value="{{old('mrp')?old('mrp'):''}}">
+                                            <span class="text-danger" id="error_mrp">{{ $errors->first('mrp') }}</span>
+                                        </div>
+                                    </div>
+
                                     <div class="col-lg-6 selling_price_div">
                                         <div class="primary_input mb-15">
                                             <label class="primary_input_label" for=""> {{ __('product.selling_price') }} <span class="text-danger">*</span></label>

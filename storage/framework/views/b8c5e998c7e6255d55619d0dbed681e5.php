@@ -1,0 +1,1 @@
+<?php /**PATH /var/www/html/Production_dev/Modules/Appearance/Resources/views/header/components/element_list.blade.php ENDPATH**/ ?>

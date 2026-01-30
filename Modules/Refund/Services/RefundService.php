@@ -39,6 +39,11 @@ class RefundService
         return $this->refundRepository->appStore($data, $user);
     }
 
+    public function driverAppStore($data, $user)
+    {
+        return $this->refundRepository->driverAppStore($data, $user);
+    }
+
     public function updateRefundRequestByAdmin($data, $id)
     {
         return $this->refundRepository->updateRefundRequestByAdmin($data, $id);
