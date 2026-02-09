@@ -262,7 +262,9 @@ unset($__errorArgs, $__bag); ?>
                         </div>
                         <?php else: ?>
                         <div class="col-12 mb_20">
-                            <label class="primary_label2"><?php echo e(__('formBuilder.email')); ?> <span>*</span></label>
+                            <!-- <label class="primary_label2"><?php echo e(__('formBuilder.email')); ?> <span>*</span></label> -->
+                             <label class="primary_label2"><?php echo e(__('Email')); ?> <span>*</span></label>
+
                             <input name="email" id="email" value="<?php echo e(old('email')); ?>" placeholder="<?php echo e(__('formBuilder.email')); ?>" onfocus="this.placeholder = ''" onblur="this.placeholder = '<?php echo e(__('common.email')); ?>'" class="primary_input3 radius_5px" type="text">
                             <span class="text-danger" ><?php echo e($errors->first('email')); ?></span>
                         </div>

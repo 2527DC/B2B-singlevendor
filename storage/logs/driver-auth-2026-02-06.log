@@ -1,0 +1,4 @@
+[2026-02-06 11:24:22] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.22.181","method":"GET","timestamp":"2026-02-06 11:24:22"} 
+[2026-02-06 11:24:22] development.WARNING: Driver authentication failed {"reason":"No token provided","token_preview":"none","ip":"49.206.22.181","endpoint":"api/drivers/orders","user_agent":"okhttp/4.12.0","timestamp":"2026-02-06 11:24:22"} 
+[2026-02-06 11:24:23] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.22.181","method":"GET","timestamp":"2026-02-06 11:24:23"} 
+[2026-02-06 11:24:23] development.WARNING: Driver authentication failed {"reason":"No token provided","token_preview":"none","ip":"49.206.22.181","endpoint":"api/drivers/orders","user_agent":"okhttp/4.12.0","timestamp":"2026-02-06 11:24:23"} 

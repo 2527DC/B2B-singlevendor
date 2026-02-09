@@ -235,7 +235,9 @@
                         </div>
                         @else
                         <div class="col-12 mb_20">
-                            <label class="primary_label2">{{__('formBuilder.email')}} <span>*</span></label>
+                            <!-- <label class="primary_label2">{{__('formBuilder.email')}} <span>*</span></label> -->
+                             <label class="primary_label2">{{ __('Email') }} <span>*</span></label>
+
                             <input name="email" id="email" value="{{ old('email') }}" placeholder="{{ __('formBuilder.email') }}" onfocus="this.placeholder = ''" onblur="this.placeholder = '{{ __('common.email') }}'" class="primary_input3 radius_5px" type="text">
                             <span class="text-danger" >{{ $errors->first('email') }}</span>
                         </div>

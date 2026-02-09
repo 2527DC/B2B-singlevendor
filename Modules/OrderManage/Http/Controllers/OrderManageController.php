@@ -117,7 +117,10 @@ class OrderManageController extends Controller
                 ->editColumn('order_number', function ($order) {
                     return getNumberTranslate($order->order_number);
                 })
-                ->addColumn('email', function ($order) {
+                ->addColumn('customer_name', function ($order) {
+                return ($order->customer_id) ? @$order->customer->first_name . ' ' . @$order->customer->last_name : @$order->guest_info->shipping_name;
+            })
+            ->addColumn('email', function ($order) {
                     return ($order->customer_id) ? @$order->customer->email : @$order->guest_info->shipping_email;;
                 })
                 ->addColumn('total_qty', function ($order) {

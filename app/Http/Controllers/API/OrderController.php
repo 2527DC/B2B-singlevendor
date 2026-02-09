@@ -20,7 +20,7 @@ use Modules\OrderManage\Entities\DeliveryProcess;
 use Modules\Shipping\Repositories\ShippingRepository;
 use Modules\Refund\Repositories\RefundReasonRepository;
 use App\Http\Resources\Api\v1\Orders\OrderRefundResource;
-
+use Illuminate\Support\Facades\Log;
 /**
 * @group Order Manage
 *
@@ -430,43 +430,78 @@ class OrderController extends Controller
      * }
      */
 
-    public function orderStore(Request $request){
-        $request->validate([
-            'customer_email' => 'required',
-            'customer_phone' => 'required',
-            'payment_method' => 'required',
-            'customer_shipping_address' => 'required',
-            'customer_billing_address' => 'required',
-            'grand_total' => 'required',
-            'sub_total' => 'required',
-            'discount_total' => 'required',
-            'shipping_total' => 'required',
-            'number_of_package' => 'required',
-            'number_of_item' => 'required',
-            'payment_id' => 'required',
-            'tax_total' => 'required',
-            'shipping_cost.*' => 'required',
-            'delivery_date.*' => 'required',
-            'shipping_method.*' => 'required',
-            'packagewiseTax.*' => 'required',
-            'payment_method' => 'required',
+public function orderStore(Request $request)
+{
+    // Log incoming request (avoid sensitive data if any)
+    Log::info('OrderStore API called', [
+        'user_id' => optional($request->user())->id,
+        'payload' => $request->except(['_token'])
+    ]);
+
+    $request->validate([
+        'customer_email' => 'nullable|email',
+        'customer_phone' => 'required',
+        'payment_method' => 'required',
+        'customer_shipping_address' => 'required',
+        'customer_billing_address' => 'required',
+        'grand_total' => 'required',
+        'sub_total' => 'required',
+        'discount_total' => 'required',
+        'shipping_total' => 'required',
+        'number_of_package' => 'required',
+        'number_of_item' => 'required',
+        'payment_id' => 'required',
+        'tax_total' => 'required',
+        'shipping_cost.*' => 'required',
+        'delivery_date.*' => 'required',
+        'shipping_method.*' => 'required',
+        'packagewiseTax.*' => 'required',
+    ]);
+
+    try {
+        DB::beginTransaction();
+
+        $data = $request->except('_token');
+        $data['customer_email'] = $data['customer_email'] ?? '';
+
+        $order = $this->orderService->orderStoreForAPI(
+            $request->user(),
+            $data
+        );
+
+        DB::commit();
+
+        // ✅ Success log
+        Log::info('Order created successfully', [
+            'order_id' => $order->id,
+            'order_number' => $order->order_number,
+            'user_id' => optional($request->user())->id,
+            'response_status' => 201
         ]);
-        try{
-            DB::beginTransaction();
-            $order = $this->orderService->orderStoreForAPI($request->user(), $request->except('_token'));
-            DB::commit();
-            return response()->json([
-                'message' => trans('app.order created successfully')
-            ],201);
-        }catch(Exception $e){
-            DB::rollBack();
-            return response()->json([
-                'message' => trans('app.Something went wrong')
-            ], 503);
-        }
 
+        return response()->json([
+            'message' => trans('app.order created successfully'),
+            'order_id' => $order->id
+        ], 201);
 
+    } catch (\Exception $e) {
+        DB::rollBack();
+
+        // ❌ Error log
+        Log::error('Order creation failed', [
+            'user_id' => optional($request->user())->id,
+            'error_message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => $e->getTraceAsString()
+        ]);
+
+        return response()->json([
+            'message' => trans('app.Something went wrong')
+        ], 503);
     }
+}
+
 
     public function InAppOrderStore(Request $request)
     {
@@ -1321,40 +1356,371 @@ class OrderController extends Controller
      * }
      */
 
-    public function refundStore(Request $request){
 
-       $data = $request->validate([
-            'order_id' => 'required',
-            'product_ids' => 'required',
-            'money_get_method' => 'required',
-            'shipping_way' => 'required',
-            "drop_off_courier_address" => 'nullable'
-        ]);
-        $package_id = explode('-',$data['product_ids'][0]);
-        $data['package_id'] = $package_id[0];
-        unset($data['_token']);
-        DB::beginTransaction();
-        try {
-            $refund =  $this->refundService->appStore($data, $request->user());
-            DB::commit();
-            if($refund){
-                return response()->json([
-                    'message' => 'refund successfully'
-                ],201);
-            }else{
-                return response()->json([
-                    'message' => 'refund not complete. something gone wrong'
-                ],500);
-            }
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json([
-                'message' => 'something gone wrong'
-            ],500);
-
-        }
-    }
+     public function driverRefundStore(Request $request)
+     {
+         // Log the incoming request
+         Log::info('Refund API request received', [
+             'ip_address' => $request->ip(),
+             'user_agent' => $request->userAgent(),
+             'request_data' => $request->all(),
+             'timestamp' => now()->toDateTimeString(),
+         ]);
+     
+         // Validate request with all required fields
+         $data = $request->validate([
+             'order_id' => 'required|integer',
+             'product_ids' => 'required|array|min:1',
+             'product_ids.*' => 'required|string', // Format: "package-product-seller-amount"
+             'money_get_method' => 'required|in:wallet',
+             'shipping_way' => 'required|in:courier,drop_off',
+             'drop_off_courier_address' => 'nullable|string|required_if:shipping_way,drop_off',
+             'pick_up_address_id' => 'nullable|integer|required_if:shipping_way,courier',
+             
+             // User data from payload
+             'user_id' => 'required|integer',
+             'user_name' => 'required|string',
+             'user_email' => 'required|email',
+             'user_phone' => 'nullable|string',
+         ]);
+     
+         // Log validation passed
+         Log::debug('Refund API request validation passed', [
+             'order_id' => $data['order_id'],
+             'product_ids_count' => count($data['product_ids']),
+             'money_get_method' => $data['money_get_method'],
+             'shipping_way' => $data['shipping_way'],
+             'user_id' => $data['user_id'],
+             'user_name' => $data['user_name'],
+         ]);
+     
+         // Extract package ID from first product
+         $package_id = explode('-', $data['product_ids'][0]);
+         $data['package_id'] = $package_id[0];
+         
+         // Clean up data
+         unset($data['_token']);
+     
+         // Set default null values for optional fields
+         $data['additional_info'] = null;
+         $data['e_items'] = null;
+         $data['bank_name'] = null;
+         $data['branch_name'] = null;
+         $data['account_name'] = null;
+         $data['account_no'] = null;
+     
+         // Process dynamic quantity and reason fields
+         foreach ($data['product_ids'] as $productString) {
+             $parts = explode('-', $productString);
+             if (count($parts) < 4) {
+                 Log::error('Invalid product ID format in API request', [
+                     'product_string' => $productString,
+                     'expected_format' => 'package-product-seller-amount'
+                 ]);
+                 
+                 return response()->json([
+                     'message' => 'Invalid product ID format',
+                     'expected_format' => 'package-product-seller-amount',
+                     'invalid_product' => $productString,
+                 ], 400);
+             }
+             
+             $productId = $parts[1];
+             
+             // Process quantity fields (qty_4, qty_5, etc.)
+             $qtyKey = 'qty_' . $productId;
+             if (isset($request->input()[$qtyKey])) {
+                 $data[$qtyKey] = $request->input($qtyKey);
+             } else {
+                 $data[$qtyKey] = 1; // Default quantity
+             }
+             
+             // Process reason fields (reason_4, reason_5, etc.)
+             $reasonKey = 'reason_' . $productId;
+             if (isset($request->input()[$reasonKey])) {
+                 $data[$reasonKey] = $request->input($reasonKey);
+             } else {
+                 $data[$reasonKey] = 1; // Default reason
+             }
+             
+             // Validate quantity and reason if they exist in request
+             if ($request->has($qtyKey)) {
+                 $request->validate([
+                     $qtyKey => 'integer|min:1'
+                 ]);
+             }
+             
+             if ($request->has($reasonKey)) {
+                 $request->validate([
+                     $reasonKey => 'integer|min:1'
+                 ]);
+             }
+         }
+     
+         // Create a user object from payload data
+         $user = new \stdClass();
+         $user->id = $data['user_id'];
+         $user->name = $data['user_name'];
+         $user->email = $data['user_email'];
+         $user->phone = $data['user_phone'] ?? null;
+     
+         DB::beginTransaction();
+         
+         try {
+             // Log transaction start
+             Log::debug('Starting refund API transaction', [
+                 'order_id' => $data['order_id'],
+                 'package_id' => $data['package_id'],
+                 'user_id' => $data['user_id'],
+                 'user_name' => $data['user_name'],
+                 'product_count' => count($data['product_ids']),
+             ]);
+     
+             // Process refund through service
+             $refund = $this->refundService->driverAppStore($data, $user);
+             
+             DB::commit();
+     
+             if ($refund) {
+                 // Log successful refund
+                 Log::info('Refund successfully processed via API', [
+                     'order_id' => $data['order_id'],
+                     'package_id' => $data['package_id'],
+                     'user_id' => $data['user_id'],
+                     'user_name' => $data['user_name'],
+                     'money_get_method' => $data['money_get_method'],
+                     'shipping_way' => $data['shipping_way'],
+                     'transaction_committed' => true,
+                 ]);
+     
+                 return response()->json([
+                     'message' => 'Refund successfully processed',
+                     'data' => [
+                         'order_id' => $data['order_id'],
+                         'refund_id' => $refund->id ?? 'unknown',
+                         'user_id' => $data['user_id'],
+                         'status' => 'completed'
+                     ]
+                 ], 201);
+             } else {
+                 // Log failed refund (service returned false)
+                 Log::error('Refund service returned false via API', [
+                     'order_id' => $data['order_id'],
+                     'package_id' => $data['package_id'],
+                     'user_id' => $data['user_id'],
+                     'transaction_committed' => true,
+                 ]);
+     
+                 return response()->json([
+                     'message' => 'Refund not complete. Something went wrong with the refund service',
+                     'order_id' => $data['order_id'],
+                     'user_id' => $data['user_id'],
+                     'status' => 'failed'
+                 ], 500);
+             }
+     
+         } catch (\Exception $e) {
+             DB::rollBack();
+             
+             // Log exception with full details
+             Log::error('Refund processing failed via API with exception', [
+                 'order_id' => $data['order_id'] ?? 'unknown',
+                 'package_id' => $data['package_id'] ?? 'unknown',
+                 'user_id' => $data['user_id'] ?? 'unknown',
+                 'error_message' => $e->getMessage(),
+                 'error_code' => $e->getCode(),
+                 'error_file' => $e->getFile(),
+                 'error_line' => $e->getLine(),
+                 'error_trace' => config('app.debug') ? $e->getTraceAsString() : null,
+                 'ip_address' => $request->ip(),
+                 'transaction_rolled_back' => true,
+                 'timestamp' => now()->toDateTimeString(),
+             ]);
+     
+             $errorMessage = config('app.debug') 
+                 ? 'Refund failed: ' . $e->getMessage()
+                 : 'Something went wrong while processing your refund';
+     
+             return response()->json([
+                 'message' => $errorMessage,
+                 'order_id' => $data['order_id'] ?? 'unknown',
+                 'user_id' => $data['user_id'] ?? 'unknown',
+                 'status' => 'error'
+             ], 500);
+         } catch (\Throwable $e) {
+             DB::rollBack();
+             
+             // Log Throwable errors (not just Exceptions)
+             Log::critical('Refund processing failed via API with Throwable', [
+                 'order_id' => $data['order_id'] ?? 'unknown',
+                 'package_id' => $data['package_id'] ?? 'unknown',
+                 'user_id' => $data['user_id'] ?? 'unknown',
+                 'error_message' => $e->getMessage(),
+                 'error_type' => get_class($e),
+                 'error_file' => $e->getFile(),
+                 'error_line' => $e->getLine(),
+                 'transaction_rolled_back' => true,
+                 'timestamp' => now()->toDateTimeString(),
+             ]);
+     
+             return response()->json([
+                 'message' => 'A critical error occurred while processing your refund',
+                 'order_id' => $data['order_id'] ?? 'unknown',
+                 'user_id' => $data['user_id'] ?? 'unknown',
+                 'status' => 'critical_error'
+             ], 500);
+         }
+     }
+     
+     // Helper method to extract product quantities for logging
+     private function extractProductQuantities($data)
+     {
+         $quantities = [];
+         foreach ($data['product_ids'] as $productString) {
+             $parts = explode('-', $productString);
+             if (count($parts) >= 2) {
+                 $productId = $parts[1];
+                 $qtyKey = 'qty_' . $productId;
+                 $reasonKey = 'reason_' . $productId;
+                 
+                 $quantities[] = [
+                     'product_id' => $productId,
+                     'quantity' => $data[$qtyKey] ?? 1,
+                     'reason_id' => $data[$reasonKey] ?? 1,
+                 ];
+             }
+         }
+         return $quantities;
+     }
+     public function refundStore(Request $request)
+     {
+         // Log the incoming request
+         Log::info('Refund request received', [
+             'user_id' => $request->user() ? $request->user()->id : 'guest',
+             'ip_address' => $request->ip(),
+             'user_agent' => $request->userAgent(),
+             'request_data' => $request->all(),
+             'timestamp' => now()->toDateTimeString(),
+         ]);
+     
+         $data = $request->validate([
+             'order_id' => 'required',
+             'product_ids' => 'required',
+             'money_get_method' => 'required',
+             'shipping_way' => 'required',
+             "drop_off_courier_address" => 'nullable'
+         ]);
+     
+         // Log validation passed
+         Log::debug('Refund request validation passed', [
+             'order_id' => $data['order_id'],
+             'product_ids_count' => is_array($data['product_ids']) ? count($data['product_ids']) : 0,
+             'money_get_method' => $data['money_get_method'],
+             'shipping_way' => $data['shipping_way'],
+         ]);
+     
+         $package_id = explode('-', $data['product_ids'][0]);
+         $data['package_id'] = $package_id[0];
+         unset($data['_token']);
+     
+         DB::beginTransaction();
+         
+         try {
+             // Log transaction start
+             Log::debug('Starting refund transaction', [
+                 'order_id' => $data['order_id'],
+                 'package_id' => $data['package_id'],
+                 'user_id' => $request->user() ? $request->user()->id : null,
+             ]);
+     
+             $refund = $this->refundService->appStore($data, $request->user());
+             
+             DB::commit();
+     
+             if ($refund) {
+                 // Log successful refund
+                 Log::info('Refund successfully processed', [
+                     'order_id' => $data['order_id'],
+                     'package_id' => $data['package_id'],
+                     'user_id' => $request->user() ? $request->user()->id : null,
+                     'money_get_method' => $data['money_get_method'],
+                     'shipping_way' => $data['shipping_way'],
+                     'transaction_committed' => true,
+                     'refund_result' => $refund,
+                 ]);
+     
+                 return response()->json([
+                     'message' => 'Refund successfully processed',
+                     'data' => [
+                         'order_id' => $data['order_id'],
+                         'refund_id' => $refund->id ?? 'unknown',
+                     ]
+                 ], 201);
+             } else {
+                 // Log failed refund (service returned false)
+                 Log::error('Refund service returned false', [
+                     'order_id' => $data['order_id'],
+                     'package_id' => $data['package_id'],
+                     'user_id' => $request->user() ? $request->user()->id : null,
+                     'transaction_committed' => true,
+                     'note' => 'Service method returned false/null',
+                 ]);
+     
+                 return response()->json([
+                     'message' => 'Refund not complete. Something went wrong with the refund service',
+                     'order_id' => $data['order_id'],
+                 ], 500);
+             }
+     
+         } catch (\Exception $e) {
+             DB::rollBack();
+             
+             // Log exception with full details
+             Log::error('Refund processing failed with exception', [
+                 'order_id' => $data['order_id'] ?? 'unknown',
+                 'package_id' => $data['package_id'] ?? 'unknown',
+                 'user_id' => $request->user() ? $request->user()->id : null,
+                 'error_message' => $e->getMessage(),
+                 'error_code' => $e->getCode(),
+                 'error_file' => $e->getFile(),
+                 'error_line' => $e->getLine(),
+                 'error_trace' => config('app.debug') ? $e->getTraceAsString() : null,
+                 'ip_address' => $request->ip(),
+                 'transaction_rolled_back' => true,
+                 'timestamp' => now()->toDateTimeString(),
+             ]);
+     
+             // You might want to create a more user-friendly message
+             $errorMessage = config('app.debug') 
+                 ? 'Refund failed: ' . $e->getMessage()
+                 : 'Something went wrong while processing your refund';
+     
+             return response()->json([
+                 'message' => $errorMessage,
+                 'order_id' => $data['order_id'] ?? 'unknown',
+             ], 500);
+         } catch (\Throwable $e) {
+             DB::rollBack();
+             
+             // Log Throwable errors (not just Exceptions)
+             Log::critical('Refund processing failed with Throwable', [
+                 'order_id' => $data['order_id'] ?? 'unknown',
+                 'package_id' => $data['package_id'] ?? 'unknown',
+                 'user_id' => $request->user() ? $request->user()->id : null,
+                 'error_message' => $e->getMessage(),
+                 'error_type' => get_class($e),
+                 'error_file' => $e->getFile(),
+                 'error_line' => $e->getLine(),
+                 'transaction_rolled_back' => true,
+                 'timestamp' => now()->toDateTimeString(),
+             ]);
+     
+             return response()->json([
+                 'message' => 'A critical error occurred while processing your refund',
+                 'order_id' => $data['order_id'] ?? 'unknown',
+             ], 500);
+         }
+     }
 
 
     /**
