@@ -15,18 +15,46 @@
                         <p class="mb-0"><strong>{{ __('product.current_stock') }}:</strong> <span id="history_current_stock" class="badge badge-primary"></span></p>
                     </div>
                 </div>
+
+                <!-- Filter by Date Section -->
+                <div class="row mb-4 p-3 bg-light rounded">
+                    <div class="col-md-12">
+                        <h6 class="mb-3">{{ __('product.filter_by_date') }}</h6>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="form-group">
+                            <label for="from_date">{{ __('product.from_date') }}</label>
+                            <input type="text" class="form-control" id="from_date" placeholder="dd-mm-yyyy">
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="form-group">
+                            <label for="to_date">{{ __('product.to_date') }}</label>
+                            <input type="text" class="form-control" id="to_date" placeholder="dd-mm-yyyy">
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label>&nbsp;</label>
+                            <div>
+                                <button type="button" class="btn btn-primary btn-sm w-100 mb-2" id="filterBtn">{{ __('common.filter') }}</button>
+                                <button type="button" class="btn btn-secondary btn-sm w-100" id="resetBtn">{{ __('common.reset') }}</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 
                 <div class="table-responsive">
                     <table class="table table-bordered" id="stockHistoryTable">
                         <thead>
                             <tr>
                                 <th>{{ __('common.date') }}</th>
-                                <th>{{ __('product.type') }}</th>
-                                <th>{{ __('product.quantity') }}</th>
-                                <th>{{ __('product.previous_stock') }}</th>
-                                <th>{{ __('product.new_stock') }}</th>
-                                <th>{{ __('product.note') }}</th>
                                 <th>{{ __('common.user') }}</th>
+                                <th>{{ __('common.action') }}</th>
+                                <th>{{ __('product.stock') }}</th>
+                                <th>{{ __('product.old_value') }}</th>
+                                <th>{{ __('product.new_value') }}</th>
+                                <th>{{ __('product.note') }}</th>
                             </tr>
                         </thead>
                         <tbody>

@@ -90,6 +90,7 @@ class ToppicksResource extends JsonResource
                     "created_at" => $allProductsku->created_at,
                     "updated_at" => $allProductsku->updated_at,
                     "product_variations" => $allPdtsSkuPdctVrans,
+                     "whole_sale_prices" => $allProductsku->wholeSalePrices,
                 ];
             }
         }

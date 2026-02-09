@@ -46,6 +46,16 @@ class DeliveryProcessController extends Controller
     public function update(DeliveryProcessRequest $request)
     {
         try {
+            // Debug: Log the request data
+            \Log::info('DeliveryProcess Update Request', [
+                'id' => $request->id,
+                'all_data' => $request->all()
+            ]);
+            
+            if (!$request->id || $request->id == 0) {
+                return response()->json(["error" => "Invalid ID provided"], 422);
+            }
+            
             $this->deliveryProcessService->update($request->except("_token"), $request->id);
             LogActivity::successLog('Delivery Process updated.');
             return response()->json(["message" => "Delivery Process updated Successfully"], 200);

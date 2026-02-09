@@ -23,6 +23,7 @@ Route::prefix('ordermanage')->middleware(['auth','seller'])->group(function () {
     Route::get('/my-sales-details-print/{id}', 'OrderManageController@personalPrint')->name('my_order_manage.print_order_details')->middleware(['seller']);
     Route::post('/sales-info-update-delivery/{id}', 'OrderManageController@update_delivery')->name('order_manage.update_delivery_status')->middleware(['seller']);
     Route::post('/delivery-status-update-customer', 'OrderManageController@change_delivery_status_by_customer')->name('change_delivery_status_by_customer');
+    Route::post('/my-sales-list/bulk-update-delivery', 'OrderManageController@bulk_update_delivery')->name('order_manage.bulk_update_delivery_seller')->middleware(['seller']);
 
     Route::post('send-gift-card-code-to-mail', 'OrderManageController@send_gift_card_code')->name('send_gift_card_code_to_customer');
     Route::post('send-digital-file-access-to-mail', 'OrderManageController@send_digital_file_access')->name('send_digital_file_access_to_customer');
@@ -32,13 +33,14 @@ Route::prefix('ordermanage')->middleware(['auth','seller'])->group(function () {
         Route::post('/sales-info-update-admin/{id}', 'OrderManageController@sales_info_update')->name('order_manage.order_update_info')->middleware(['permission']);
         Route::get('/total-sales-list', 'OrderManageController@total_sales_index')->name('order_manage.total_sales_index')->middleware(['permission']);
         Route::get('/total-sales-list/get-data', 'OrderManageController@total_sales_get_data')->name('order_manage.total_sales_get_data');
+        Route::post('/total-sales-list/bulk-update-delivery', 'OrderManageController@bulk_update_delivery')->name('order_manage.bulk_update_delivery')->middleware(['permission','prohibited_demo_mode']);
         Route::get('/sales-details/{id}', 'OrderManageController@show')->name('order_manage.show_details')->middleware(['permission']);
         Route::get('/order/confirm/{id}', 'OrderManageController@orderConfirm')->name('admin.order.confirm');
         Route::put('/order/{id}/update', 'OrderManageController@orderUpdate')->name('admin.order.update');
         Route::get('/delivery-process', 'DeliveryProcessController@index')->name('order_manage.process_index');
         Route::get('/delivery-process-list', 'DeliveryProcessController@process_list')->name('order_manage.process_list');
         Route::post('/delivery-process-store', 'DeliveryProcessController@store')->name('order_manage.process_store')->middleware('prohibited_demo_mode');
-        Route::post('/delivery-processs/update', 'DeliveryProcessController@update')->name('admin.delivery-process.update')->middleware('prohibited_demo_mode');
+        Route::post('/delivery-process/update', 'DeliveryProcessController@update')->name('admin.delivery-process.update')->middleware(['permission','prohibited_demo_mode']);
         Route::get('/delivery-process-destroy/{id}', 'DeliveryProcessController@destroy')->name('order_manage.process_destroy')->middleware('prohibited_demo_mode');
         Route::get('/cancel-reason', 'CancelReasonController@index')->name('order_manage.cancel_reason_index');
         Route::get('/cancel-reason-list', 'CancelReasonController@process_list')->name('order_manage.cancel_reason_list');

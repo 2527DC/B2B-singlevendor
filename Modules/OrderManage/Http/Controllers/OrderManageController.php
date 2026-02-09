@@ -3,6 +3,7 @@
 namespace Modules\OrderManage\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Validator;
 use Modules\OrderManage\Services\OrderManageService;
 use Modules\GiftCard\Services\GiftCardService;
 use Modules\GiftCard\Repositories\GiftCardRepository;
@@ -32,8 +33,9 @@ class OrderManageController extends Controller
 
     public function my_sales_index()
     {
-
-        return view('ordermanage::order_manage.my_orders');
+        $deliveryProcessRepo = new DeliveryProcessRepository();
+        $data['processes'] = $deliveryProcessRepo->getAll();
+        return view('ordermanage::order_manage.my_orders', $data);
     }
 
     public function my_sales_get_data()
@@ -83,7 +85,9 @@ class OrderManageController extends Controller
 
     public function total_sales_index()
     {
-        return view('ordermanage::order_manage.total_sales');
+        $deliveryProcessRepo = new DeliveryProcessRepository();
+        $data['processes'] = $deliveryProcessRepo->getAll();
+        return view('ordermanage::order_manage.total_sales', $data);
     }
 
     public function total_sales_get_data()
@@ -119,6 +123,12 @@ class OrderManageController extends Controller
                 })
                 ->addColumn('email', function ($order) {
                     return ($order->customer_id) ? @$order->customer->email : @$order->guest_info->shipping_email;;
+                })
+                ->addColumn('customer_name', function ($order) {
+                    return ($order->customer_id) ? @trim(@$order->customer->name) : @trim(@$order->guest_info->shipping_name);
+                })
+                ->addColumn('customer_phone', function ($order) {
+                    return ($order->customer_id) ? @trim(@$order->customer->phone) : @trim(@$order->guest_info->shipping_phone);
                 })
                 ->addColumn('total_qty', function ($order) {
                     $count = 0;
@@ -241,6 +251,13 @@ class OrderManageController extends Controller
         DB::beginTransaction();
         try {
             $data['order'] = $this->ordermanageService->updateDeliveryStatus($request->except("_token"), $id);
+            
+            if ($data['order'] === false) {
+                DB::rollBack();
+                Toastr::warning(__('order.please_create_account_for_deposite_main_income_seller_income_product_wise_tax_and_gst_tax'));
+                return back();
+            }
+
             DB::commit();
             Toastr::success(__('common.status_updated_successfully'), __('common.success'));
             LogActivity::successLog('delivery update successful.');
@@ -250,6 +267,111 @@ class OrderManageController extends Controller
             Toastr::error(__('common.error_message'));
             DB::rollBack();
             return back();
+        }
+    }
+
+    public function bulk_update_delivery(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'order_ids' => 'required_without:package_ids|array',
+            'package_ids' => 'required_without:order_ids|array',
+            'delivery_status' => 'required|integer'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' => __('validation.failed'), 'errors' => $validator->errors()], 422);
+        }
+
+        DB::beginTransaction();
+        try {
+            $orderIds = $request->input('order_ids');
+            $deliveryStatus = $request->input('delivery_status');
+            $note = $request->input('note', null);
+
+            Log::info('bulk_update_delivery called', [
+                'user_id' => auth()->id(),
+                'order_ids' => $orderIds,
+                'delivery_status' => $deliveryStatus
+            ]);
+
+            $processedPackages = 0;
+            $skippedOrders = [];
+
+            // If package_ids supplied, process them directly (package-level selection)
+            $packageIds = $request->input('package_ids', []);
+            if (!empty($packageIds) && is_array($packageIds)) {
+                foreach ($packageIds as $pkgId) {
+                    try {
+                        $package = $this->ordermanageService->findOrderPackageByID($pkgId);
+                    } catch (\Exception $e) {
+                        Log::warning('bulk_update_delivery package not found', ['package_id' => $pkgId]);
+                        $skippedOrders[] = ['package_id' => $pkgId, 'reason' => 'package_not_found'];
+                        continue;
+                    }
+
+                    // Only process if parent order is confirmed
+                    if (!isset($package->order) || $package->order->is_confirmed != 1) {
+                        Log::info('bulk_update_delivery skipped package because order not confirmed', ['package_id' => $pkgId, 'order_id' => $package->order_id ?? null]);
+                        $skippedOrders[] = ['package_id' => $pkgId, 'reason' => 'order_not_confirmed'];
+                        continue;
+                    }
+
+                    $payload = [
+                        'delivery_status' => $deliveryStatus,
+                        'note' => $note
+                    ];
+                    try {
+                        $result = $this->ordermanageService->updateDeliveryStatus($payload, $pkgId);
+                        Log::info('bulk_update_delivery package processed', ['package_id' => $pkgId, 'result' => $result]);
+                        $processedPackages++;
+                    } catch (\Exception $e) {
+                        Log::error('bulk_update_delivery package error', ['package_id' => $pkgId, 'error' => $e->getMessage()]);
+                        $skippedOrders[] = ['package_id' => $pkgId, 'reason' => 'error'];
+                    }
+                }
+            } else {
+                foreach ($orderIds as $orderId) {
+                    $order = $this->ordermanageService->findOrderByID($orderId);
+                    if (!$order) {
+                        $skippedOrders[] = ['order_id' => $orderId, 'reason' => 'order_not_found'];
+                        continue;
+                    }
+
+                    // Only process confirmed orders
+                    if ($order->is_confirmed != 1) {
+                        $skippedOrders[] = ['order_id' => $orderId, 'reason' => 'order_not_confirmed'];
+                        continue;
+                    }
+
+                    if (!isset($order->packages) || count($order->packages) == 0) {
+                        $skippedOrders[] = ['order_id' => $orderId, 'reason' => 'no_packages'];
+                        continue;
+                    }
+
+                    foreach ($order->packages as $package) {
+                        $payload = [
+                            'delivery_status' => $deliveryStatus,
+                            'note' => $note
+                        ];
+                        try {
+                            $result = $this->ordermanageService->updateDeliveryStatus($payload, $package->id);
+                            Log::info('bulk_update_delivery package processed', ['order_id' => $orderId, 'package_id' => $package->id, 'result' => $result]);
+                            $processedPackages++;
+                        } catch (\Exception $e) {
+                            Log::error('bulk_update_delivery package error', ['order_id' => $orderId, 'package_id' => $package->id, 'error' => $e->getMessage()]);
+                        }
+                    }
+                }
+            }
+
+            DB::commit();
+            Log::info('bulk_update_delivery summary', ['processed_packages' => $processedPackages, 'skipped_orders' => $skippedOrders]);
+            LogActivity::successLog('Bulk delivery update completed.');
+            return response()->json(['message' => __('common.updated_successfully'), 'processed_packages' => $processedPackages, 'skipped_orders' => $skippedOrders], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            LogActivity::errorLog($e->getMessage());
+            return response()->json(['message' => __('common.operation_failed')], 500);
         }
     }
 
@@ -381,5 +503,45 @@ class OrderManageController extends Controller
     public function getPackageInfo(Request $request){
         $package = $this->ordermanageService->getPackageInfo($request->id);
         return view('ordermanage::order_manage.components._modal_for_package_manage',compact('package'));
+    }
+
+    /**
+     * Get delivery status history for an order or package
+     */
+    public function getDeliveryStatusHistory(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'order_id' => 'nullable|integer',
+                'package_id' => 'nullable|integer'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json(['message' => __('validation.failed'), 'errors' => $validator->errors()], 422);
+            }
+
+            $query = \Modules\OrderManage\Entities\OrderDeliveryStatusHistory::query();
+
+            if ($request->has('order_id') && $request->order_id) {
+                $query->where('order_id', $request->order_id);
+            }
+
+            if ($request->has('package_id') && $request->package_id) {
+                $query->where('package_id', $request->package_id);
+            }
+
+            $history = $query->with(['changedBy', 'previousDeliveryProcess', 'newDeliveryProcess'])
+                ->orderByDesc('created_at')
+                ->get();
+
+            return response()->json([
+                'message' => 'Success',
+                'data' => $history,
+                'count' => $history->count()
+            ], 200);
+        } catch (\Exception $e) {
+            Log::error('Error fetching delivery status history', ['error' => $e->getMessage()]);
+            return response()->json(['message' => __('common.operation_failed')], 500);
+        }
     }
 }

@@ -112,13 +112,15 @@ class DriverOrdersApiController extends Controller
     public function driverOrders(Request $request)
     {
         try {
-            // Validate request
+            // Validate request - allow seller_id to be a single integer or array of integers
             $request->validate([
                 'order_date' => 'nullable|date',
+                'seller_id'  => 'nullable', // Can be single integer or array
             ]);
     
             Log::info('Fetching confirmed orders', [
                 'order_date' => $request->order_date,
+                'seller_id'  => $request->seller_id,
                 'ip_address' => $request->ip(),
             ]);
     
@@ -131,6 +133,28 @@ class DriverOrdersApiController extends Controller
                         // Match ONLY created_at date
                         $query->whereDate('created_at', $request->order_date);
                     }   
+                )
+                ->when(
+                    $request->filled('seller_id'),
+                    function ($query) use ($request) {
+                        // Handle comma-separated string like "33,34,35" or single ID
+                        $sellerIdInput = $request->seller_id;
+                        
+                        if (is_string($sellerIdInput) && strpos($sellerIdInput, ',') !== false) {
+                            // Split comma-separated string into array
+                            $sellerIds = array_map('trim', explode(',', $sellerIdInput));
+                        } elseif (is_array($sellerIdInput)) {
+                            // Already an array
+                            $sellerIds = $sellerIdInput;
+                        } else {
+                            // Single ID
+                            $sellerIds = [$sellerIdInput];
+                        }
+                        
+                        $query->whereHas('packages', function ($q) use ($sellerIds) {
+                            $q->whereIn('seller_id', $sellerIds);
+                        });
+                    }
                 )
                 ->orderBy('created_at', 'desc')
                 ->paginate(30);

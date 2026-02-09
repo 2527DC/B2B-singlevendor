@@ -43,6 +43,7 @@ Route::prefix('products')->as('product.')->group(function() {
     Route::get('show-report/{report_id}','ProductController@showReport')->name('showReport');
     Route::get('/get-category-data', 'ProductController@getcategoryData');
     Route::get('/get-parent-category-data', 'ProductController@getParentcategoryData');
+    Route::get('/history/get', 'ProductController@getHistory')->name('history.get');
     Route::get('/brands/get-by-ajax', 'BrandController@getBrandsByAjax')->name('brands.get-by-ajax');
     Route::get('/get-by-ajax', 'ProductController@getProductByAjax')->name('get-by-ajax');
     Route::get('/related-product-search', 'ProductController@related_product')->name('related.product');

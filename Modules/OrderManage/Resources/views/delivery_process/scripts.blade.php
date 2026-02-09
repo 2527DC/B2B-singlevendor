@@ -85,22 +85,24 @@
                             $('#pre-loader').addClass('d-none');
                         },
                         error: function(response) {
-                            if(response.responseJSON.error){
+                            $('#pre-loader').addClass('d-none');
+                            if(response.responseJSON && response.responseJSON.error){
                                 toastr.error(response.responseJSON.error ,"{{__('common.error')}}");
-                                $('#pre-loader').addClass('d-none');
                                 return false;
                             }
-                            if (response) {
+                            if (response.responseJSON && response.responseJSON.errors) {
                             @if(isModuleActive('FrontendMultiLang'))
-                                $('#edit_name_error_{{auth()->user()->lang_code}}').text(response.responseJSON.errors['name.{{auth()->user()->lang_code}}']);
-                                $('#edit_description_error_{{auth()->user()->lang_code}}').text(response.responseJSON.errors['description.{{auth()->user()->lang_code}}']);
+                                let nameError = response.responseJSON.errors['name.{{auth()->user()->lang_code}}'];
+                                let descError = response.responseJSON.errors['description.{{auth()->user()->lang_code}}'];
+                                if(nameError) $('#edit_name_error_{{auth()->user()->lang_code}}').text(nameError);
+                                if(descError) $('#edit_description_error_{{auth()->user()->lang_code}}').text(descError);
                             @else
-                                $('#edit_name_error').text(response.responseJSON.errors.name);
-                                $('#edit_description_error').text(response.responseJSON.errors.description);
+                                if(response.responseJSON.errors.name) $('#edit_name_error').text(response.responseJSON.errors.name);
+                                if(response.responseJSON.errors.description) $('#edit_description_error').text(response.responseJSON.errors.description);
                             @endif
+                            } else {
+                                toastr.error("{{__('common.error_message')}}" ,"{{__('common.error')}}");
                             }
-                            toastr.error(response.responseJSON.error ,"{{__('common.error')}}");
-                            $('#pre-loader').addClass('d-none');
                         }
                     });
                 });
@@ -108,38 +110,58 @@
 
                 $("#refund_process_list").on("click", ".edit_reason", function () {
                     let item = $(this).data("value");
+                    // Parse JSON if it's a string
+                    if (typeof item === 'string') {
+                        item = JSON.parse(item);
+                    }
+                    
+                    // Debug log to verify the item data
+                    console.log('Edit item:', item);
+                    
+                    // Ensure we have an ID
+                    if (!item.id) {
+                        toastr.error("Invalid item data: missing ID", "{{__('common.error')}}");
+                        return false;
+                    }
+                    
+                    // Set the ID in the hidden field
+                    $(".edit_id").val(item.id);
+                    
                     $('.edit_div').show();
                     $('.edit_div').removeClass("d-none");
                     $('.create_div').hide();
                     @if(isModuleActive('FrontendMultiLang'))
-                    if (item.name != null) {
+                    if (item.name != null && typeof item.name === 'object') {
                         $.each(item.name, function( key, value ) {
                             $("#name"+key).val(value);
                         });
                     }else{
-                        $("#name{{auth()->user()->lang_code}}").val(item.translateName);
+                        $("#name{{auth()->user()->lang_code}}").val(item.translateName || item.name);
                     }
-                    if (item.description != null) {
+                    if (item.description != null && typeof item.description === 'object') {
                         $.each(item.description, function( key, value ) {
                             $("#description"+key).val(value);
                         });
                     }else{
-                        $("#description{{auth()->user()->lang_code}}").val(item.TranslateDescription);
+                        $("#description{{auth()->user()->lang_code}}").val(item.TranslateDescription || item.description);
                     }
                     @else
 
-                    $(".name").val(item.name.en);
+                    if(typeof item.name === 'object' && item.name !== null)
+                    {
+                        $(".name").val(item.name.en || item.name);
+                    }else{
+                        $(".name").val(item.name);
+                    }
 
                     if(typeof item.description === 'object' && item.description !== null)
                     {
-                        $(".description").val(item.description.en);
+                        $(".description").val(item.description.en || item.description);
                     }else{
                         $(".description").val(item.description);
                     }
 
-
                     @endif
-                    $(".edit_id").val(item.id);
                 });
 
                 $(document).on('click', '.delete_item', function(event){

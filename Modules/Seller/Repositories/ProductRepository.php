@@ -139,8 +139,13 @@ class ProductRepository {
     public function store($data){
         $host = activeFileStorage();
         $product = Product::where('id',$data['product_id'])->firstOrFail();
+        
+        // Safely get discount values with defaults
+        $discount_type = isset($data['discount_type']) ? $data['discount_type'] : 1;
+        $discount = isset($data['discount']) ? $data['discount'] : 0;
+        
         if (app('gst_config')['enable_gst'] == "only_tax" && app('general_setting')->price_with_vat) {
-            $selling_price = selling_price($data['selling_price'],$data['discount_type'],$data['discount']);
+            $selling_price = selling_price($data['selling_price'], $discount_type, $discount);
             $gst = GstTax::find($product->tax_id);
             $data['tax'] = ($selling_price * $gst->tax_percentage) / 100;
         }
@@ -157,10 +162,10 @@ class ProductRepository {
         $sellerProduct->tax = isset($data['tax'])?$data['tax']:0;
         $sellerProduct->user_id = $seller_id;
         $sellerProduct->tax_type = 0;
-        $sellerProduct->discount = isset($data['discount'])?$data['discount']:0;
-        $sellerProduct->discount_type = $data['discount_type'];
-        $sellerProduct->discount_start_date = $data['discount_start_date']?date('Y-m-d',strtotime($data['discount_start_date'])):null;
-        $sellerProduct->discount_end_date = $data['discount_end_date']?date('Y-m-d',strtotime($data['discount_end_date'])):null;
+        $sellerProduct->discount = $discount;
+        $sellerProduct->discount_type = $discount_type;
+        $sellerProduct->discount_start_date = isset($data['discount_start_date']) && $data['discount_start_date'] ? date('Y-m-d',strtotime($data['discount_start_date'])) : null;
+        $sellerProduct->discount_end_date = isset($data['discount_end_date']) && $data['discount_end_date'] ? date('Y-m-d',strtotime($data['discount_end_date'])) : null;
         if ($host == 'Dropbox') {
             $sellerProduct->thum_img = (!empty($data['thum_img_src']['images_source'])) ? $data['thum_img_src']['images_source'] : null;
             $sellerProduct->file_dropbox = (!empty($data['thum_img_src']['file_dropbox'])) ? $data['thum_img_src']['file_dropbox'] : null;
@@ -168,8 +173,8 @@ class ProductRepository {
             $sellerProduct->thum_img = (!empty($data['thum_img_src'])) ? $data['thum_img_src'] : null;
         }
         $sellerProduct->slug = $productName;
-        $sellerProduct->subtitle_1 = $data['subtitle_1'];
-        $sellerProduct->subtitle_2 = $data['subtitle_2'];
+        $sellerProduct->subtitle_1 = isset($data['subtitle_1']) ? $data['subtitle_1'] : null;
+        $sellerProduct->subtitle_2 = isset($data['subtitle_2']) ? $data['subtitle_2'] : null;
         $sellerProduct->save();
         if(isset($data['thum_img_src'])){
             UsedMedia::create([
@@ -179,22 +184,35 @@ class ProductRepository {
                 'used_for' => 'thumb_image'
             ]);
         }
+        
+        // Update main product with MRP and status
+        if(isset($data['mrp'])){
+            $product->update([
+                'mrp' => $data['mrp'],
+                'status' => 1
+            ]);
+        } else {
+            $product->update([
+                'status' => 1
+            ]);
+        }
         if($product->product_type == 1){
             $sellerProductSKU = SellerProductSKU::create([
                 'product_id' => $sellerProduct->id,
                 'product_sku_id' => $product->skus->first()->id,
                 'product_stock' => ($data['stock_manage'] == 1) ? $data['product_stock'] : 0,
                 'selling_price' => $data['selling_price'],
+                'mrp' => isset($data['mrp']) ? $data['mrp'] : null,
                 'status' => 1,
                 'user_id' => $seller_id
             ]);
             //add Whole-sale price
             if (isModuleActive('WholeSale')){
-                $wholeSaleMinQty = $data['wholesale_min_qty_0'];
-                $wholeSaleMaxQty = $data['wholesale_max_qty_0'];
-                $wholeSalePrice  = $data['wholesale_price_0'];
+                $wholeSaleMinQty = isset($data['wholesale_min_qty_0']) ? $data['wholesale_min_qty_0'] : [];
+                $wholeSaleMaxQty = isset($data['wholesale_max_qty_0']) ? $data['wholesale_max_qty_0'] : [];
+                $wholeSalePrice  = isset($data['wholesale_price_0']) ? $data['wholesale_price_0'] : [];
                 $wholeSaleArrValue = [];
-                if ( $wholeSaleMinQty[0]!=null ){
+                if (!empty($wholeSaleMinQty) && $wholeSaleMinQty[0] != null ){
                     foreach ($wholeSaleMinQty as $keyMinQty=>$minVal){
                         $wholeSaleArrValue['min_qty'] = $wholeSaleMinQty[$keyMinQty];
                         $wholeSaleArrValue['max_qty'] = $wholeSaleMaxQty[$keyMinQty];
@@ -208,23 +226,24 @@ class ProductRepository {
                 }
             }
         }
-        if($product->product_type == 2 && @$data['selling_price_sku']){
+        if($product->product_type == 2 && !empty($data['selling_price_sku'])){
             foreach($data['selling_price_sku'] as $key => $item){
                 $sellerProductSKU = SellerProductSKU::create([
                     'product_id' => $sellerProduct->id,
                     'product_sku_id' => $data['product_skus'][$key],
                     'product_stock' => ($data['stock_manage'] == 1) ? $data['stock'][$key] : 0,
                     'selling_price' => $data['selling_price_sku'][$key],
+                    'mrp' => isset($data['mrp_sku'][$key]) ? $data['mrp_sku'][$key] : null,
                     'status' => 1,
                     'user_id' => $seller_id
                 ]);
                 //add Whole-sale price
                 if (isModuleActive('WholeSale')){
-                    $wholeSaleMinQty = $data['wholesale_min_qty_v_'.$key];
-                    $wholeSaleMaxQty = $data['wholesale_max_qty_v_'.$key];
-                    $wholeSalePrice  = $data['wholesale_price_v_'.$key];
+                    $wholeSaleMinQty = isset($data['wholesale_min_qty_v_'.$key]) ? $data['wholesale_min_qty_v_'.$key] : [];
+                    $wholeSaleMaxQty = isset($data['wholesale_max_qty_v_'.$key]) ? $data['wholesale_max_qty_v_'.$key] : [];
+                    $wholeSalePrice  = isset($data['wholesale_price_v_'.$key]) ? $data['wholesale_price_v_'.$key] : [];
                     $wholeSaleArrValue = [];
-                    if ( $wholeSaleMinQty[0]!=null ){
+                    if (!empty($wholeSaleMinQty) && $wholeSaleMinQty[0] != null ){
                         foreach ($wholeSaleMinQty as $keyMinQty=>$minVal){
                             $wholeSaleArrValue['min_qty'] = $wholeSaleMinQty[$keyMinQty];
                             $wholeSaleArrValue['max_qty'] = $wholeSaleMaxQty[$keyMinQty];
@@ -251,7 +270,7 @@ class ProductRepository {
     }
 
     public function findBySellerProductId($id){
-        return SellerProduct::with('skus')->findOrFail($id);
+        return SellerProduct::with('skus', 'product')->findOrFail($id);
     }
 
     public function deleteById($id){
@@ -278,7 +297,9 @@ class ProductRepository {
         $host = activeFileStorage();
         $product =  $this->product::findOrFail($id);
         if (app('gst_config')['enable_gst'] == "only_tax" && app('general_setting')->price_with_vat) {
-            $selling_price = selling_price($data['selling_price'],$data['discount_type'],$data['discount']);
+            $discount_type = isset($data['discount_type']) ? $data['discount_type'] : 0;
+            $discount = isset($data['discount']) ? $data['discount'] : 0;
+            $selling_price = selling_price($data['selling_price'], $discount_type, $discount);
             $gst = GstTax::find($product->product->tax_id);
             $data['tax'] = ($selling_price * $gst->tax_percentage) / 100;
         }
@@ -292,9 +313,9 @@ class ProductRepository {
         $product->tax = isset($data['tax'])?$data['tax']:0;
         $product->tax_type = 0;
         $product->discount = isset($data['discount'])?$data['discount']:0;
-        $product->discount_type = $data['discount_type'];
-        $product->discount_start_date = $data['discount_start_date']?date('Y-m-d',strtotime($data['discount_start_date'])):null;
-        $product->discount_end_date = $data['discount_end_date']?date('Y-m-d',strtotime($data['discount_end_date'])):null;
+        $product->discount_type = isset($data['discount_type']) ? $data['discount_type'] : ($product->discount_type ?? 0);
+        $product->discount_start_date = isset($data['discount_start_date']) && $data['discount_start_date'] ? date('Y-m-d',strtotime($data['discount_start_date'])) : null;
+        $product->discount_end_date = isset($data['discount_end_date']) && $data['discount_end_date'] ? date('Y-m-d',strtotime($data['discount_end_date'])) : null;
         if ($host == 'Dropbox') {
             $product->thum_img = (!empty($data['thum_img_src']['images_source'])) ? $data['thum_img_src']['images_source'] : null;
             $product->file_dropbox = (!empty($data['thum_img_src']['file_dropbox'])) ? $data['thum_img_src']['file_dropbox'] : null;
@@ -302,20 +323,35 @@ class ProductRepository {
             $product->thum_img =  isset($data['thum_img_src'])?$data['thum_img_src']: $product->thum_img;
         }
         $product->slug = $productName;
-        $product->subtitle_1 = $data['subtitle_1'];
-        $product->subtitle_2 = $data['subtitle_2'];
+        $product->subtitle_1 = isset($data['subtitle_1']) ? $data['subtitle_1'] : ($product->subtitle_1 ?? '');
+        $product->subtitle_2 = isset($data['subtitle_2']) ? $data['subtitle_2'] : ($product->subtitle_2 ?? '');
+        
+        // Add MRP to update
+        if(isset($data['mrp'])){
+            $product->product->update([
+                'mrp' => $data['mrp']
+            ]);
+        }
+        
         $product->save();
 
         if($product->seller->role->type == 'superadmin'){
             $product->product->update([
-                'stock_manage' => (!empty($data['stock_manage'])) ? $data['stock_manage'] : 0
+                'stock_manage' => (!empty($data['stock_manage'])) ? $data['stock_manage'] : 0,
+                'status' => 1
+            ]);
+        } else {
+            // For sellers, ensure product is activated in main table
+            $product->product->update([
+                'status' => 1
             ]);
         }
 
         if($product->product->product_type == 1){
             $product->skus->first()->update([
-                'product_stock' => ($product->stock_manage == 1) ? $data['product_stock'] : 0,
+                'product_stock' => ($product->stock_manage == 1) ? (isset($data['product_stock']) ? $data['product_stock'] : 0) : 0,
                 'selling_price' => $data['selling_price'],
+                'mrp' => isset($data['mrp']) ? $data['mrp'] : null,
             ]);
             $product->update([
                 'min_sell_price' => $data['selling_price'],
@@ -324,7 +360,7 @@ class ProductRepository {
 
             if($product->seller->role->type == 'superadmin'){
                 $product->product->skus->first()->update([
-                    'product_stock' => ($product->stock_manage == 1) ? $data['product_stock'] : 0
+                    'product_stock' => ($product->stock_manage == 1) ? (isset($data['product_stock']) ? $data['product_stock'] : 0) : 0
                 ]);
             }
 
@@ -375,6 +411,7 @@ class ProductRepository {
                     $variant->update([
                         'product_stock' => ($product->stock_manage == 1) ? $data['stock'][$key]??0 : 0,
                         'selling_price' => $data['selling_price_sku'][$key],
+                        'mrp' => isset($data['mrp_sku'][$key]) ? $data['mrp_sku'][$key] : null,
                         'status' => isset($data['status_'.$item])?1:0
                     ]);
                 }
@@ -384,6 +421,7 @@ class ProductRepository {
                         'product_sku_id' => $data['product_skus'][$key],
                         'product_stock' => ($product->stock_manage == 1) ? $data['stock'][$key]??0 : 0,
                         'selling_price' => $data['selling_price_sku'][$key],
+                        'mrp' => isset($data['mrp_sku'][$key]) ? $data['mrp_sku'][$key] : null,
                         'status' => isset($data['status_'.$item])?1:0,
                         'user_id' => getParentSellerId()
                     ]);
@@ -567,5 +605,11 @@ class ProductRepository {
     public function findProductSkuById($id)
     {
         return SellerProductSKU::findOrFail($id);
+    }
+
+    public function varientwholesaleProduct($id){
+        return SellerProduct::with('product','seller', 'reviews.customer', 'reviews.images', 'product.brand','product.categories','product.unit_type',
+        'product.variations','product.skus', 'skus.wholeSalePrices', 'product.tags','product.gallary_images','product.relatedProducts.related_seller_products.product',
+        'product.upSales.up_seller_products.product', 'product.crossSales.cross_seller_products.product','product.shippingMethods.shippingMethod')->where('id', $id)->first();
     }
 }

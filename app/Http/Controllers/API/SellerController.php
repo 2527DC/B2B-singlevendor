@@ -145,6 +145,21 @@ class SellerController extends Controller
         }
     }
 
+    public function allSellerList()
+    {
+        $sellers = $this->sellerRepository->getAllSellersList();
+        if (count($sellers) > 0) {
+            return response()->json([
+                'sellers' => $sellers,
+                'mesage' => trans('app.Success')
+            ], 200);
+        } else {
+            return response()->json([
+                'message' => trans('app.Empty list')
+            ], 404);
+        }
+    }
+
 
     /**
      * Single Seller

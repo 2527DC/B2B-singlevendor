@@ -135,14 +135,14 @@
                                         {{getNumberTranslate(@$product->product->club_point)}}
                                     </span>
                                     @endif
-                                    @if(isModuleActive('WholeSale') && @$product->skus->first()->wholeSalePrices->count())
+                                    @if(isModuleActive('WholeSale') && @$product->skus->first()?->wholeSalePrices?->count())
                                         <span class="d-flex align-items-center sale">{{__('common.wholesale')}}</span>
                                     @endif
                                 </div>
                             </div>
                             <div class="product_star mx-auto">
                                 @php
-                                    $reviews = @$product->reviews->where('status', 1)->pluck('rating');
+                                    $reviews = @$product->reviews?->where('status', 1)?->pluck('rating') ?? collect();
 
                                     if (count($reviews) > 0) {
                                         $value = 0;

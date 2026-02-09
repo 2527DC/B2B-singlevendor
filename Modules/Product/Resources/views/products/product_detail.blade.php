@@ -26,7 +26,7 @@
                                     </div>
                                     <div class="products_details_single">
                                         <span>{{__('product.SKU')}}: </span>
-                                        <span>{{ $product->skus->first()->sku }}</span>
+                                        <span>{{ @$product->skus->first()?->sku ?? 'N/A' }}</span>
                                     </div>
                                     <div class="products_details_single">
                                         <span>{{__('product.product_type')}}: </span>

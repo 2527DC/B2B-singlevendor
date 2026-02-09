@@ -18,6 +18,7 @@ class ProductSku extends Model
         'product_stock' => 'integer',
         'purchase_price' => 'double',
         'selling_price' => 'double',
+        'mrp' => 'double',
         'status' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',

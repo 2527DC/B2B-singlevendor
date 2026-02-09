@@ -28,7 +28,41 @@ class OrderManageRepository
 {
     use SendMail, Accounts, Notification;
 
-    // ... all your list methods remain unchanged (myConfirmedSalesList, myCompletedSalesList, etc.) ...
+    public function myConfirmedSalesList()
+    {
+        $seller_id = getParentSellerId();
+        return OrderPackageDetail::whereHas('order', function ($q) {
+            $q->where('orders.is_cancelled', 0)->where('is_confirmed', 1)->where('is_completed', 0);
+        })->where('order_package_details.is_cancelled', 0)->with('order', 'seller', 'order.customer')->where('seller_id', $seller_id)->select('order_package_details.*')->latest();
+    }
+
+    public function myCompletedSalesList()
+    {
+        $seller_id = getParentSellerId();
+        return OrderPackageDetail::whereHas('order', function ($q) {
+            $q->where('orders.is_cancelled', 0)->where('is_completed', 1);
+        })->where('order_package_details.is_cancelled', 0)->with('order', 'seller', 'order.customer')->where('seller_id', $seller_id)->select('order_package_details.*')->latest();
+    }
+
+    public function myPendingPaymentSalesList()
+    {
+        $seller_id = getParentSellerId();
+        return OrderPackageDetail::whereHas('order', function ($q) {
+            $q->where('orders.is_cancelled', 0)->where('is_paid', 0);
+        })->where('order_package_details.is_cancelled', 0)->with('order', 'seller', 'order.customer')->where('seller_id', $seller_id)->select('order_package_details.*')->latest();
+    }
+
+    public function myCancelledPaymentSalesList()
+    {
+        $seller_id = getParentSellerId();
+        $orderpackage =  OrderPackageDetail::where('seller_id', $seller_id)
+        ->whereHas('order', function ($q) {
+                $q->where('is_cancelled', 1);
+            })->orWhere('is_cancelled', 1)
+        ->with('order', 'seller', 'order.customer')->latest();
+
+        return $orderpackage->where('seller_id', $seller_id);
+    }
 
     public function totalSalesList()
     {
@@ -37,7 +71,7 @@ class OrderManageRepository
 
     public function findOrderByID($id)
     {
-        return Order::findOrFail($id);
+        return Order::with('packages')->findOrFail($id);
     }
 
     public function orderInfoUpdate($data, $id)
@@ -121,13 +155,14 @@ class OrderManageRepository
                 } else {
                     // Delivery status change
                     if ($package->delivery_status != $data['delivery_status']) {
-                        OrderDeliveryState::create([
+                        $createdState = OrderDeliveryState::create([
                             'order_package_id' => $package->id,
                             'delivery_status' => $data['delivery_status'],
                             'note' => $data['note'] ?? null,
                             'created_by' => auth()->user()->id,
                             'date' => Carbon::now()->format('Y-m-d')
                         ]);
+                        Log::info('OrderDeliveryState created', ['order_package_id' => $package->id, 'delivery_status' => $data['delivery_status'], 'state_id' => $createdState->id ?? null]);
 
                         $package->update(['delivery_status' => $data['delivery_status']]);
 
@@ -233,6 +268,12 @@ class OrderManageRepository
     {
         $merchantRepo = new MerchantRepository();
         $seller = $merchantRepo->findUserByID($package->seller_id);
+        
+        // Initialize variables to avoid undefined variable errors
+        $seller_rcv_money = 0;
+        $claim_gst = 0;
+        $final_commission = 0;
+
         if ($seller) {
             $seller_account = $seller->SellerAccount;
             $seller_business_info = $seller->SellerBusinessInformation;
@@ -306,6 +347,13 @@ class OrderManageRepository
 
             return $data;
         }
+        
+        // Return default data if seller not found
+        return [
+            'seller_rcv_money' => 0,
+            'claim_gst' => 0,
+            'final_commission' => 0
+        ];
     }
 
     public function findOrderPackageByID($id)
@@ -315,8 +363,10 @@ class OrderManageRepository
 
     public function updateDeliveryStatus($data, $id)
     {
+        Log::info('OrderManageRepository::updateDeliveryStatus called', ['package_id' => $id, 'payload' => $data]);
         $order_package = $this->findOrderPackageByID($id);
         $order = $this->findOrderByID($order_package->order_id);
+        Log::info('OrderManageRepository::updateDeliveryStatus loaded', ['package_id' => $order_package->id ?? null, 'current_status' => $order_package->delivery_status ?? null, 'order_id' => $order->id ?? null]);
 
         if ($order_package->delivery_status != $data['delivery_status']) {
             if (app('business_settings')->where('type', 'mail_notification')->first()->status == 1) {
@@ -331,13 +381,14 @@ class OrderManageRepository
             $this->typeId = EmailTemplateType::where('type','order_email_template')->first()->id;//order email templete type id
             $this->notificationSend(null, $order->customer_id,$data['delivery_status']);
 
-            OrderDeliveryState::create([
+            $createdState = OrderDeliveryState::create([
                 'order_package_id' => $order_package->id,
                 'delivery_status' => $data['delivery_status'],
-                'note' => $data['note'],
+                'note' => $data['note'] ?? null,
                 'created_by' => getParentSellerId(),
                 'date' => Carbon::now()->format('Y-m-d')
             ]);
+            Log::info('OrderDeliveryState created', ['order_package_id' => $order_package->id, 'delivery_status' => $data['delivery_status'], 'state_id' => $createdState->id ?? null]);
 
             $orderPayment = OrderPayment::findOrFail($order->order_payment_id);
             $orderPayment->update([
@@ -365,6 +416,17 @@ class OrderManageRepository
 
             if ($order_package->seller->role->type != "superadmin") {
                 $amount = $this->get_commission_rate($order_package->seller_id, $order_package);
+                
+                // Safety check for amount
+                if (!is_array($amount)) {
+                    $amount = [
+                        'seller_rcv_money' => 0,
+                        'claim_gst' => 0,
+                        'final_commission' => 0
+                    ];
+                    Log::warning('Commission rate calculation returned invalid data', ['package_id' => $order_package->id]);
+                }
+                
                 $seller_amount = $amount['seller_rcv_money'] + $order_package->tax_amount;
                 $seller_commision = $amount['final_commission'];
                 if ($amount['claim_gst'] == 0) {
@@ -420,9 +482,13 @@ class OrderManageRepository
             $order_package->is_paid = 1;
         }
 
+
         $order_package->delivery_status = $data['delivery_status'];
         $order_package->last_updated_by = getParentSellerId();
         $order_package->save();
+
+        // CRITICAL: Refresh the packages relationship to get updated delivery_status
+        $order->load('packages');
 
         $total_is_paid = 0;
         $total_is_complete = 0;
@@ -442,7 +508,7 @@ class OrderManageRepository
             $order->is_paid = 1;
         }
         if($order->is_completed == 0 && $total_package == $total_is_complete){
-            $order->is_completed = auth()->user()->role->type != 'seller' ? 1:0;
+            $order->is_completed = 1;
         }
         $order->save();
         return true;

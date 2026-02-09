@@ -209,6 +209,7 @@
     </section>
     <div class="product_detail_view_div">
     </div>
+    @include('product::products.manage_history')
     <div id="sku_modal">
         <div class="modal fade" id="sku_edit">
             <div class="modal-dialog modal_800px modal-dialog-centered">

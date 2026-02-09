@@ -10,6 +10,8 @@ use Modules\Seller\Services\ProductService;
 use Illuminate\Contracts\Support\Renderable;
 use Modules\Seller\Entities\SellerProductSKU;
 use Modules\Seller\Transformers\ProductResource;
+use Illuminate\Support\Facades\Log;
+
 /**
 * @group Product Management
 *
@@ -641,17 +643,41 @@ class ProductController extends Controller
      * }
      */
 
-    public function show($id){
-        $product = $this->productService->getSellerProductById($id);
-        if($product){
-            return new ToppicksResource($product);
-        }else{
-            return response([
-                'message' => trans('app.Not found')
-            ],404);
-        }
-    }
 
+public function show($id)
+{
+    Log::info('ToppicksController@show invoked', [
+        'product_id' => $id,
+        'user_id' => auth()->id(),
+        'timestamp' => now()->toDateTimeString(),
+    ]);
+
+    $product = $this->productService->getSellerProductById($id);
+
+    if ($product) {
+        return new ToppicksResource($product);
+    } else {
+        Log::warning('Product not found in ToppicksController@show', [
+            'product_id' => $id
+        ]);
+
+        return response([
+            'message' => trans('app.Not found')
+        ], 404);
+    }
+}
+
+public function varientwholesaleProduct($id)
+{
+    $product = $this->productService->varientwholesaleProduct($id);
+    if ($product) {
+        return new ToppicksResource($product);
+    } else {
+        return response([
+            'message' => trans('app.Not found')
+        ], 404);
+    }
+}
     /**
      * sku wise price
      * @response

@@ -280,6 +280,8 @@ return [
   
   // Stock Management
   "manage_stock" => "Manage Stock",
+  "manage_history" => "Manage History",
+  "product_history" => "Product History",
   "stock_in" => "Stock In",
   "stock_out" => "Stock Out",
   "add_stock" => "Add Stock",

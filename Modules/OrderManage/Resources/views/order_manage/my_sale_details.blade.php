@@ -412,7 +412,7 @@
                                     <div class="col-lg-12 p-0">
                                         <div class="primary_input mb-25">
                                             <label class="primary_input_label" for=""> <strong>{{ __('order.delivery_status') }}</strong></label>
-                                            <select class="primary_select mb-25" name="delivery_status" id="delivery_status" {{$order_packages->order->is_confirmed == 0 || auth()->user()->role->type == 'seller' && $order_packages->delivery_status == 5?'disabled':''}}>
+                                            <select class="primary_select mb-25" name="delivery_status" id="delivery_status" {{$order_packages->order->is_confirmed == 0 ?'disabled':''}}>
                                                 @foreach ($processes as $key => $process)
                                                     <option value="{{ $process->id }}" @if ($order_packages->delivery_status == $process->id) selected @endif>{{ $process->name }}</option>
                                                 @endforeach
