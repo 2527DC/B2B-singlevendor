@@ -14,15 +14,6 @@
                     </div>
                 </div>
                 <div class="col-lg-12">
-                    @if ($errors->any())
-                        <div class="alert alert-danger">
-                            <ul>
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
                     <div class="QA_section QA_section_heading_custom check_box_table">
                         <div class="QA_table ">
                             <!-- table-responsive -->
@@ -33,8 +24,6 @@
                                             <th scope="col">{{ __('ID') }}</th>
                                             <th scope="col">{{ __('Name') }}</th>
                                             <th scope="col">{{ __('Phone') }}</th>
-                                            <th scope="col">{{ __('Vehicle No') }}</th>
-                                            <th scope="col">{{ __('Assigned Seller') }}</th>
                                             <th scope="col">{{ __('Status') }}</th>
                                             <th scope="col">{{ __('Action') }}</th>
                                         </tr>
@@ -45,8 +34,6 @@
                                             <th>{{ $loop->iteration }}</th>
                                             <td>{{ $driver->name }}</td>
                                             <td>{{ $driver->phone }}</td>
-                                            <td>{{ $driver->vehicle_number }}</td>
-                                            <td>{{ @$driver->seller->first_name }}</td>
                                             <td>
                                                 @php
                                                     $isActive = isset($driver->is_active) && (int)$driver->is_active === 1;
@@ -69,8 +56,6 @@
                                                             data-driver-id="{{ $driver->id }}"
                                                             data-driver-name="{{ $driver->name }}"
                                                             data-driver-phone="{{ $driver->phone }}"
-                                                            data-driver-vehicle-number="{{ $driver->vehicle_number }}"
-                                                            data-driver-seller-id="{{ $driver->seller_id }}"
                                                             data-driver-is-active="{{ isset($driver->is_active) ? (int)$driver->is_active : 1 }}"
                                                             >{{__('Edit')}}</a>
                                                         
@@ -109,7 +94,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form action="{{ route('drivers.store') }}" method="POST" id="createDriverForm">
+                    <form action="{{ route('seller.drivers.store') }}" method="POST" id="createDriverForm">
                         @csrf
                         <div class="row">
                             <div class="col-xl-12">
@@ -122,23 +107,6 @@
                                 <div class="primary_input mb-25">
                                     <label class="primary_input_label" for="phone">{{ __('Phone') }} <span class="text-danger">*</span></label>
                                     <input name="phone" class="primary_input_field name" id="phone" placeholder="{{ __('Phone') }}" type="tel" required>
-                                </div>
-                            </div>
-                             <div class="col-xl-12">
-                                <div class="primary_input mb-25">
-                                    <label class="primary_input_label" for="vehicle_number">{{ __('Vehicle Number') }}</label>
-                                    <input name="vehicle_number" class="primary_input_field name" id="vehicle_number" placeholder="{{ __('Vehicle Number') }}" type="text">
-                                </div>
-                            </div>
-                            <div class="col-xl-12">
-                                <div class="primary_input mb-25">
-                                    <label class="primary_input_label" for="seller_id">{{ __('Assign Seller') }}</label>
-                                    <select name="seller_id" class="form-control mb-25" id="create_seller_id">
-                                        <option value="">{{ __('Select Seller') }}</option>
-                                        @foreach($sellers as $seller)
-                                            <option value="{{ $seller->id }}">{{ $seller->first_name }} {{ $seller->last_name }} ({{ $seller->email }})</option>
-                                        @endforeach
-                                    </select>
                                 </div>
                             </div>
                              <div class="col-xl-12">
@@ -196,23 +164,6 @@
                                 <div class="primary_input mb-25">
                                     <label class="primary_input_label" for="edit_phone">{{ __('Phone') }} <span class="text-danger">*</span></label>
                                     <input name="phone" class="primary_input_field name" id="edit_phone" placeholder="{{ __('Phone') }}" type="tel" required>
-                                </div>
-                            </div>
-                            <div class="col-xl-12">
-                                <div class="primary_input mb-25">
-                                    <label class="primary_input_label" for="edit_vehicle_number">{{ __('Vehicle Number') }}</label>
-                                    <input name="vehicle_number" class="primary_input_field name" id="edit_vehicle_number" placeholder="{{ __('Vehicle Number') }}" type="text">
-                                </div>
-                            </div>
-                            <div class="col-xl-12">
-                                <div class="primary_input mb-25">
-                                    <label class="primary_input_label" for="edit_seller_id">{{ __('Assign Seller') }}</label>
-                                    <select name="seller_id" class="form-control mb-25" id="edit_seller_id">
-                                        <option value="">{{ __('Select Seller') }}</option>
-                                        @foreach($sellers as $seller)
-                                            <option value="{{ $seller->id }}">{{ $seller->first_name }} {{ $seller->last_name }} ({{ $seller->email }})</option>
-                                        @endforeach
-                                    </select>
                                 </div>
                             </div>
                             <div class="col-xl-12">
@@ -294,16 +245,12 @@
                 let driverId = $(this).data('driver-id');
                 let driverName = $(this).data('driver-name');
                 let driverPhone = $(this).data('driver-phone');
-                let driverVehicleNumber = $(this).data('driver-vehicle-number');
-                let driverSellerId = $(this).data('driver-seller-id');
                 let isActive = $(this).data('driver-is-active');
 
                 $('#editDriverModal').modal('show');
                 $('#edit_driver_id').val(driverId);
                 $('#edit_name').val(driverName);
                 $('#edit_phone').val(driverPhone);
-                $('#edit_vehicle_number').val(driverVehicleNumber);
-                $('#edit_seller_id').val(driverSellerId);
                 
                 if (isActive == 1) {
                     $('#edit_is_active').prop('checked', true);
@@ -315,7 +262,7 @@
                 let form = $('#editDriverForm');
                 // The route in web.php is drivers.update (PUT /drivers/{id})
                 // We construct the URL manually or use a JS variable for base URL if available
-                let url = "{{ url('drivers') }}" + "/" + driverId;
+                let url = "{{ url('seller/drivers') }}" + "/" + driverId;
                 form.attr('action', url);
             });
 
@@ -329,7 +276,7 @@
                 $('#driverName').text(driverName);
 
                 let form = $('#resetPasswordForm');
-                let url = "{{ url('drivers') }}" + "/" + driverId + "/reset-password";
+                let url = "{{ url('seller/drivers') }}" + "/" + driverId + "/reset-password";
                 form.attr('action', url);
             });
 
@@ -338,7 +285,7 @@
             $(document).on('click', '.delete_driver', function(event){
                 event.preventDefault();
                 let id = $(this).data('id');
-                let url = "{{ url('drivers') }}" + "/" + id;
+                let url = "{{ url('seller/drivers') }}" + "/" + id;
                 confirm_modal(url);
             });
         });

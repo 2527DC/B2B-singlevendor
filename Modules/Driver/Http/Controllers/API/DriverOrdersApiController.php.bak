@@ -118,10 +118,15 @@ class DriverOrdersApiController extends Controller
                 'seller_id'  => 'nullable', // Can be single integer or array
             ]);
     
+            Log::info('Fetching confirmed orders', [
+                'order_date' => $request->order_date,
+                'seller_id'  => $request->seller_id,
+                'ip_address' => $request->ip(),
+            ]);
+    
             // Fetch CONFIRMED orders with pagination (30 per page)
             $orders = DriverOrders::with('addressDetails')
                 ->where('is_confirmed', 1) // Only get confirmed orders (is_confirmed = 1)
-                ->where('driver_id', auth('sanctum')->id()) // Filter by logged-in driver
                 ->when(
                     $request->filled('order_date'),
                     function ($query) use ($request) {
@@ -313,29 +318,11 @@ public function getPhotoProof(Request $request)
 
     public function uploadPhotoProof(Request $request)
     {
-        Log::info('uploadPhotoProof hit', [
-            'has_file' => $request->hasFile('photo_proof'),
-            'all_keys' => array_keys($request->all()),
-            'order_number' => $request->order_number,
-            'order_id' => $request->order_id,
-        ]);
-
-        $validator = Validator::make($request->all(), [
+        $request->validate([
             'order_id'     => 'required',
             'order_number' => 'required|string',
             'photo_proof'  => 'required|image|mimes:jpg,jpeg,png|max:5120',
         ]);
-
-        if ($validator->fails()) {
-            Log::warning('uploadPhotoProof validation failed', [
-                'errors' => $validator->errors()->toArray()
-            ]);
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation error',
-                'errors'  => $validator->errors()
-            ], 422);
-        }
     
         $file = $request->file('photo_proof');
     
@@ -427,14 +414,6 @@ public function orderDetails($id)
  {
     try {
         $order = $this->ordermanageService->findOrderByID($id);
-
-        // Check if order exists and belongs to the driver
-        if (!$order || $order->driver_id != auth('sanctum')->id()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Order not found or access denied',
-            ], 404);
-        }
         
         // Load the necessary relationships if not already loaded
         if (!$order->relationLoaded('packages')) {
@@ -469,11 +448,7 @@ public function orderDetails($id)
             'order_details' => [
                 'basic_info' => array_merge(
                     $order->only(['id', 'order_number', 'order_type', 'payment_type', 'grand_total', 'sub_total']),
-                    [
-                        'order_status' => $orderStatus,
-                        'photo_proof_url' => $order->photo_proof ? url($order->photo_proof) : null,
-                        'signature_proof_url' => $order->signature_proof ? url($order->signature_proof) : null,
-                    ]
+                    ['order_status' => $orderStatus]
                 ),
                 'customer_info' => $order->customer ? [
                     'name' => $order->customer->first_name . ' ' . $order->customer->last_name,
@@ -593,20 +568,13 @@ public function salesInfoUpdateApi(Request $request, $id)
         'is_completed',
         'delivery_status',
         'cancel_reason_id',
-        'note',
-        'photo_proof',
-        'signature_proof'
+        'note'
     ]);
 
     // Remove null values to avoid overwriting with null
     $data = array_filter($data, function($value) {
         return $value !== null;
     });
-
-    // ✅ If order is completed, force delivery_status to Delivered (ID 5)
-    if (isset($data['is_completed']) && $data['is_completed'] == 1) {
-        $data['delivery_status'] = 5;
-    }
 
     try {
         Log::info('Calling orderInfoUpdate service (API)', [
@@ -642,4 +610,76 @@ public function salesInfoUpdateApi(Request $request, $id)
 }
 
 
+
+    public function getReturnRequests(Request $request)
+    {
+        try {
+            \$driverId = auth()->user()->id;
+            \$returns = \Modules\Refund\Entities\RefundRequest::with(['customer', 'order.addressDetails'])
+                ->where('driver_id', \$driverId)
+                ->orderBy('assigned_at', 'desc')
+                ->paginate(20);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Return requests fetched successfully',
+                'data' => [
+                    'returns' => \$returns
+                ]
+            ], 200);
+        } catch (\Exception \$e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch return requests',
+                'error' => \$e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function updateReturnStatus(Request $request)
+    {
+        \$validator = \Illuminate\Support\Facades\Validator::make(\$request->all(), [
+            'refund_id' => 'required',
+            'status' => 'required|in:2,3,4' // 2: Picked Up, 3: In Transit, 4: Delivered to Seller
+        ]);
+
+        if (\$validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => \$validator->errors()
+            ], 422);
+        }
+
+        try {
+            \$refund = \Modules\Refund\Entities\RefundRequest::findOrFail(\$request->refund_id);
+            
+            // Check if driver is assigned
+            if (\$refund->driver_id != auth()->user()->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized. This return is not assigned to you.'
+                ], 403);
+            }
+
+            \$refund->update([
+                'return_status' => \$request->status
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Return status updated successfully',
+                'data' => [
+                    'return_status' => \$refund->return_status,
+                    'status_text' => \$refund->ReturnStatusText
+                ]
+            ], 200);
+        } catch (\Exception \$e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update return status',
+                'error' => \$e->getMessage()
+            ], 500);
+        }
+    }
 }

@@ -77,28 +77,40 @@ class OrderManageRepository
         $order = $this->findOrderByID($id);
         
         // Update order fields
-        $order->update([
+        // Update order fields
+        $updateData = [
             'is_paid' => $data['is_paid'] ?? $order->is_paid,
             'is_confirmed' => $data['is_confirmed'] ?? $order->is_confirmed,
             'is_completed' => $data['is_completed'] ?? $order->is_completed,
-        ]);
+            'photo_proof' => $data['photo_proof'] ?? $order->photo_proof,
+            'signature_proof' => $data['signature_proof'] ?? $order->signature_proof,
+        ];
+
+        // ✅ Update order_status if provided
+        if (isset($data['delivery_status'])) {
+            $updateData['order_status'] = $data['delivery_status'];
+        }
+
+        $order->update($updateData);
         
         // Update delivery_status in order_package_details table
-        if (isset($data['delivery_status']) && !isModuleActive('MultiVendor')) {
-            $package = $order->packages->first();
-            if ($package && $package->delivery_status != $data['delivery_status']) {
-                $package->update([
-                    'delivery_status' => $data['delivery_status']
-                ]);
-                
-                // Add delivery state history
-                OrderDeliveryState::create([
-                    'order_package_id' => $package->id,
-                    'delivery_status' => $data['delivery_status'],
-                    'note' => $data['note'] ?? null,
-                    'created_by' => auth()->user()->id ?? null,
-                    'date' => Carbon::now()->format('Y-m-d')
-                ]);
+        // Removed !isModuleActive('MultiVendor') check to ensure it works for all
+        if (isset($data['delivery_status'])) {
+            foreach($order->packages as $package) {
+                if ($package->delivery_status != $data['delivery_status']) {
+                    $package->update([
+                        'delivery_status' => $data['delivery_status']
+                    ]);
+                    
+                    // Add delivery state history
+                    OrderDeliveryState::create([
+                        'order_package_id' => $package->id,
+                        'delivery_status' => $data['delivery_status'],
+                        'note' => $data['note'] ?? null,
+                        'created_by' => auth()->user()->id ?? null,
+                        'date' => Carbon::now()->format('Y-m-d')
+                    ]);
+                }
             }
         }
         

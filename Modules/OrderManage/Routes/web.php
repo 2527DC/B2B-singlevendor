@@ -24,6 +24,8 @@ Route::prefix('ordermanage')->middleware(['auth','seller'])->group(function () {
     Route::post('/sales-info-update-delivery/{id}', 'OrderManageController@update_delivery')->name('order_manage.update_delivery_status')->middleware(['seller']);
     Route::post('/delivery-status-update-customer', 'OrderManageController@change_delivery_status_by_customer')->name('change_delivery_status_by_customer');
     Route::post('/my-sales-list/bulk-update-delivery', 'OrderManageController@bulk_update_delivery')->name('order_manage.bulk_update_delivery_seller')->middleware(['seller']);
+    Route::post('/my-sales-list/bulk-assign-driver', 'OrderManageController@bulk_assign_driver')->name('order_manage.bulk_assign_driver')->middleware(['seller']);
+    Route::post('/order/{id}/assign-driver', 'OrderManageController@assign_driver')->name('order_manage.assign_driver')->middleware(['seller']);
 
     Route::post('send-gift-card-code-to-mail', 'OrderManageController@send_gift_card_code')->name('send_gift_card_code_to_customer');
     Route::post('send-digital-file-access-to-mail', 'OrderManageController@send_digital_file_access')->name('send_digital_file_access_to_customer');

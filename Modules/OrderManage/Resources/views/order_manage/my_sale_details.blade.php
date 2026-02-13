@@ -433,6 +433,30 @@
                             </form>
                         @endif
 
+                        {{-- Driver Assignment --}}
+
+                            <div class="row white_box p-25 box_shadow_white mr-0 ml-0 mt-2">
+                                <div class="col-lg-12 p-0">
+                                    <div class="primary_input mb-25">
+                                        <label class="primary_input_label" for=""> <strong>{{ __('order.assign_driver') }}</strong></label>
+                                        <select class="primary_select mb-25" name="driver_id" id="order_driver_id">
+                                            <option value="">Select Driver</option>
+                                            @foreach ($drivers as $driver)
+                                                <option value="{{ $driver->id }}" @if ($order->driver_id == $driver->id) selected @endif>
+                                                    {{ $driver->name }}@if($driver->vehicle_number) - {{$driver->vehicle_number}}@endif
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-lg-12 p-0 text-center">
+                                    <button type="button" class="primary_btn_2" id="assign_driver_btn">
+                                        <i class="ti-check"></i>{{ __('order.assign_driver') }}
+                                    </button>
+                                </div>
+                            </div>
+
+
                         <div class="row mt-2 mr-0 ml-0 white_box p-25 box_shadow_white">
                             <div class="col-lg-12 p-0">
                                 <div class="table-responsive">
@@ -556,6 +580,39 @@
                         window.location.reload();
                     }, 15000);
                 }
+
+                // Driver assignment for order detail page
+                $('#assign_driver_btn').on('click', function(){
+                    var driverId = $('#order_driver_id').val();
+                    if(driverId == '') driverId = null;
+                    var orderId = {{ $order->id }};
+
+                    var csrfToken = $('meta[name="csrf-token"]').attr('content') || $('meta[name="_token"]').attr('content');
+                    $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': csrfToken } });
+                    $.ajax({
+                        url: "/ordermanage/order/" + orderId + "/assign-driver",
+                        method: 'POST',
+                        data: { driver_id: driverId },
+                        beforeSend: function(){
+                            $('#assign_driver_btn').prop('disabled', true);
+                        },
+                        success: function(res){
+                            toastr.success(res.message || 'Driver assigned successfully', 'Success');
+                            $('#assign_driver_btn').prop('disabled', false);
+                            setTimeout(function(){
+                                window.location.reload();
+                            }, 1000);
+                        },
+                        error: function(err){
+                            var msg = 'Operation failed';
+                            if(err.responseJSON && err.responseJSON.message) {
+                                msg = err.responseJSON.message;
+                            }
+                            toastr.error(msg, 'Error');
+                            $('#assign_driver_btn').prop('disabled', false);
+                        }
+                    });
+                });
             });
         })(jQuery);
 

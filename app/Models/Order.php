@@ -42,6 +42,10 @@ class Order extends Model
         return $this->belongsTo(CancelReason::class,'cancel_reason_id','id');
     }
 
+    public function driver(){
+        return $this->belongsTo(\Modules\Driver\Entities\Driver::class, 'driver_id','id');
+    }
+
     public function packages(){
         return $this->hasMany(OrderPackageDetail::class,'order_id','id');
     }

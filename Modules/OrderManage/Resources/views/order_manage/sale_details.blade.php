@@ -554,6 +554,23 @@
                                         </div>
                                     </div>
                                     @endif
+                                    
+                                    {{-- Driver Assignment --}}
+                                    <div class="col-lg-12 p-0"  id='driver_assignment_div'>
+                                        <div class="primary_input mb-25">
+                                            <label class="primary_input_label" for="">
+                                                <strong>{{ __('order.assign_driver') }}</strong></label>
+                                            <select class="primary_select mb-25" name="driver_id" id="admin_order_driver_id">
+                                                <option value="">Select Driver</option>
+                                                @foreach ($drivers as $driver)
+                                                    <option value="{{ $driver->id }}" @if ($order->driver_id == $driver->id) selected @endif>
+                                                        {{ $driver->name }}@if($driver->vehicle_number) - {{$driver->vehicle_number}}@endif
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
                                     <div class="col-lg-12 p-0 text-center">
                                         <button class="primary_btn_2"><i class="ti-check"></i>{{ __('common.update') }}
                                         </button>

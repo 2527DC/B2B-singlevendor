@@ -6582,6 +6582,7 @@ return array(
     'Modules\\Driver\\Http\\Controllers\\API\\DriverAuthController' => $baseDir . '/Modules/Driver/Http/Controllers/API/DriverAuthController.php',
     'Modules\\Driver\\Http\\Controllers\\API\\DriverOrdersApiController' => $baseDir . '/Modules/Driver/Http/Controllers/API/DriverOrdersApiController.php',
     'Modules\\Driver\\Http\\Controllers\\DriverController' => $baseDir . '/Modules/Driver/Http/Controllers/DriverController.php',
+    'Modules\\Driver\\Http\\Controllers\\SellerDriverController' => $baseDir . '/Modules/Driver/Http/Controllers/SellerDriverController.php',
     'Modules\\Driver\\Http\\Middleware\\ValidateDriverToken' => $baseDir . '/Modules/Driver/Http/Middleware/ValidateDriverToken.php',
     'Modules\\Driver\\Providers\\DriverServiceProvider' => $baseDir . '/Modules/Driver/Providers/DriverServiceProvider.php',
     'Modules\\Driver\\Providers\\RouteServiceProvider' => $baseDir . '/Modules/Driver/Providers/RouteServiceProvider.php',

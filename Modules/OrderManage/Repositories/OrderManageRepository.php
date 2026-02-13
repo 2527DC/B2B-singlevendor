@@ -255,11 +255,17 @@ class OrderManageRepository
         }
 
         // Final order update
-        $order->update([
+        $updateData = [
             'is_paid' => $data['is_paid'],
             'is_confirmed' => $data['is_confirmed'],
             'is_completed' => $data['is_completed'],
-        ]);
+        ];
+
+        if (isset($data['driver_id'])) {
+            $updateData['driver_id'] = $data['driver_id'];
+        }
+
+        $order->update($updateData);
 
         return true;
     }

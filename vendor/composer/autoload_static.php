@@ -7786,6 +7786,7 @@ class ComposerStaticInitfd3392c270d9e3c051088bd776a2bdae
         'Modules\\Driver\\Http\\Controllers\\API\\DriverAuthController' => __DIR__ . '/../..' . '/Modules/Driver/Http/Controllers/API/DriverAuthController.php',
         'Modules\\Driver\\Http\\Controllers\\API\\DriverOrdersApiController' => __DIR__ . '/../..' . '/Modules/Driver/Http/Controllers/API/DriverOrdersApiController.php',
         'Modules\\Driver\\Http\\Controllers\\DriverController' => __DIR__ . '/../..' . '/Modules/Driver/Http/Controllers/DriverController.php',
+        'Modules\\Driver\\Http\\Controllers\\SellerDriverController' => __DIR__ . '/../..' . '/Modules/Driver/Http/Controllers/SellerDriverController.php',
         'Modules\\Driver\\Http\\Middleware\\ValidateDriverToken' => __DIR__ . '/../..' . '/Modules/Driver/Http/Middleware/ValidateDriverToken.php',
         'Modules\\Driver\\Providers\\DriverServiceProvider' => __DIR__ . '/../..' . '/Modules/Driver/Providers/DriverServiceProvider.php',
         'Modules\\Driver\\Providers\\RouteServiceProvider' => __DIR__ . '/../..' . '/Modules/Driver/Providers/RouteServiceProvider.php',

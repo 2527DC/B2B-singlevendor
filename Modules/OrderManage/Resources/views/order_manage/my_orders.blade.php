@@ -138,17 +138,33 @@
                                     </div>
                                 </div>
 
-                                <div class="d-flex mb-3 align-items-center">
+                                <div class="d-flex mb-2 align-items-center">
                                     <div class="mr-2">
                                         <select class="form-control" id="bulk_delivery_status_confirmed">
                                             <option value="">{{__('order.select_status')}}</option>
                                             @foreach($processes as $process)
-                                                <option value="{{ $process->id }}">{{ $process->name }}</option>
+                                                @if($process->id <= 3)
+                                                    <option value="{{ $process->id }}">{{ $process->name }}</option>
+                                                @endif
                                             @endforeach
                                         </select>
                                     </div>
                                     <div class="mr-2">
                                         <button type="button" class="btn btn-primary" id="apply_bulk_delivery_confirmed">{{__('common.apply')}}</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex mb-3 align-items-center">
+                                    <div class="mr-2">
+                                        <select class="form-control" id="bulk_driver_confirmed">
+                                            <option value="">Select Driver</option>
+                                            @foreach($drivers as $driver)
+                                                <option value="{{ $driver->id }}">{{ $driver->name }}@if($driver->vehicle_number) - {{$driver->vehicle_number}}@endif</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="mr-2">
+                                        <button type="button" class="btn btn-success" id="apply_bulk_driver_confirmed">Assign Driver</button>
                                     </div>
                                 </div>
 
@@ -165,7 +181,7 @@
                                                         <th width="10%">{{__('common.date')}}</th>
                                                         <th>{{__('common.order_id')}}</th>
                                                         <th>{{__('common.email')}}</th>
-                                                        <th>{{__('order.order_state')}}</th>
+                                                        <th>{{__('order.delivery_status')}}</th>
                                                         <th>{{__('common.total_amount')}}</th>
                                                         <th>{{__('order.order_status')}}</th>
                                                         <th>{{__('common.action')}}</th>
@@ -308,7 +324,7 @@
                                 return '';
                             }, className: 'checkbox-column-all'},
                         { data: null, orderable: false, searchable: false, render: function(data,type,row){
-                                return '<input type="checkbox" class="bulk-select-confirmed" data-order-id="'+row.id+'" />';
+                                return '<input type="checkbox" class="bulk-select-confirmed" data-package-id="'+row.id+'" data-order-id="'+row.order_id+'" />';
                             }, className: 'checkbox-column-item'},
                         { data: 'DT_RowIndex', name: 'id',render:function(data){
                             return numbertrans(data)
@@ -722,7 +738,7 @@
             }
             var selected = [];
             $('.bulk-select-confirmed:checked').each(function(){
-                selected.push($(this).data('order-id'));
+                selected.push($(this).data('package-id'));
             });
             if(selected.length == 0){
                 alert('{{ __('order.select_at_least_one') }}');
@@ -734,7 +750,7 @@
             $.ajax({
                 url: "{{ route('order_manage.bulk_update_delivery_seller') }}",
                 method: 'POST',
-                data: { order_ids: selected, delivery_status: status },
+                data: { package_ids: selected, delivery_status: status },
                 beforeSend: function(){
                     $('#apply_bulk_delivery_confirmed').prop('disabled', true);
                 },
@@ -746,6 +762,44 @@
                 error: function(err){
                     alert('{{ __('common.operation_failed') }}');
                     $('#apply_bulk_delivery_confirmed').prop('disabled', false);
+                }
+            });
+        });
+
+        // Bulk driver assignment
+        $('#apply_bulk_driver_confirmed').on('click', function(){
+            var driverId = $('#bulk_driver_confirmed').val();
+            if(driverId == '') driverId = null;
+            var selected = [];
+            $('.bulk-select-confirmed:checked').each(function(){
+                selected.push($(this).data('order-id'));
+            });
+            if(selected.length == 0){
+                alert('{{__('order.select_at_least_one')}}');
+                return;
+            }
+
+            var csrfToken = $('meta[name="csrf-token"]').attr('content') || $('meta[name="_token"]').attr('content');
+            $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': csrfToken } });
+            $.ajax({
+                url: "{{ route('order_manage.bulk_assign_driver') }}",
+                method: 'POST',
+                data: { order_ids: selected, driver_id: driverId },
+                beforeSend: function(){
+                    $('#apply_bulk_driver_confirmed').prop('disabled', true);
+                },
+                success: function(res){
+                    alert(res.message || 'Driver assigned successfully');
+                    $('#apply_bulk_driver_confirmed').prop('disabled', false);
+                    $('#orderConfimedTable').DataTable().ajax.reload();
+                },
+                error: function(err){
+                    var msg = 'Operation failed';
+                    if(err.responseJSON && err.responseJSON.message) {
+                        msg = err.responseJSON.message;
+                    }
+                    alert(msg);
+                    $('#apply_bulk_driver_confirmed').prop('disabled', false);
                 }
             });
         });

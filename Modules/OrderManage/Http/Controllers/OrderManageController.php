@@ -35,6 +35,13 @@ class OrderManageController extends Controller
     {
         $deliveryProcessRepo = new DeliveryProcessRepository();
         $data['processes'] = $deliveryProcessRepo->getAll();
+        
+        // Get seller's drivers
+        $seller_id = getParentSellerId();
+        $data['drivers'] = \Modules\Driver\Entities\Driver::where('seller_id', $seller_id)
+            ->where('is_active', 1)
+            ->get();
+        
         return view('ordermanage::order_manage.my_orders', $data);
     }
 
@@ -169,6 +176,12 @@ class OrderManageController extends Controller
         $cancelReason = new CancelReasonRepository();
         $data['cancel_reasons'] = $cancelReason->getAll();
         $data['processes'] = $deliveryProcessRepo->getAll();
+        
+        // Get seller's drivers
+        $data['drivers'] = \Modules\Driver\Entities\Driver::where('seller_id', auth()->id())
+            ->where('is_active', 1)
+            ->get();
+        
         return view('ordermanage::order_manage.sale_details', $data);
     }
 
@@ -178,6 +191,13 @@ class OrderManageController extends Controller
         $data['order'] = $this->ordermanageService->findOrderByID($data['package']->order_id);
         $orderDeliveryRepo = new DeliveryProcessRepository;
         $data['processes'] = $orderDeliveryRepo->getAll();
+        
+        // Get seller's drivers
+        $seller_id = getParentSellerId();
+        $data['drivers'] = \Modules\Driver\Entities\Driver::where('seller_id', $seller_id)
+            ->where('is_active', 1)
+            ->get();
+        
         return view('ordermanage::order_manage.my_sale_details', $data);
     }
 
@@ -541,6 +561,157 @@ class OrderManageController extends Controller
             ], 200);
         } catch (\Exception $e) {
             Log::error('Error fetching delivery status history', ['error' => $e->getMessage()]);
+            return response()->json(['message' => __('common.operation_failed')], 500);
+        }
+    }
+
+    /**
+     * Bulk assign driver to multiple orders
+     */
+    public function bulk_assign_driver(Request $request)
+    {
+        Log::info('bulk_assign_driver STARTED',  ['request_data' => $request->all()]);
+        
+        $validator = Validator::make($request->all(), [
+            'order_ids' => 'required|array',
+            'driver_id' => 'nullable'
+        ]);
+
+        if ($validator->fails()) {
+            Log::warning('bulk_assign_driver validation failed', ['errors' => $validator->errors()]);
+            return response()->json(['message' => __('validation.failed'), 'errors' => $validator->errors()], 422);
+        }
+
+        DB::beginTransaction();
+        try {
+            $orderIds = $request->input('order_ids');
+            $driverId = $request->input('driver_id');
+            if ($driverId === '') {
+                $driverId = null;
+            }
+
+            Log::info('bulk_assign_driver processing', ['order_ids' => $orderIds, 'driver_id' => $driverId, 'seller_id' => auth()->id()]);
+
+            // Verify driver belongs to seller if driver_id is provided
+            if ($driverId) {
+                $seller_id = getParentSellerId();
+                $driver = \Modules\Driver\Entities\Driver::where('id', $driverId)
+                    ->where('seller_id', $seller_id)
+                    ->first();
+                
+                if (!$driver) {
+                    Log::warning('bulk_assign_driver driver not found or unauthorized', ['driver_id' => $driverId, 'seller_id' => $seller_id]);
+                    return response()->json(['message' => __('order.driver_not_found_or_unauthorized')], 403);
+                }
+                Log::info('Driver verified', ['driver_id' => $driverId, 'driver_name' => $driver->name]);
+            }
+
+            $processedOrders = 0;
+            foreach ($orderIds as $orderId) {
+                Log::info('Processing order', ['order_id' => $orderId]);
+                
+                $order = $this->ordermanageService->findOrderByID($orderId);
+                
+                if (!$order) {
+                    Log::warning('Order not found', ['order_id' => $orderId]);
+                    continue;
+                }
+
+                // Verify order belongs to seller (check packages)
+                $belongsToSeller = false;
+                foreach ($order->packages as $package) {
+                    if ($package->seller_id == auth()->id()) {
+                        $belongsToSeller = true;
+                        break;
+                    }
+                }
+
+                if (!$belongsToSeller) {
+                    Log::warning('Order does not belong to seller', ['order_id' => $orderId, 'seller_id' => auth()->id()]);
+                    continue;
+                }
+
+                // Update driver_id
+                Log::info('Setting driver_id', ['order_id' => $orderId, 'old_driver_id' => $order->driver_id, 'new_driver_id' => $driverId]);
+                $order->driver_id = $driverId;
+                $saved = $order->save();
+                Log::info('Save result', ['order_id' => $orderId, 'saved' => $saved, 'driver_id_after_save' => $order->driver_id]);
+                $processedOrders++;
+            }
+
+            DB::commit();
+            Log::info('bulk_assign_driver completed successfully', ['processed_orders' => $processedOrders]);
+            LogActivity::successLog('Bulk driver assignment completed.');
+            return response()->json(['message' => __('common.updated_successfully'), 'processed_orders' => $processedOrders], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('bulk_assign_driver exception', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            LogActivity::errorLog($e->getMessage());
+            return response()->json(['message' => __('common.operation_failed')], 500);
+        }
+    }
+
+    /**
+     * Assign driver to a single order
+     */
+    public function assign_driver(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'driver_id' => 'nullable'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' => __('validation.failed'), 'errors' => $validator->errors()], 422);
+        }
+
+        DB::beginTransaction();
+        try {
+            $order = $this->ordermanageService->findOrderByID($id);
+            
+            if (!$order) {
+                return response()->json(['message' => __('order.order_not_found')], 404);
+            }
+
+            // Verify order belongs to seller
+            $belongsToSeller = false;
+            foreach ($order->packages as $package) {
+                if ($package->seller_id == auth()->id()) {
+                    $belongsToSeller = true;
+                    break;
+                }
+            }
+
+            if (!$belongsToSeller) {
+                return response()->json(['message' => __('order.unauthorized')], 403);
+            }
+
+            $driverId = $request->input('driver_id');
+            if ($driverId === '') {
+                $driverId = null;
+            }
+
+            // Verify driver belongs to seller if driver_id is provided
+            if ($driverId) {
+                $seller_id = getParentSellerId();
+                $driver = \Modules\Driver\Entities\Driver::where('id', $driverId)
+                    ->where('seller_id', $seller_id)
+                    ->first();
+                
+                if (!$driver) {
+                    return response()->json(['message' => __('order.driver_not_found_or_unauthorized')], 403);
+                }
+            }
+
+            // Update driver_id
+            $order->driver_id = $driverId;
+            $order->save();
+
+            DB::commit();
+            LogActivity::successLog('Driver assigned to order.');
+            return response()->json(['message' => __('common.updated_successfully')], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            LogActivity::errorLog($e->getMessage());
             return response()->json(['message' => __('common.operation_failed')], 500);
         }
     }

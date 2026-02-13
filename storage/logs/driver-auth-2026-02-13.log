@@ -1,0 +1,706 @@
+[2026-02-13 10:16:06] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 10:16:06"} 
+[2026-02-13 10:16:06] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 10:16:06"} 
+[2026-02-13 10:16:08] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 10:16:08"} 
+[2026-02-13 10:16:08] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 10:16:08"} 
+[2026-02-13 10:16:10] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 10:16:10"} 
+[2026-02-13 10:16:10] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 10:16:10"} 
+[2026-02-13 10:16:11] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 10:16:11"} 
+[2026-02-13 10:16:11] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 10:16:11"} 
+[2026-02-13 10:16:18] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/36","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 10:16:18"} 
+[2026-02-13 10:16:18] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/36","timestamp":"2026-02-13 10:16:18"} 
+[2026-02-13 10:16:47] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 10:16:47"} 
+[2026-02-13 10:16:47] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 10:16:47"} 
+[2026-02-13 10:16:47] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 10:16:47"} 
+[2026-02-13 10:16:47] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 10:16:47"} 
+[2026-02-13 10:16:49] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 10:16:49"} 
+[2026-02-13 10:16:49] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 10:16:49"} 
+[2026-02-13 10:16:52] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 10:16:52"} 
+[2026-02-13 10:16:52] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 10:16:52"} 
+[2026-02-13 10:16:55] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 10:16:55"} 
+[2026-02-13 10:16:55] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 10:16:55"} 
+[2026-02-13 10:16:56] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 10:16:56"} 
+[2026-02-13 10:16:56] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 10:16:56"} 
+[2026-02-13 10:17:02] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 10:17:02"} 
+[2026-02-13 10:17:02] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 10:17:02"} 
+[2026-02-13 10:17:09] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders/43/update-status","ip":"49.206.19.36","method":"POST","timestamp":"2026-02-13 10:17:09"} 
+[2026-02-13 10:17:10] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders/43/update-status","timestamp":"2026-02-13 10:17:10"} 
+[2026-02-13 10:19:31] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 10:19:31"} 
+[2026-02-13 10:19:31] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 10:19:31"} 
+[2026-02-13 10:19:32] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 10:19:32"} 
+[2026-02-13 10:19:32] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 10:19:32"} 
+[2026-02-13 10:24:05] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/43","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 10:24:05"} 
+[2026-02-13 10:24:05] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/43","timestamp":"2026-02-13 10:24:05"} 
+[2026-02-13 10:24:12] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/43","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 10:24:12"} 
+[2026-02-13 10:24:12] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/43","timestamp":"2026-02-13 10:24:12"} 
+[2026-02-13 10:25:03] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 10:25:03"} 
+[2026-02-13 10:25:03] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 10:25:03"} 
+[2026-02-13 10:25:03] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 10:25:03"} 
+[2026-02-13 10:25:03] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 10:25:03"} 
+[2026-02-13 10:25:24] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/43","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 10:25:24"} 
+[2026-02-13 10:25:24] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/43","timestamp":"2026-02-13 10:25:24"} 
+[2026-02-13 10:37:15] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 10:37:15"} 
+[2026-02-13 10:37:15] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 10:37:15"} 
+[2026-02-13 10:37:16] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 10:37:16"} 
+[2026-02-13 10:37:16] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 10:37:16"} 
+[2026-02-13 10:37:20] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 10:37:20"} 
+[2026-02-13 10:37:20] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 10:37:20"} 
+[2026-02-13 10:37:22] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 10:37:22"} 
+[2026-02-13 10:37:22] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 10:37:22"} 
+[2026-02-13 10:38:02] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 10:38:02"} 
+[2026-02-13 10:38:02] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 10:38:02"} 
+[2026-02-13 13:09:27] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:09:27"} 
+[2026-02-13 13:09:27] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:09:27"} 
+[2026-02-13 13:10:41] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:10:41"} 
+[2026-02-13 13:10:41] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:10:41"} 
+[2026-02-13 13:10:53] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:10:53"} 
+[2026-02-13 13:10:53] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:10:53"} 
+[2026-02-13 13:13:27] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:13:27"} 
+[2026-02-13 13:13:27] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:13:27"} 
+[2026-02-13 13:13:37] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:13:37"} 
+[2026-02-13 13:13:37] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:13:37"} 
+[2026-02-13 13:14:11] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:14:11"} 
+[2026-02-13 13:14:11] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:14:11"} 
+[2026-02-13 13:14:25] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:14:25"} 
+[2026-02-13 13:14:25] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:14:25"} 
+[2026-02-13 13:20:16] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:20:16"} 
+[2026-02-13 13:20:16] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:20:16"} 
+[2026-02-13 13:20:16] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:20:16"} 
+[2026-02-13 13:20:16] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:20:16"} 
+[2026-02-13 13:20:16] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:20:16"} 
+[2026-02-13 13:20:16] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:20:16"} 
+[2026-02-13 13:20:19] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:20:19"} 
+[2026-02-13 13:20:19] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:20:19"} 
+[2026-02-13 13:20:20] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:20:20"} 
+[2026-02-13 13:20:20] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:20:20"} 
+[2026-02-13 13:20:22] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:20:22"} 
+[2026-02-13 13:20:22] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:20:22"} 
+[2026-02-13 13:20:25] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:20:25"} 
+[2026-02-13 13:20:25] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:20:25"} 
+[2026-02-13 13:20:26] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:20:26"} 
+[2026-02-13 13:20:26] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:20:26"} 
+[2026-02-13 13:22:36] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:22:36"} 
+[2026-02-13 13:22:36] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:22:36"} 
+[2026-02-13 13:32:52] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:32:52"} 
+[2026-02-13 13:32:52] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:32:52"} 
+[2026-02-13 13:32:54] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:32:54"} 
+[2026-02-13 13:32:54] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:32:54"} 
+[2026-02-13 13:32:55] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:32:55"} 
+[2026-02-13 13:32:55] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:32:55"} 
+[2026-02-13 13:32:55] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:32:55"} 
+[2026-02-13 13:32:55] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:32:55"} 
+[2026-02-13 13:32:55] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:32:55"} 
+[2026-02-13 13:32:55] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:32:55"} 
+[2026-02-13 13:32:55] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:32:55"} 
+[2026-02-13 13:32:55] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:32:55"} 
+[2026-02-13 13:32:56] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:32:56"} 
+[2026-02-13 13:32:56] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:32:56"} 
+[2026-02-13 13:32:56] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:32:56"} 
+[2026-02-13 13:32:56] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:32:56"} 
+[2026-02-13 13:32:56] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:32:56"} 
+[2026-02-13 13:32:56] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:32:56"} 
+[2026-02-13 13:32:57] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:32:57"} 
+[2026-02-13 13:32:57] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:32:57"} 
+[2026-02-13 13:32:57] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:32:57"} 
+[2026-02-13 13:32:57] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:32:57"} 
+[2026-02-13 13:32:57] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:32:57"} 
+[2026-02-13 13:32:57] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:32:57"} 
+[2026-02-13 13:32:58] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:32:58"} 
+[2026-02-13 13:32:58] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:32:58"} 
+[2026-02-13 13:32:58] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:32:58"} 
+[2026-02-13 13:32:58] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:32:58"} 
+[2026-02-13 13:32:58] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:32:58"} 
+[2026-02-13 13:32:58] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:32:58"} 
+[2026-02-13 13:32:59] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:32:59"} 
+[2026-02-13 13:32:59] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:32:59"} 
+[2026-02-13 13:32:59] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:32:59"} 
+[2026-02-13 13:32:59] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:32:59"} 
+[2026-02-13 13:32:59] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:32:59"} 
+[2026-02-13 13:32:59] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:32:59"} 
+[2026-02-13 13:32:59] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:32:59"} 
+[2026-02-13 13:32:59] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:32:59"} 
+[2026-02-13 13:33:00] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:33:00"} 
+[2026-02-13 13:33:00] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:33:00"} 
+[2026-02-13 13:33:00] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:33:00"} 
+[2026-02-13 13:33:00] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:33:00"} 
+[2026-02-13 13:33:00] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:33:00"} 
+[2026-02-13 13:33:00] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:33:00"} 
+[2026-02-13 13:33:00] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:33:00"} 
+[2026-02-13 13:33:00] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:33:00"} 
+[2026-02-13 13:33:01] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:33:01"} 
+[2026-02-13 13:33:01] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:33:01"} 
+[2026-02-13 13:33:01] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:33:01"} 
+[2026-02-13 13:33:01] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:33:01"} 
+[2026-02-13 13:33:01] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:33:01"} 
+[2026-02-13 13:33:01] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:33:01"} 
+[2026-02-13 13:33:02] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:33:02"} 
+[2026-02-13 13:33:02] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:33:02"} 
+[2026-02-13 13:33:02] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:33:02"} 
+[2026-02-13 13:33:02] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:33:02"} 
+[2026-02-13 13:33:02] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:33:02"} 
+[2026-02-13 13:33:02] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:33:02"} 
+[2026-02-13 13:33:03] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:33:03"} 
+[2026-02-13 13:33:03] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:33:03"} 
+[2026-02-13 13:33:03] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:33:03"} 
+[2026-02-13 13:33:03] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:33:03"} 
+[2026-02-13 13:33:03] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:33:03"} 
+[2026-02-13 13:33:03] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:33:03"} 
+[2026-02-13 13:34:18] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:34:18"} 
+[2026-02-13 13:34:18] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:34:18"} 
+[2026-02-13 13:34:47] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:34:47"} 
+[2026-02-13 13:34:47] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:34:47"} 
+[2026-02-13 13:34:48] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:34:48"} 
+[2026-02-13 13:34:48] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:34:48"} 
+[2026-02-13 13:34:50] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:34:50"} 
+[2026-02-13 13:34:50] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:34:50"} 
+[2026-02-13 13:34:51] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:34:51"} 
+[2026-02-13 13:34:51] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:34:51"} 
+[2026-02-13 13:34:52] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:34:52"} 
+[2026-02-13 13:34:52] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:34:52"} 
+[2026-02-13 13:34:53] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:34:53"} 
+[2026-02-13 13:34:53] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:34:53"} 
+[2026-02-13 13:34:54] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:34:54"} 
+[2026-02-13 13:34:54] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:34:54"} 
+[2026-02-13 13:34:54] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:34:54"} 
+[2026-02-13 13:34:54] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:34:54"} 
+[2026-02-13 13:34:55] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:34:55"} 
+[2026-02-13 13:34:55] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:34:55"} 
+[2026-02-13 13:34:55] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:34:55"} 
+[2026-02-13 13:34:55] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:34:55"} 
+[2026-02-13 13:34:55] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:34:55"} 
+[2026-02-13 13:34:55] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:34:55"} 
+[2026-02-13 13:34:56] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:34:56"} 
+[2026-02-13 13:34:56] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:34:56"} 
+[2026-02-13 13:34:56] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:34:56"} 
+[2026-02-13 13:34:56] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:34:56"} 
+[2026-02-13 13:34:56] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:34:56"} 
+[2026-02-13 13:34:56] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:34:56"} 
+[2026-02-13 13:34:56] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:34:56"} 
+[2026-02-13 13:34:56] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:34:56"} 
+[2026-02-13 13:34:57] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:34:57"} 
+[2026-02-13 13:34:57] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:34:57"} 
+[2026-02-13 13:34:57] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:34:57"} 
+[2026-02-13 13:34:57] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:34:57"} 
+[2026-02-13 13:34:57] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:34:57"} 
+[2026-02-13 13:34:57] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:34:57"} 
+[2026-02-13 13:34:58] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:34:58"} 
+[2026-02-13 13:34:58] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:34:58"} 
+[2026-02-13 13:34:58] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:34:58"} 
+[2026-02-13 13:34:58] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:34:58"} 
+[2026-02-13 13:34:58] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:34:58"} 
+[2026-02-13 13:34:58] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:34:58"} 
+[2026-02-13 13:34:58] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:34:58"} 
+[2026-02-13 13:34:58] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:34:58"} 
+[2026-02-13 13:34:58] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:34:58"} 
+[2026-02-13 13:34:58] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:34:58"} 
+[2026-02-13 13:35:00] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:35:00"} 
+[2026-02-13 13:35:00] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:35:00"} 
+[2026-02-13 13:35:00] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:35:00"} 
+[2026-02-13 13:35:00] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:35:00"} 
+[2026-02-13 13:35:00] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:35:00"} 
+[2026-02-13 13:35:00] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:35:00"} 
+[2026-02-13 13:35:00] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:35:00"} 
+[2026-02-13 13:35:00] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:35:00"} 
+[2026-02-13 13:35:01] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:35:01"} 
+[2026-02-13 13:35:01] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:35:01"} 
+[2026-02-13 13:35:01] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:35:01"} 
+[2026-02-13 13:35:01] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:35:01"} 
+[2026-02-13 13:35:01] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:35:01"} 
+[2026-02-13 13:35:01] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:35:01"} 
+[2026-02-13 13:35:02] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:35:02"} 
+[2026-02-13 13:35:02] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:35:02"} 
+[2026-02-13 13:35:02] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:35:02"} 
+[2026-02-13 13:35:02] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:35:02"} 
+[2026-02-13 13:35:02] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:35:02"} 
+[2026-02-13 13:35:02] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:35:02"} 
+[2026-02-13 13:35:02] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:35:02"} 
+[2026-02-13 13:35:02] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:35:02"} 
+[2026-02-13 13:35:04] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:35:04"} 
+[2026-02-13 13:35:04] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:35:04"} 
+[2026-02-13 13:35:08] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:35:08"} 
+[2026-02-13 13:35:08] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:35:08"} 
+[2026-02-13 13:35:13] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:35:13"} 
+[2026-02-13 13:35:13] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:35:13"} 
+[2026-02-13 13:35:14] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:35:14"} 
+[2026-02-13 13:35:14] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:35:14"} 
+[2026-02-13 13:36:22] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:36:22"} 
+[2026-02-13 13:36:22] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:36:22"} 
+[2026-02-13 13:36:59] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:36:59"} 
+[2026-02-13 13:36:59] development.WARNING: Driver authentication failed {"reason":"No token provided","token_preview":"none","ip":"49.206.19.36","endpoint":"api/drivers/orders","user_agent":"okhttp/4.12.0","timestamp":"2026-02-13 13:36:59"} 
+[2026-02-13 13:38:05] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:38:05"} 
+[2026-02-13 13:38:05] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:38:05"} 
+[2026-02-13 13:38:07] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:38:07"} 
+[2026-02-13 13:38:07] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:38:07"} 
+[2026-02-13 13:38:40] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:38:40"} 
+[2026-02-13 13:38:40] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:38:40"} 
+[2026-02-13 13:39:09] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:39:09"} 
+[2026-02-13 13:39:09] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:39:09"} 
+[2026-02-13 13:39:19] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:39:19"} 
+[2026-02-13 13:39:19] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:39:19"} 
+[2026-02-13 13:39:27] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:39:27"} 
+[2026-02-13 13:39:27] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:39:27"} 
+[2026-02-13 13:40:17] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:40:17"} 
+[2026-02-13 13:40:17] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:40:17"} 
+[2026-02-13 13:40:19] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:40:19"} 
+[2026-02-13 13:40:19] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:40:19"} 
+[2026-02-13 13:40:49] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:40:49"} 
+[2026-02-13 13:40:49] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:40:49"} 
+[2026-02-13 13:40:52] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:40:52"} 
+[2026-02-13 13:40:52] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:40:52"} 
+[2026-02-13 13:40:54] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:40:54"} 
+[2026-02-13 13:40:54] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:40:54"} 
+[2026-02-13 13:40:57] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:40:57"} 
+[2026-02-13 13:40:57] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:40:57"} 
+[2026-02-13 13:41:05] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders/51/update-status","ip":"49.206.19.36","method":"POST","timestamp":"2026-02-13 13:41:05"} 
+[2026-02-13 13:41:05] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders/51/update-status","timestamp":"2026-02-13 13:41:05"} 
+[2026-02-13 13:41:25] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:41:25"} 
+[2026-02-13 13:41:25] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:41:25"} 
+[2026-02-13 13:41:28] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:41:28"} 
+[2026-02-13 13:41:28] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:41:28"} 
+[2026-02-13 13:41:41] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:41:41"} 
+[2026-02-13 13:41:41] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:41:41"} 
+[2026-02-13 13:41:54] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:41:54"} 
+[2026-02-13 13:41:54] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:41:54"} 
+[2026-02-13 13:41:57] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:41:57"} 
+[2026-02-13 13:41:57] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:41:57"} 
+[2026-02-13 13:42:11] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:42:11"} 
+[2026-02-13 13:42:11] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:42:11"} 
+[2026-02-13 13:42:19] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:42:19"} 
+[2026-02-13 13:42:19] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:42:19"} 
+[2026-02-13 13:42:22] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:42:22"} 
+[2026-02-13 13:42:22] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:42:22"} 
+[2026-02-13 13:42:23] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:42:23"} 
+[2026-02-13 13:42:23] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:42:23"} 
+[2026-02-13 13:42:24] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:42:24"} 
+[2026-02-13 13:42:24] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:42:24"} 
+[2026-02-13 13:42:26] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:42:26"} 
+[2026-02-13 13:42:26] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:42:26"} 
+[2026-02-13 13:42:42] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:42:42"} 
+[2026-02-13 13:42:42] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:42:42"} 
+[2026-02-13 13:43:07] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:43:07"} 
+[2026-02-13 13:43:07] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:43:07"} 
+[2026-02-13 13:43:14] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/51","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:43:14"} 
+[2026-02-13 13:43:14] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/51","timestamp":"2026-02-13 13:43:14"} 
+[2026-02-13 13:43:50] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/50","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:43:50"} 
+[2026-02-13 13:43:50] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/50","timestamp":"2026-02-13 13:43:50"} 
+[2026-02-13 13:43:50] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/50","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:43:50"} 
+[2026-02-13 13:43:50] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/50","timestamp":"2026-02-13 13:43:50"} 
+[2026-02-13 13:43:54] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:43:54"} 
+[2026-02-13 13:43:54] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:43:54"} 
+[2026-02-13 13:43:55] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:43:55"} 
+[2026-02-13 13:43:55] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:43:55"} 
+[2026-02-13 13:44:00] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:44:00"} 
+[2026-02-13 13:44:00] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:44:00"} 
+[2026-02-13 13:44:02] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:44:02"} 
+[2026-02-13 13:44:02] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:44:02"} 
+[2026-02-13 13:44:03] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:44:03"} 
+[2026-02-13 13:44:03] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:44:03"} 
+[2026-02-13 13:44:04] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:44:04"} 
+[2026-02-13 13:44:04] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:44:04"} 
+[2026-02-13 13:44:06] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:44:06"} 
+[2026-02-13 13:44:06] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:44:06"} 
+[2026-02-13 13:44:08] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:44:08"} 
+[2026-02-13 13:44:08] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:44:08"} 
+[2026-02-13 13:45:20] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:45:20"} 
+[2026-02-13 13:45:20] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:45:20"} 
+[2026-02-13 13:45:22] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:45:22"} 
+[2026-02-13 13:45:22] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:45:22"} 
+[2026-02-13 13:45:24] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:45:24"} 
+[2026-02-13 13:45:24] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:45:24"} 
+[2026-02-13 13:45:37] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/50","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:45:37"} 
+[2026-02-13 13:45:37] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/50","timestamp":"2026-02-13 13:45:37"} 
+[2026-02-13 13:45:41] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:45:41"} 
+[2026-02-13 13:45:41] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 13:45:41"} 
+[2026-02-13 13:45:55] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/49","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:45:55"} 
+[2026-02-13 13:45:55] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/49","timestamp":"2026-02-13 13:45:55"} 
+[2026-02-13 13:46:02] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/51","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 13:46:02"} 
+[2026-02-13 13:46:02] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/51","timestamp":"2026-02-13 13:46:02"} 
+[2026-02-13 14:15:17] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 14:15:17"} 
+[2026-02-13 14:15:17] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 14:15:17"} 
+[2026-02-13 14:15:44] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders/50/update-status","ip":"49.206.19.36","method":"POST","timestamp":"2026-02-13 14:15:44"} 
+[2026-02-13 14:15:44] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders/50/update-status","timestamp":"2026-02-13 14:15:44"} 
+[2026-02-13 14:15:52] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/51","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 14:15:52"} 
+[2026-02-13 14:15:52] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/51","timestamp":"2026-02-13 14:15:52"} 
+[2026-02-13 14:15:55] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/50","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 14:15:55"} 
+[2026-02-13 14:15:55] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/50","timestamp":"2026-02-13 14:15:55"} 
+[2026-02-13 14:15:57] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/50","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 14:15:57"} 
+[2026-02-13 14:15:57] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/50","timestamp":"2026-02-13 14:15:57"} 
+[2026-02-13 14:16:00] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/50","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 14:16:00"} 
+[2026-02-13 14:16:00] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/50","timestamp":"2026-02-13 14:16:00"} 
+[2026-02-13 14:16:25] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/50","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 14:16:25"} 
+[2026-02-13 14:16:25] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/50","timestamp":"2026-02-13 14:16:25"} 
+[2026-02-13 14:19:53] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 14:19:53"} 
+[2026-02-13 14:19:53] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 14:19:53"} 
+[2026-02-13 14:19:57] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/51","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 14:19:57"} 
+[2026-02-13 14:19:57] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/51","timestamp":"2026-02-13 14:19:57"} 
+[2026-02-13 14:19:59] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/50","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 14:19:59"} 
+[2026-02-13 14:19:59] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/50","timestamp":"2026-02-13 14:19:59"} 
+[2026-02-13 14:20:04] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders/49/update-status","ip":"49.206.19.36","method":"POST","timestamp":"2026-02-13 14:20:04"} 
+[2026-02-13 14:20:04] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders/49/update-status","timestamp":"2026-02-13 14:20:04"} 
+[2026-02-13 14:20:08] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/51","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 14:20:08"} 
+[2026-02-13 14:20:08] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/51","timestamp":"2026-02-13 14:20:08"} 
+[2026-02-13 14:20:10] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/50","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 14:20:10"} 
+[2026-02-13 14:20:10] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/50","timestamp":"2026-02-13 14:20:10"} 
+[2026-02-13 14:20:13] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/49","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 14:20:13"} 
+[2026-02-13 14:20:13] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/49","timestamp":"2026-02-13 14:20:13"} 
+[2026-02-13 14:21:23] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 14:21:23"} 
+[2026-02-13 14:21:23] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 14:21:23"} 
+[2026-02-13 14:21:26] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders/47/update-status","ip":"49.206.19.36","method":"POST","timestamp":"2026-02-13 14:21:26"} 
+[2026-02-13 14:21:26] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders/47/update-status","timestamp":"2026-02-13 14:21:26"} 
+[2026-02-13 14:21:33] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/47","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 14:21:33"} 
+[2026-02-13 14:21:33] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/47","timestamp":"2026-02-13 14:21:33"} 
+[2026-02-13 14:21:38] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/49","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 14:21:38"} 
+[2026-02-13 14:21:38] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/49","timestamp":"2026-02-13 14:21:38"} 
+[2026-02-13 14:21:40] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/50","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 14:21:40"} 
+[2026-02-13 14:21:40] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/50","timestamp":"2026-02-13 14:21:40"} 
+[2026-02-13 14:21:43] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/50","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 14:21:43"} 
+[2026-02-13 14:21:43] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/50","timestamp":"2026-02-13 14:21:43"} 
+[2026-02-13 14:21:45] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/51","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 14:21:45"} 
+[2026-02-13 14:21:45] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/51","timestamp":"2026-02-13 14:21:45"} 
+[2026-02-13 14:22:38] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 14:22:38"} 
+[2026-02-13 14:22:38] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 14:22:38"} 
+[2026-02-13 14:23:42] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 14:23:42"} 
+[2026-02-13 14:23:42] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 14:23:42"} 
+[2026-02-13 14:27:51] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 14:27:51"} 
+[2026-02-13 14:27:51] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 14:27:51"} 
+[2026-02-13 14:33:55] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 14:33:55"} 
+[2026-02-13 14:33:55] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 14:33:55"} 
+[2026-02-13 14:33:57] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/51","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 14:33:57"} 
+[2026-02-13 14:33:57] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/51","timestamp":"2026-02-13 14:33:57"} 
+[2026-02-13 14:34:00] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/51","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 14:34:00"} 
+[2026-02-13 14:34:00] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/51","timestamp":"2026-02-13 14:34:00"} 
+[2026-02-13 16:33:44] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 16:33:44"} 
+[2026-02-13 16:33:44] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 16:33:44"} 
+[2026-02-13 16:33:51] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/51","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 16:33:51"} 
+[2026-02-13 16:33:51] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/51","timestamp":"2026-02-13 16:33:51"} 
+[2026-02-13 16:52:28] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/51","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 16:52:28"} 
+[2026-02-13 16:52:28] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/51","timestamp":"2026-02-13 16:52:28"} 
+[2026-02-13 16:52:33] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 16:52:33"} 
+[2026-02-13 16:52:33] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 16:52:33"} 
+[2026-02-13 16:52:34] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 16:52:34"} 
+[2026-02-13 16:52:34] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 16:52:34"} 
+[2026-02-13 16:52:36] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 16:52:36"} 
+[2026-02-13 16:52:36] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 16:52:36"} 
+[2026-02-13 16:52:36] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 16:52:36"} 
+[2026-02-13 16:52:36] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 16:52:36"} 
+[2026-02-13 16:52:36] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 16:52:36"} 
+[2026-02-13 16:52:36] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 16:52:36"} 
+[2026-02-13 16:52:37] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 16:52:37"} 
+[2026-02-13 16:52:37] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 16:52:37"} 
+[2026-02-13 16:53:23] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/50","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 16:53:23"} 
+[2026-02-13 16:53:23] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/50","timestamp":"2026-02-13 16:53:23"} 
+[2026-02-13 16:53:26] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/47","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 16:53:26"} 
+[2026-02-13 16:53:26] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/47","timestamp":"2026-02-13 16:53:26"} 
+[2026-02-13 16:53:41] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/49","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 16:53:41"} 
+[2026-02-13 16:53:41] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/49","timestamp":"2026-02-13 16:53:41"} 
+[2026-02-13 16:54:55] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 16:54:55"} 
+[2026-02-13 16:54:55] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 16:54:55"} 
+[2026-02-13 16:54:56] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 16:54:56"} 
+[2026-02-13 16:54:56] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 16:54:56"} 
+[2026-02-13 16:55:07] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/47","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 16:55:07"} 
+[2026-02-13 16:55:07] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/47","timestamp":"2026-02-13 16:55:07"} 
+[2026-02-13 16:55:21] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 16:55:21"} 
+[2026-02-13 16:55:21] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 16:55:21"} 
+[2026-02-13 17:48:44] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 17:48:44"} 
+[2026-02-13 17:48:44] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 17:48:44"} 
+[2026-02-13 17:54:10] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 17:54:10"} 
+[2026-02-13 17:54:10] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 17:54:10"} 
+[2026-02-13 17:54:27] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/upload-photo-proof","ip":"49.206.19.36","method":"POST","timestamp":"2026-02-13 17:54:27"} 
+[2026-02-13 17:54:27] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/upload-photo-proof","timestamp":"2026-02-13 17:54:27"} 
+[2026-02-13 17:54:36] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/53","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 17:54:36"} 
+[2026-02-13 17:54:36] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/53","timestamp":"2026-02-13 17:54:36"} 
+[2026-02-13 17:54:44] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders/53/update-status","ip":"49.206.19.36","method":"POST","timestamp":"2026-02-13 17:54:44"} 
+[2026-02-13 17:54:44] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders/53/update-status","timestamp":"2026-02-13 17:54:44"} 
+[2026-02-13 17:54:49] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/47","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 17:54:49"} 
+[2026-02-13 17:54:49] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/47","timestamp":"2026-02-13 17:54:49"} 
+[2026-02-13 17:54:53] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/49","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 17:54:53"} 
+[2026-02-13 17:54:53] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/49","timestamp":"2026-02-13 17:54:53"} 
+[2026-02-13 17:56:01] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/50","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 17:56:01"} 
+[2026-02-13 17:56:01] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/50","timestamp":"2026-02-13 17:56:01"} 
+[2026-02-13 17:56:33] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/49","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 17:56:33"} 
+[2026-02-13 17:56:33] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/49","timestamp":"2026-02-13 17:56:33"} 
+[2026-02-13 17:56:36] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/47","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 17:56:36"} 
+[2026-02-13 17:56:36] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/47","timestamp":"2026-02-13 17:56:36"} 
+[2026-02-13 17:57:04] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 17:57:04"} 
+[2026-02-13 17:57:04] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 17:57:04"} 
+[2026-02-13 18:00:29] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:00:29"} 
+[2026-02-13 18:00:29] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 18:00:29"} 
+[2026-02-13 18:00:36] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:00:36"} 
+[2026-02-13 18:00:36] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 18:00:36"} 
+[2026-02-13 18:00:39] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/53","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:00:39"} 
+[2026-02-13 18:00:39] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/53","timestamp":"2026-02-13 18:00:39"} 
+[2026-02-13 18:00:41] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/47","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:00:41"} 
+[2026-02-13 18:00:41] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/47","timestamp":"2026-02-13 18:00:41"} 
+[2026-02-13 18:02:09] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:02:09"} 
+[2026-02-13 18:02:09] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 18:02:09"} 
+[2026-02-13 18:02:29] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/upload-photo-proof","ip":"49.206.19.36","method":"POST","timestamp":"2026-02-13 18:02:29"} 
+[2026-02-13 18:02:29] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/upload-photo-proof","timestamp":"2026-02-13 18:02:29"} 
+[2026-02-13 18:02:34] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/54","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:02:34"} 
+[2026-02-13 18:02:34] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/54","timestamp":"2026-02-13 18:02:34"} 
+[2026-02-13 18:02:42] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders/54/update-status","ip":"49.206.19.36","method":"POST","timestamp":"2026-02-13 18:02:42"} 
+[2026-02-13 18:02:42] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders/54/update-status","timestamp":"2026-02-13 18:02:42"} 
+[2026-02-13 18:02:56] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/53","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:02:56"} 
+[2026-02-13 18:02:56] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/53","timestamp":"2026-02-13 18:02:56"} 
+[2026-02-13 18:03:11] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/53","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:03:11"} 
+[2026-02-13 18:03:11] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/53","timestamp":"2026-02-13 18:03:11"} 
+[2026-02-13 18:03:23] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/47","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:03:23"} 
+[2026-02-13 18:03:23] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/47","timestamp":"2026-02-13 18:03:23"} 
+[2026-02-13 18:06:04] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:06:04"} 
+[2026-02-13 18:06:04] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 18:06:04"} 
+[2026-02-13 18:06:18] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:06:18"} 
+[2026-02-13 18:06:18] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 18:06:18"} 
+[2026-02-13 18:06:39] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:06:39"} 
+[2026-02-13 18:06:39] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 18:06:39"} 
+[2026-02-13 18:06:41] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/54","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:06:41"} 
+[2026-02-13 18:06:41] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/54","timestamp":"2026-02-13 18:06:41"} 
+[2026-02-13 18:06:45] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:06:45"} 
+[2026-02-13 18:06:45] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 18:06:45"} 
+[2026-02-13 18:08:25] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/51","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:08:25"} 
+[2026-02-13 18:08:25] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/51","timestamp":"2026-02-13 18:08:25"} 
+[2026-02-13 18:10:26] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:10:26"} 
+[2026-02-13 18:10:26] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 18:10:26"} 
+[2026-02-13 18:10:39] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/upload-photo-proof","ip":"49.206.19.36","method":"POST","timestamp":"2026-02-13 18:10:39"} 
+[2026-02-13 18:10:39] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/upload-photo-proof","timestamp":"2026-02-13 18:10:39"} 
+[2026-02-13 18:10:46] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:10:46"} 
+[2026-02-13 18:10:46] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 18:10:46"} 
+[2026-02-13 18:10:59] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/upload-photo-proof","ip":"49.206.19.36","method":"POST","timestamp":"2026-02-13 18:10:59"} 
+[2026-02-13 18:10:59] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/upload-photo-proof","timestamp":"2026-02-13 18:10:59"} 
+[2026-02-13 18:16:09] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:16:09"} 
+[2026-02-13 18:16:09] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 18:16:09"} 
+[2026-02-13 18:16:14] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:16:14"} 
+[2026-02-13 18:16:14] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 18:16:14"} 
+[2026-02-13 18:16:33] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:16:33"} 
+[2026-02-13 18:16:33] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 18:16:33"} 
+[2026-02-13 18:16:57] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/56","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:16:57"} 
+[2026-02-13 18:16:57] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/56","timestamp":"2026-02-13 18:16:57"} 
+[2026-02-13 18:21:54] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:21:54"} 
+[2026-02-13 18:21:54] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 18:21:54"} 
+[2026-02-13 18:22:09] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/upload-photo-proof","ip":"49.206.19.36","method":"POST","timestamp":"2026-02-13 18:22:09"} 
+[2026-02-13 18:22:09] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/upload-photo-proof","timestamp":"2026-02-13 18:22:09"} 
+[2026-02-13 18:23:48] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:23:48"} 
+[2026-02-13 18:23:48] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 18:23:48"} 
+[2026-02-13 18:24:26] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/upload-photo-proof","ip":"49.206.19.36","method":"POST","timestamp":"2026-02-13 18:24:26"} 
+[2026-02-13 18:24:26] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/upload-photo-proof","timestamp":"2026-02-13 18:24:26"} 
+[2026-02-13 18:25:14] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/56","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:25:14"} 
+[2026-02-13 18:25:14] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/56","timestamp":"2026-02-13 18:25:14"} 
+[2026-02-13 18:25:33] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/55","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:25:33"} 
+[2026-02-13 18:25:33] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/55","timestamp":"2026-02-13 18:25:33"} 
+[2026-02-13 18:25:44] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/upload-photo-proof","ip":"49.206.19.36","method":"POST","timestamp":"2026-02-13 18:25:44"} 
+[2026-02-13 18:25:44] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/upload-photo-proof","timestamp":"2026-02-13 18:25:44"} 
+[2026-02-13 18:25:50] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/upload-photo-proof","ip":"49.206.19.36","method":"POST","timestamp":"2026-02-13 18:25:50"} 
+[2026-02-13 18:25:50] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/upload-photo-proof","timestamp":"2026-02-13 18:25:50"} 
+[2026-02-13 18:27:57] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/upload-photo-proof","ip":"49.206.19.36","method":"POST","timestamp":"2026-02-13 18:27:57"} 
+[2026-02-13 18:27:57] development.WARNING: Driver authentication failed {"reason":"No token provided","token_preview":"none","ip":"49.206.19.36","endpoint":"api/drivers/upload-photo-proof","user_agent":"curl/8.18.0","timestamp":"2026-02-13 18:27:57"} 
+[2026-02-13 18:29:49] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/upload-photo-proof","ip":"49.206.19.36","method":"POST","timestamp":"2026-02-13 18:29:49"} 
+[2026-02-13 18:29:49] development.WARNING: Driver authentication failed {"reason":"No token provided","token_preview":"none","ip":"49.206.19.36","endpoint":"api/drivers/upload-photo-proof","user_agent":"curl/8.18.0","timestamp":"2026-02-13 18:29:49"} 
+[2026-02-13 18:30:40] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:30:40"} 
+[2026-02-13 18:30:40] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 18:30:40"} 
+[2026-02-13 18:30:50] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/upload-photo-proof","ip":"49.206.19.36","method":"POST","timestamp":"2026-02-13 18:30:50"} 
+[2026-02-13 18:30:50] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/upload-photo-proof","timestamp":"2026-02-13 18:30:50"} 
+[2026-02-13 18:35:16] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:35:16"} 
+[2026-02-13 18:35:16] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 18:35:16"} 
+[2026-02-13 18:35:23] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/upload-photo-proof","ip":"49.206.19.36","method":"POST","timestamp":"2026-02-13 18:35:23"} 
+[2026-02-13 18:35:23] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/upload-photo-proof","timestamp":"2026-02-13 18:35:23"} 
+[2026-02-13 18:36:23] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:36:23"} 
+[2026-02-13 18:36:23] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 18:36:23"} 
+[2026-02-13 18:36:25] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:36:25"} 
+[2026-02-13 18:36:25] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 18:36:25"} 
+[2026-02-13 18:36:49] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:36:49"} 
+[2026-02-13 18:36:49] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 18:36:49"} 
+[2026-02-13 18:36:52] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/55","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:36:52"} 
+[2026-02-13 18:36:52] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/55","timestamp":"2026-02-13 18:36:52"} 
+[2026-02-13 18:38:07] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:38:07"} 
+[2026-02-13 18:38:07] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 18:38:07"} 
+[2026-02-13 18:38:10] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/55","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:38:10"} 
+[2026-02-13 18:38:10] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/55","timestamp":"2026-02-13 18:38:10"} 
+[2026-02-13 18:38:16] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/upload-photo-proof","ip":"49.206.19.36","method":"POST","timestamp":"2026-02-13 18:38:16"} 
+[2026-02-13 18:38:16] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/upload-photo-proof","timestamp":"2026-02-13 18:38:16"} 
+[2026-02-13 18:38:31] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders/55/update-status","ip":"49.206.19.36","method":"POST","timestamp":"2026-02-13 18:38:31"} 
+[2026-02-13 18:38:31] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders/55/update-status","timestamp":"2026-02-13 18:38:31"} 
+[2026-02-13 18:38:43] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/47","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:38:43"} 
+[2026-02-13 18:38:43] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/47","timestamp":"2026-02-13 18:38:43"} 
+[2026-02-13 18:38:50] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/49","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:38:50"} 
+[2026-02-13 18:38:50] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/49","timestamp":"2026-02-13 18:38:50"} 
+[2026-02-13 18:38:54] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/55","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:38:54"} 
+[2026-02-13 18:38:54] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/55","timestamp":"2026-02-13 18:38:54"} 
+[2026-02-13 18:38:59] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/49","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:38:59"} 
+[2026-02-13 18:38:59] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/49","timestamp":"2026-02-13 18:38:59"} 
+[2026-02-13 18:39:01] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/49","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:39:01"} 
+[2026-02-13 18:39:02] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/49","timestamp":"2026-02-13 18:39:02"} 
+[2026-02-13 18:39:06] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:39:06"} 
+[2026-02-13 18:39:06] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 18:39:06"} 
+[2026-02-13 18:39:18] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/55","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:39:18"} 
+[2026-02-13 18:39:18] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/55","timestamp":"2026-02-13 18:39:18"} 
+[2026-02-13 18:39:30] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/55","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:39:30"} 
+[2026-02-13 18:39:30] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/55","timestamp":"2026-02-13 18:39:30"} 
+[2026-02-13 18:39:30] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:39:30"} 
+[2026-02-13 18:39:30] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 18:39:30"} 
+[2026-02-13 18:42:13] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/55","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:42:13"} 
+[2026-02-13 18:42:13] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/55","timestamp":"2026-02-13 18:42:13"} 
+[2026-02-13 18:43:10] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:43:10"} 
+[2026-02-13 18:43:10] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 18:43:10"} 
+[2026-02-13 18:43:13] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/55","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:43:13"} 
+[2026-02-13 18:43:13] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/55","timestamp":"2026-02-13 18:43:13"} 
+[2026-02-13 18:43:57] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:43:57"} 
+[2026-02-13 18:43:57] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 18:43:57"} 
+[2026-02-13 18:44:01] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/55","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:44:01"} 
+[2026-02-13 18:44:01] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/55","timestamp":"2026-02-13 18:44:01"} 
+[2026-02-13 18:44:06] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:44:06"} 
+[2026-02-13 18:44:06] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 18:44:06"} 
+[2026-02-13 18:44:06] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/55","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:44:06"} 
+[2026-02-13 18:44:06] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/55","timestamp":"2026-02-13 18:44:06"} 
+[2026-02-13 18:44:12] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/55","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:44:12"} 
+[2026-02-13 18:44:12] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/55","timestamp":"2026-02-13 18:44:12"} 
+[2026-02-13 18:44:20] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/55","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:44:20"} 
+[2026-02-13 18:44:21] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/55","timestamp":"2026-02-13 18:44:21"} 
+[2026-02-13 18:44:37] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/upload-photo-proof","ip":"49.206.19.36","method":"POST","timestamp":"2026-02-13 18:44:37"} 
+[2026-02-13 18:44:37] development.WARNING: Driver authentication failed {"reason":"No token provided","token_preview":"none","ip":"49.206.19.36","endpoint":"api/drivers/upload-photo-proof","user_agent":"okhttp/4.12.0","timestamp":"2026-02-13 18:44:37"} 
+[2026-02-13 18:45:03] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:45:03"} 
+[2026-02-13 18:45:03] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 18:45:03"} 
+[2026-02-13 18:45:09] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/upload-photo-proof","ip":"49.206.19.36","method":"POST","timestamp":"2026-02-13 18:45:09"} 
+[2026-02-13 18:45:09] development.WARNING: Driver authentication failed {"reason":"No token provided","token_preview":"none","ip":"49.206.19.36","endpoint":"api/drivers/upload-photo-proof","user_agent":"okhttp/4.12.0","timestamp":"2026-02-13 18:45:09"} 
+[2026-02-13 18:45:19] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/55","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:45:19"} 
+[2026-02-13 18:45:19] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/55","timestamp":"2026-02-13 18:45:19"} 
+[2026-02-13 18:45:25] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/56","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:45:25"} 
+[2026-02-13 18:45:25] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/56","timestamp":"2026-02-13 18:45:25"} 
+[2026-02-13 18:46:01] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/upload-photo-proof","ip":"49.206.19.36","method":"POST","timestamp":"2026-02-13 18:46:01"} 
+[2026-02-13 18:46:01] development.WARNING: Driver authentication failed {"reason":"No token provided","token_preview":"none","ip":"49.206.19.36","endpoint":"api/drivers/upload-photo-proof","user_agent":"okhttp/4.12.0","timestamp":"2026-02-13 18:46:01"} 
+[2026-02-13 18:47:03] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:47:03"} 
+[2026-02-13 18:47:03] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 18:47:03"} 
+[2026-02-13 18:48:11] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:48:11"} 
+[2026-02-13 18:48:11] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 18:48:11"} 
+[2026-02-13 18:51:39] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 18:51:39"} 
+[2026-02-13 18:51:39] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 18:51:39"} 
+[2026-02-13 18:51:48] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/upload-photo-proof","ip":"49.206.19.36","method":"POST","timestamp":"2026-02-13 18:51:48"} 
+[2026-02-13 18:51:48] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/upload-photo-proof","timestamp":"2026-02-13 18:51:48"} 
+[2026-02-13 19:00:11] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 19:00:11"} 
+[2026-02-13 19:00:11] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 19:00:11"} 
+[2026-02-13 19:00:30] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/upload-photo-proof","ip":"49.206.19.36","method":"POST","timestamp":"2026-02-13 19:00:30"} 
+[2026-02-13 19:00:30] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/upload-photo-proof","timestamp":"2026-02-13 19:00:30"} 
+[2026-02-13 19:00:39] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders/56/update-status","ip":"49.206.19.36","method":"POST","timestamp":"2026-02-13 19:00:39"} 
+[2026-02-13 19:00:39] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders/56/update-status","timestamp":"2026-02-13 19:00:39"} 
+[2026-02-13 19:00:44] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/56","ip":"49.206.19.36","method":"GET","timestamp":"2026-02-13 19:00:44"} 
+[2026-02-13 19:00:44] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/56","timestamp":"2026-02-13 19:00:44"} 
+[2026-02-13 22:13:49] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 22:13:49"} 
+[2026-02-13 22:13:49] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 22:13:49"} 
+[2026-02-13 22:13:54] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/56","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 22:13:54"} 
+[2026-02-13 22:13:54] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/56","timestamp":"2026-02-13 22:13:54"} 
+[2026-02-13 22:13:59] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/47","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 22:13:59"} 
+[2026-02-13 22:13:59] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/47","timestamp":"2026-02-13 22:13:59"} 
+[2026-02-13 22:16:00] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/47","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 22:16:00"} 
+[2026-02-13 22:16:00] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/47","timestamp":"2026-02-13 22:16:00"} 
+[2026-02-13 22:16:07] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/56","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 22:16:07"} 
+[2026-02-13 22:16:07] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/56","timestamp":"2026-02-13 22:16:07"} 
+[2026-02-13 22:22:35] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/56","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 22:22:35"} 
+[2026-02-13 22:22:35] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/56","timestamp":"2026-02-13 22:22:35"} 
+[2026-02-13 22:24:18] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 22:24:18"} 
+[2026-02-13 22:24:18] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 22:24:18"} 
+[2026-02-13 22:24:25] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/56","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 22:24:25"} 
+[2026-02-13 22:24:25] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/56","timestamp":"2026-02-13 22:24:25"} 
+[2026-02-13 22:26:08] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 22:26:08"} 
+[2026-02-13 22:26:08] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 22:26:08"} 
+[2026-02-13 22:26:26] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/upload-photo-proof","ip":"157.50.186.17","method":"POST","timestamp":"2026-02-13 22:26:26"} 
+[2026-02-13 22:26:26] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/upload-photo-proof","timestamp":"2026-02-13 22:26:26"} 
+[2026-02-13 22:29:14] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 22:29:14"} 
+[2026-02-13 22:29:14] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 22:29:14"} 
+[2026-02-13 22:31:04] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 22:31:04"} 
+[2026-02-13 22:31:04] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 22:31:04"} 
+[2026-02-13 22:32:02] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 22:32:02"} 
+[2026-02-13 22:32:02] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 22:32:02"} 
+[2026-02-13 22:32:15] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/upload-photo-proof","ip":"157.50.186.17","method":"POST","timestamp":"2026-02-13 22:32:15"} 
+[2026-02-13 22:32:15] development.WARNING: Driver authentication failed {"reason":"No token provided","token_preview":"none","ip":"157.50.186.17","endpoint":"api/drivers/upload-photo-proof","user_agent":"okhttp/4.12.0","timestamp":"2026-02-13 22:32:15"} 
+[2026-02-13 22:33:14] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 22:33:14"} 
+[2026-02-13 22:33:14] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 22:33:14"} 
+[2026-02-13 22:34:33] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 22:34:33"} 
+[2026-02-13 22:34:33] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 22:34:33"} 
+[2026-02-13 22:38:07] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 22:38:07"} 
+[2026-02-13 22:38:07] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 22:38:07"} 
+[2026-02-13 22:38:10] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/60","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 22:38:10"} 
+[2026-02-13 22:38:10] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/60","timestamp":"2026-02-13 22:38:10"} 
+[2026-02-13 22:40:28] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 22:40:28"} 
+[2026-02-13 22:40:28] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 22:40:28"} 
+[2026-02-13 22:41:42] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 22:41:42"} 
+[2026-02-13 22:41:42] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 22:41:42"} 
+[2026-02-13 22:42:20] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 22:42:20"} 
+[2026-02-13 22:42:20] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 22:42:20"} 
+[2026-02-13 22:46:35] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 22:46:35"} 
+[2026-02-13 22:46:35] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 22:46:35"} 
+[2026-02-13 22:46:43] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/upload-photo-proof","ip":"157.50.186.17","method":"POST","timestamp":"2026-02-13 22:46:43"} 
+[2026-02-13 22:46:43] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/upload-photo-proof","timestamp":"2026-02-13 22:46:43"} 
+[2026-02-13 22:46:52] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders/61/update-status","ip":"157.50.186.17","method":"POST","timestamp":"2026-02-13 22:46:52"} 
+[2026-02-13 22:46:52] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders/61/update-status","timestamp":"2026-02-13 22:46:52"} 
+[2026-02-13 22:46:59] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/61","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 22:46:59"} 
+[2026-02-13 22:46:59] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/61","timestamp":"2026-02-13 22:46:59"} 
+[2026-02-13 22:47:00] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/photo-proof","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 22:47:00"} 
+[2026-02-13 22:47:00] development.WARNING: Driver authentication failed {"reason":"No token provided","token_preview":"none","ip":"157.50.186.17","endpoint":"api/drivers/photo-proof","user_agent":"okhttp/4.12.0","timestamp":"2026-02-13 22:47:00"} 
+[2026-02-13 22:53:53] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 22:53:53"} 
+[2026-02-13 22:53:53] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 22:53:53"} 
+[2026-02-13 22:53:57] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/61","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 22:53:57"} 
+[2026-02-13 22:53:57] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/61","timestamp":"2026-02-13 22:53:57"} 
+[2026-02-13 22:54:39] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/49","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 22:54:39"} 
+[2026-02-13 22:54:39] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/49","timestamp":"2026-02-13 22:54:39"} 
+[2026-02-13 22:54:44] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/56","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 22:54:44"} 
+[2026-02-13 22:54:44] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/56","timestamp":"2026-02-13 22:54:44"} 
+[2026-02-13 22:54:48] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/61","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 22:54:48"} 
+[2026-02-13 22:54:48] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/61","timestamp":"2026-02-13 22:54:48"} 
+[2026-02-13 22:55:04] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/upload-photo-proof","ip":"157.50.186.17","method":"POST","timestamp":"2026-02-13 22:55:04"} 
+[2026-02-13 22:55:04] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/upload-photo-proof","timestamp":"2026-02-13 22:55:04"} 
+[2026-02-13 22:55:13] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders/60/update-status","ip":"157.50.186.17","method":"POST","timestamp":"2026-02-13 22:55:13"} 
+[2026-02-13 22:55:13] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders/60/update-status","timestamp":"2026-02-13 22:55:13"} 
+[2026-02-13 22:55:19] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/61","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 22:55:19"} 
+[2026-02-13 22:55:19] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/61","timestamp":"2026-02-13 22:55:19"} 
+[2026-02-13 22:55:22] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/60","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 22:55:22"} 
+[2026-02-13 22:55:22] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/60","timestamp":"2026-02-13 22:55:22"} 
+[2026-02-13 22:55:26] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/60","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 22:55:26"} 
+[2026-02-13 22:55:26] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/60","timestamp":"2026-02-13 22:55:26"} 
+[2026-02-13 22:56:02] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/upload-photo-proof","ip":"157.50.186.17","method":"POST","timestamp":"2026-02-13 22:56:02"} 
+[2026-02-13 22:56:02] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/upload-photo-proof","timestamp":"2026-02-13 22:56:02"} 
+[2026-02-13 22:56:09] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders/59/update-status","ip":"157.50.186.17","method":"POST","timestamp":"2026-02-13 22:56:09"} 
+[2026-02-13 22:56:09] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders/59/update-status","timestamp":"2026-02-13 22:56:09"} 
+[2026-02-13 22:57:19] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/57","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 22:57:19"} 
+[2026-02-13 22:57:19] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/57","timestamp":"2026-02-13 22:57:19"} 
+[2026-02-13 22:57:21] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 22:57:21"} 
+[2026-02-13 22:57:21] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 22:57:21"} 
+[2026-02-13 22:57:27] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/53","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 22:57:27"} 
+[2026-02-13 22:57:27] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/53","timestamp":"2026-02-13 22:57:27"} 
+[2026-02-13 22:58:01] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/54","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 22:58:01"} 
+[2026-02-13 22:58:01] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/54","timestamp":"2026-02-13 22:58:01"} 
+[2026-02-13 22:58:05] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/61","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 22:58:05"} 
+[2026-02-13 22:58:05] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/61","timestamp":"2026-02-13 22:58:05"} 
+[2026-02-13 22:58:58] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/61","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 22:58:58"} 
+[2026-02-13 22:58:58] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/61","timestamp":"2026-02-13 22:58:58"} 
+[2026-02-13 22:59:05] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/upload-photo-proof","ip":"157.50.186.17","method":"POST","timestamp":"2026-02-13 22:59:05"} 
+[2026-02-13 22:59:05] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/upload-photo-proof","timestamp":"2026-02-13 22:59:05"} 
+[2026-02-13 23:05:57] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 23:05:57"} 
+[2026-02-13 23:05:57] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 23:05:57"} 
+[2026-02-13 23:06:01] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/57","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 23:06:01"} 
+[2026-02-13 23:06:01] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/57","timestamp":"2026-02-13 23:06:01"} 
+[2026-02-13 23:06:28] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/upload-photo-proof","ip":"157.50.186.17","method":"POST","timestamp":"2026-02-13 23:06:28"} 
+[2026-02-13 23:06:28] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/upload-photo-proof","timestamp":"2026-02-13 23:06:28"} 
+[2026-02-13 23:07:20] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 23:07:20"} 
+[2026-02-13 23:07:20] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 23:07:20"} 
+[2026-02-13 23:07:29] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/upload-photo-proof","ip":"157.50.186.17","method":"POST","timestamp":"2026-02-13 23:07:29"} 
+[2026-02-13 23:07:29] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/upload-photo-proof","timestamp":"2026-02-13 23:07:29"} 
+[2026-02-13 23:09:12] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 23:09:12"} 
+[2026-02-13 23:09:12] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 23:09:12"} 
+[2026-02-13 23:09:27] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/upload-photo-proof","ip":"157.50.186.17","method":"POST","timestamp":"2026-02-13 23:09:27"} 
+[2026-02-13 23:09:27] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/upload-photo-proof","timestamp":"2026-02-13 23:09:27"} 
+[2026-02-13 23:09:37] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders/58/update-status","ip":"157.50.186.17","method":"POST","timestamp":"2026-02-13 23:09:37"} 
+[2026-02-13 23:09:37] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders/58/update-status","timestamp":"2026-02-13 23:09:37"} 
+[2026-02-13 23:09:45] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/59","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 23:09:45"} 
+[2026-02-13 23:09:45] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/59","timestamp":"2026-02-13 23:09:45"} 
+[2026-02-13 23:09:49] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/60","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 23:09:49"} 
+[2026-02-13 23:09:49] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/60","timestamp":"2026-02-13 23:09:49"} 
+[2026-02-13 23:09:53] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/58","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 23:09:53"} 
+[2026-02-13 23:09:53] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/58","timestamp":"2026-02-13 23:09:53"} 
+[2026-02-13 23:10:02] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 23:10:02"} 
+[2026-02-13 23:10:02] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 23:10:02"} 
+[2026-02-13 23:10:03] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 23:10:03"} 
+[2026-02-13 23:10:03] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 23:10:03"} 
+[2026-02-13 23:10:05] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 23:10:05"} 
+[2026-02-13 23:10:05] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 23:10:05"} 
+[2026-02-13 23:10:11] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 23:10:11"} 
+[2026-02-13 23:10:11] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 23:10:11"} 
+[2026-02-13 23:18:28] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 23:18:28"} 
+[2026-02-13 23:18:28] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders","timestamp":"2026-02-13 23:18:28"} 
+[2026-02-13 23:18:35] development.DEBUG: Driver token validation started {"endpoint":"api/drivers/orders-details/57","ip":"157.50.186.17","method":"GET","timestamp":"2026-02-13 23:18:35"} 
+[2026-02-13 23:18:35] development.DEBUG: Driver authenticated successfully {"driver_id":1,"phone":"9632728795","endpoint":"api/drivers/orders-details/57","timestamp":"2026-02-13 23:18:35"} 
