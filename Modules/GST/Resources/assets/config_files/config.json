@@ -1,5 +1,5 @@
 {
-    "enable_gst": "gst",
+    "enable_gst": "only_tax",
     "within_a_single_state": [
         "1"
     ],
