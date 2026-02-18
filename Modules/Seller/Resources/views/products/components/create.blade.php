@@ -226,7 +226,7 @@ $LanguageList = getLanguageList();
 
                                     </div>
 
-                                    <div class="col-lg-3">
+                                    <!-- <div class="col-lg-3">
                                         <div class="primary_input mb-15">
                                             <label class="primary_input_label" for="">
                                                 {{__("product.discount")}}</label>
@@ -235,9 +235,9 @@ $LanguageList = getLanguageList();
                                                 step="{{step_decimal()}}" value="0">
                                             <span class="text-danger">{{$errors->first('discount')}}</span>
                                         </div>
-                                    </div>
+                                    </div> -->
 
-                                    <div class="col-lg-3">
+                                    <!-- <div class="col-lg-3">
                                         <div class="primary_input mb-25">
                                             <label class="primary_input_label"
                                                 for="">{{ __('product.discount_type') }}</label>
@@ -247,8 +247,8 @@ $LanguageList = getLanguageList();
                                                 <option value="0">{{ __('product.percentage') }}</option>
                                             </select>
                                         </div>
-                                    </div>
-                                    <div class="col-lg-3">
+                                    </div> -->
+                                    <!-- <div class="col-lg-3">
                                         <div class="primary_input mb-15">
                                             <label class="primary_input_label"
                                                 for="startDate">{{__('product.discount_start_date')}}</label>
@@ -268,8 +268,8 @@ $LanguageList = getLanguageList();
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="col-lg-3">
+                                    </div> -->
+                                    <!-- <div class="col-lg-3">
                                         <div class="primary_input mb-15">
                                             <label class="primary_input_label"
                                                 for="endDate">{{__('product.discount_end_date')}}</label>
@@ -289,7 +289,7 @@ $LanguageList = getLanguageList();
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
+                                    </div> -->
                                 </div>
                                 <div class="row">
                                     <div id="variant_table_div" class="col-xl-12 d-none overflow-auto">
@@ -456,7 +456,7 @@ $LanguageList = getLanguageList();
                                                     <span id="error_variant_sku_prefix" class="text-danger">{{ $errors->first('variant_sku_prefix') }}</span>
                                                 </div>
                                             </div>
-                                                <div class="col-lg-3">
+                                                <!-- <div class="col-lg-3">
                                                     <div class="primary_input mb-15">
                                                         <label class="primary_input_label" for="model_number">
                                                             {{__("common.model_number")}}</label>
@@ -466,7 +466,7 @@ $LanguageList = getLanguageList();
                                                         <span
                                                             class="text-danger">{{$errors->first('model_number')}}</span>
                                                     </div>
-                                                </div>
+                                                </div> -->
                                                 <div class="col-lg-3">
                                                     <div class="primary_input mb-25">
                                                         <label class="primary_input_label"
@@ -675,32 +675,32 @@ $LanguageList = getLanguageList();
                                                             </div>
                                                         </div>
 
-                                                        <div class="col-lg-3">
+                                                        <!-- <div class="col-lg-3">
                                                             <div class="primary_input mb-15">
                                                                 <label class="primary_input_label" for=""> {{ __('product.length')}} [Cm]</label>
                                                                 <input class="primary_input_field" name="length" id="length"
                                                                        type="number" min="0" step="{{step_decimal()}}">
                                                                 <span class="text-danger" id="error_length">{{ $errors->first('length') }}</span>
                                                             </div>
-                                                        </div>
+                                                        </div> -->
 
-                                                        <div class="col-lg-3">
+                                                        <!-- <div class="col-lg-3">
                                                             <div class="primary_input mb-15">
                                                                 <label class="primary_input_label" for=""> {{ __('product.breadth')}} [Cm]</label>
                                                                 <input class="primary_input_field" name="breadth" id="breadth"
                                                                        type="number" min="0" step="{{step_decimal()}}">
                                                                 <span class="text-danger" id="error_breadth">{{ $errors->first('breadth') }}</span>
                                                             </div>
-                                                        </div>
+                                                        </div> -->
 
-                                                        <div class="col-lg-3">
+                                                        <!-- <div class="col-lg-3">
                                                             <div class="primary_input mb-15">
                                                                 <label class="primary_input_label" for=""> {{ __('product.height')}} [Cm]</label>
                                                                 <input class="primary_input_field" name="height" id="height"
                                                                        type="number" min="0" step="{{step_decimal()}}">
                                                                 <span class="text-danger" id="error_height">{{ $errors->first('height') }}</span>
                                                             </div>
-                                                        </div>
+                                                        </div> -->
                                                     </div>
                                                 </div>
                                                 <div id="phisical_shipping_div" class="col-lg-12">
@@ -758,7 +758,14 @@ $LanguageList = getLanguageList();
                                                             class="text-danger" id="error_selling_price">{{$errors->first('selling_price')}}</span>
                                                     </div>
                                                 </div>
-                                                <div class="col-lg-3">
+                                                <div class="col-lg-6 mrp_div">
+                                                    <div class="primary_input mb-15">
+                                                        <label class="primary_input_label" for="">{{ __('product.mrp') }} <span class="text-danger">*</span></label>
+                                                        <input class="primary_input_field" name="mrp" id="mrp" placeholder="{{ __('product.mrp') }}" type="number" min="1" step="0.001" value="">
+                                                        <span class="text-danger" id="error_mrp"></span>
+                                                    </div>
+                                                </div>
+                                                <!-- <div class="col-lg-3">
                                                     <div class="primary_input mb-15">
                                                         <label class="primary_input_label" for="">
                                                             {{__("product.discount")}} </label>
@@ -767,8 +774,8 @@ $LanguageList = getLanguageList();
                                                             min="0" step="{{step_decimal()}}" value="0">
                                                         <span class="text-danger" id="error_discunt">{{$errors->first('discount')}}</span>
                                                     </div>
-                                                </div>
-                                                <div class="col-lg-3">
+                                                </div> -->
+                                                <!-- <div class="col-lg-3">
                                                     <div class="primary_input mb-25">
                                                         <label class="primary_input_label"
                                                             for="">{{ __('product.discount_type') }}</label>
@@ -777,6 +784,12 @@ $LanguageList = getLanguageList();
                                                             <option value="1">{{ __('product.amount') }}</option>
                                                             <option value="0">{{ __('product.percentage') }}</option>
                                                         </select>
+                                                    </div>
+                                                </div> -->
+                                                <div class="col-lg-12">
+                                                    <div class="main-title d-flex">
+                                                        <h3 class="mb-3 mr-30">{{ __('product.price_info_and_stock') }}
+                                                        </h3>
                                                     </div>
                                                 </div>
 
@@ -1228,9 +1241,9 @@ $LanguageList = getLanguageList();
                                         $('#tax').val(product.tax)
                                         $('#discount').val(product.discount)
                                         $('#tax_type').val(response.tax_type)
-                                        $('#discount_type').val(product.discount_type)
+                                        // $('#discount_type').val(product.discount_type)
                                         $('#tax_type').niceSelect('update');
-                                        $('#discount_type').niceSelect('update');
+                                        // $('#discount_type').niceSelect('update');
 
 
                                         if (response.checkWholeSaleM == 1){
@@ -1259,11 +1272,11 @@ $LanguageList = getLanguageList();
                                         $('#variant_sku_div').removeClass('d-none');
 
                                         $('#tax').val(product.tax)
-                                        $('#discount').val(product.discount)
+                                        // $('#discount').val(product.discount)
                                         $('#tax_type').val(product.tax_type)
-                                        $('#discount_type').val(product.discount_type)
+                                        // $('#discount_type').val(product.discount_type)
                                         $('#tax_type').niceSelect('update');
-                                        $('#discount_type').niceSelect('update');
+                                        // $('#discount_type').niceSelect('update');
 
                                         $('#product_sku').empty();
                                         $.each( product.active_skus, function(key,value) {
@@ -1498,18 +1511,18 @@ $LanguageList = getLanguageList();
                 let weight_height_div = $('.weight_height_div');
                 weight_height_div.show()
                 $("#weight").attr('disabled', false);
-                $("#length").attr('disabled', false);
-                $("#breadth").attr('disabled', false);
-                $("#height").attr('disabled', false);
+                // $("#length").attr('disabled', false);
+                // $("#breadth").attr('disabled', false);
+                // $("#height").attr('disabled', false);
             }
 
             function weightHeightDivHide(){
                 let weight_height_div = $('.weight_height_div');
                 weight_height_div.hide()
                 $("#weight").attr('disabled', true);
-                $("#length").attr('disabled', true);
-                $("#breadth").attr('disabled', true);
-                $("#height").attr('disabled', true);
+                // $("#length").attr('disabled', true);
+                // $("#breadth").attr('disabled', true);
+                // $("#height").attr('disabled', true);
             }
 
             $(document).on('change', '#choice_attributes', function() {
@@ -1616,9 +1629,9 @@ $LanguageList = getLanguageList();
 
             $(document).on('click','.saveBtn',function() {
                 $('#error_weight').text('');
-                $('#error_length').text('');
-                $('#error_breadth').text('');
-                $('#error_height').text('');
+                // $('#error_length').text('');
+                // $('#error_breadth').text('');
+                // $('#error_height').text('');
                 $('#error_product_id').text('');
                 @if(isModuleActive('FrontendMultiLang'))
                     $('#error_product_new_name_{{auth()->user()->lang_code}}').text('');
@@ -1630,7 +1643,7 @@ $LanguageList = getLanguageList();
                 $('#error_minumum_qty').text('');
                 $('#error_selling_price').text('');
                 $('#error_tax').text('');
-                $('#error_discunt').text('');
+                // $('#error_discunt').text('');
                 $('#error_thumbnail').text('');
                 $('#error_shipping_method').text('');
                 $('#error_tags').text('');
@@ -1681,9 +1694,9 @@ $LanguageList = getLanguageList();
                     requireMatch = 1;
                     $('#error_tax').text("{{ __('product.please_input_tax') }}");
                 }
+                // Set default discount value if empty
                 if ($("#discount").val() === '') {
-                    requireMatch = 1;
-                    $('#error_discunt').text("{{ __('product.please_input_discount_minimum_0') }}");
+                    $("#discount").val('0');
                 }
                 // if ($(".image_selected_files").val() === '') {
                 //     requireMatch = 1;

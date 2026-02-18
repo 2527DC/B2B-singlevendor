@@ -187,7 +187,6 @@ class BrandController extends Controller
         'height_price' => $height_price,
     ];
 
-    
     /// 🔹 LOG THE RETURN DATA
     Log::info('Brand show API response', [
         'brand_id' => $id,

@@ -40,10 +40,13 @@ class RefundController extends Controller
                 return dateConvert($data->created_at);
             })
             ->addColumn('email', function ($data) {
-                return $data->customer->email;
+                if ($data->customer_id && $data->customer) {
+                    return $data->customer->email ?? 'N/A';
+                }
+                return optional($data->order)->guest_info->shipping_email ?? 'N/A';
             })
             ->addColumn('order_id', function ($data) {
-                return getNumberTranslate($data->order->order_number);
+                return getNumberTranslate(optional($data->order)->order_number ?? 'N/A');
             })
             ->addColumn('total_amount', function ($data) {
                 return single_price($data->total_return_amount);
@@ -85,13 +88,16 @@ class RefundController extends Controller
         return DataTables::of($data)
             ->addIndexColumn()
             ->addColumn('date', function ($data) {
-                return dateConvert($data->refund_request->created_at);
+                return dateConvert(optional($data->refund_request)->created_at ?? now());
             })
             ->addColumn('email', function ($data) {
-                return $data->refund_request->customer->email;
+                if ($data->refund_request && $data->refund_request->customer_id && $data->refund_request->customer) {
+                    return $data->refund_request->customer->email ?? 'N/A';
+                }
+                return optional(optional($data->refund_request)->order)->guest_info->shipping_email ?? 'N/A';
             })
             ->addColumn('order_id', function ($data) {
-                return getNumberTranslate($data->refund_request->order->order_number);
+                return getNumberTranslate(optional(optional($data->refund_request)->order)->order_number ?? 'N/A');
             })
             ->addColumn('total_amount', function ($data) {
                 return single_price($data->refund_request->total_return_amount);

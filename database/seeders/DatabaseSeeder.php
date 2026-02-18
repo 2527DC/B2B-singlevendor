@@ -7,6 +7,9 @@ use Illuminate\Support\Facades\DB;
 use Modules\Product\Database\Seeders\BrandTableSeeder;
 use Modules\Product\Database\Seeders\CategorySeedTableSeeder;
 use Modules\Product\Database\Seeders\ProductDatabaseSeeder;
+//dhanush
+use Modules\Driver\Database\Seeders\DriverSidebarSeeder;
+
 
 class DatabaseSeeder extends Seeder
 {
@@ -21,5 +24,6 @@ class DatabaseSeeder extends Seeder
         $this->call(CategorySeedTableSeeder::class);
         $this->call(BrandTableSeeder::class);
         $this->call(ProductDatabaseSeeder::class);
+        $this->call(DriverSidebarSeeder::class);//dhanush
     }
 }

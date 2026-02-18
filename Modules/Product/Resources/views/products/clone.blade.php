@@ -13,7 +13,7 @@ $LanguageList = getLanguageList();
         <div class="container-fluid p-20 white_box">
             <form action="{{ route('product.store') }}" method="POST" enctype="multipart/form-data" id="choice_form">
                 @csrf
-                <input type="hidden" name="id" value="{{ $product->id }}" id="product_id">
+                <input type="hidden" name="product_id" value="{{ $product->id }}" id="product_id">
                 <div class="row justify-content-center">
                     <div class="col-12">
                         <div class="box_header common_table_header">
@@ -204,13 +204,13 @@ $LanguageList = getLanguageList();
                                             <span id="error_variant_sku_prefix" class="text-danger">{{ $errors->first('variant_sku_prefix') }}</span>
                                         </div>
                                     </div>
-                                        <div class="col-lg-3">
+                                        <!-- <div class="col-lg-3">
                                             <div class="primary_input mb-15">
                                                 <label class="primary_input_label" for="model_number"> {{__("common.model_number")}}</label>
                                                 <input class="primary_input_field" name="model_number" placeholder="{{__("common.model_number")}}" type="text" value="{{old('model_number')?old('model_number'):$product->model_number}}">
                                                 <span class="text-danger">{{$errors->first('model_number')}}</span>
                                             </div>
-                                        </div>
+                                        </div> -->
                                         <div class="col-lg-3" id="category_select_div">
                                             @php
                                                 $product_categories = $product->categories;
@@ -377,7 +377,7 @@ $LanguageList = getLanguageList();
                                                         <span class="text-danger" id="error_weight">{{ $errors->first('weight') }}</span>
                                                     </div>
                                                 </div>
-                                                <div class="col-lg-3">
+                                                <!-- <div class="col-lg-3">
                                                     <div class="primary_input mb-15">
                                                         <label class="primary_input_label" for=""> {{ __('product.length')}} [{{__('product.cm')}}]</label>
                                                         <input value="{{@$product->skus->first()->length}}" class="primary_input_field" name="length" id="length"
@@ -402,7 +402,7 @@ $LanguageList = getLanguageList();
                                                         <span class="text-danger" id="error_height">{{ $errors->first('height') }}</span>
                                                     </div>
                                                 </div>
-                                            </div>
+                                            </div> -->
                                         </div>
                                         <div class="col-lg-12 digital_file_upload_div_edit" style="display: {{($product->is_physical == 1 || $product->product_type == 2)?'none':'block'}};">
                                             <div class="primary_input mb-25">
@@ -471,14 +471,14 @@ $LanguageList = getLanguageList();
                                                 <span class="text-danger" id="error_selling_price">{{$errors->first('selling_price')}}</span>
                                             </div>
                                         </div>
-                                        <div class="col-lg-3">
+                                        <!-- <div class="col-lg-3">
                                             <div class="primary_input mb-15">
                                                 <label class="primary_input_label" for=""> {{__("product.discount")}}</label>
                                                 <input class="primary_input_field" name="discount" id="discount" placeholder="{{__("product.discount")}}" type="number" min="0" step="{{step_decimal()}}" value="{{ $product->discount }}">
                                                 <span class="text-danger" id="error_discunt">{{$errors->first('discount')}}</span>
                                             </div>
-                                        </div>
-                                        <div class="col-lg-3">
+                                        </div> -->
+                                        <!-- <div class="col-lg-3">
                                             <div class="primary_input mb-25">
                                                 <label class="primary_input_label" for="">{{ __('product.discount_type') }}</label>
                                                 <select class="primary_select mb-25" name="discount_type" id="discount_type">
@@ -486,7 +486,7 @@ $LanguageList = getLanguageList();
                                                     <option value="0" @if ($product->discount_type == 0) selected @endif>{{ __('common.percentage') }}</option>
                                                 </select>
                                             </div>
-                                        </div>
+                                        </div> -->
                                         @if (app('gst_config')['enable_gst'] == "only_tax") 
                                         <div class="col-lg-6">
                                             <div class="primary_input mb-25">

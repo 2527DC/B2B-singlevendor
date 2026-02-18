@@ -749,17 +749,21 @@ class CheckoutRepository{
                             }
                         }
                     }
-                    if($cart->product->product->product->is_physical == 0){
-                        $is_digital_product  = 1;
-                    }else{
+                    if ($cart->product->product->product->is_physical == 0) {
+                        $is_digital_product = 1;
+                    } else {
                         $is_physical_product = 1;
                         $shipping_qty += 1;
-                        if(sellerWiseShippingConfig(1)['amount_multiply_with_qty']){
-                            $additional_shipping += $cart->product->sku->additional_shipping * $cart->qty;
-                        }else{
-                            $additional_shipping += $cart->product->sku->additional_shipping;
+                    
+                        $additionalShipping = optional($cart->product->sku)->additional_shipping ?? 0;
+                    
+                        if (sellerWiseShippingConfig(1)['amount_multiply_with_qty']) {
+                            $additional_shipping += $additionalShipping * $cart->qty;
+                        } else {
+                            $additional_shipping += $additionalShipping;
                         }
                     }
+                    
                     $e_items[]=[
                         "item_id"=> $cart->product->sku->sku,
                         "item_name"=> $cart->product->product->product_name,

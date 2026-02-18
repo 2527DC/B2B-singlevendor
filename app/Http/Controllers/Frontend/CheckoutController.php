@@ -33,7 +33,13 @@ class CheckoutController extends Controller
     public function index(Request $request)
     {
 
-        Log::info('Method checkout index  called');
+        Log::info('Method checkout index called', [
+            'ip' => $request->ip(),
+            'method' => $request->method(),
+            'ua' => $request->header('user-agent'),
+            'referer' => $request->header('referer'),
+            'params' => $request->all()
+        ]);
         if(isset($request->checkout_type) && base64_decode($request->checkout_type) == 'buy_it_now'){
             Log::info('Method checkout inside if of checkout_type  called');
             session()->put('buy_it_now', 'yes');
@@ -152,7 +158,7 @@ class CheckoutController extends Controller
             $request->validate([
                 'name' => 'required',
                 'address' => $addr,
-                'email' => 'required',
+                'email' => 'nullable|email',
                 'phone' => 'required',
                 'country' => $country_r,
                 'g-recaptcha-response' => $g_recaptcha,
@@ -220,7 +226,7 @@ class CheckoutController extends Controller
                 $request->validate([
                     'name' => 'required',
                     'address' => $addr,
-                    'email' => 'required',
+                    'email' => 'nullable|email',
                     'phone' => 'required',
                     'country' => $country_r,
                     'g-recaptcha-response' => $g_recaptcha,
@@ -1042,7 +1048,7 @@ class CheckoutController extends Controller
 
         $request->validate([
             'name' => 'required',
-            'email' => 'required|email|max:255',
+            'email' => 'nullable|email',
             'phone' => 'required|max:30',
             'city' => $cityr,
             'state' => $stater,
@@ -1095,7 +1101,7 @@ class CheckoutController extends Controller
 
         $request->validate([
             'name' => 'required',
-            'email' => 'required|email|max:255',
+            'email' => 'nullable|email|max:255',
             'phone' => 'required|max:30',
             'city' => $cityr,
             'state' => $stater,

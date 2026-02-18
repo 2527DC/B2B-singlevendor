@@ -20,6 +20,7 @@
 
     <title id="header_title">@yield('page-title', app('general_setting')->site_title) | {{$path}}</title>
     <meta name="_token" content="@php echo csrf_token(); @endphp" >
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     @laravelPWA
     <!-- Bootstrap CSS -->
     @if(isRtl())

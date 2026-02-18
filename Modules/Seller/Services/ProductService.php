@@ -192,5 +192,8 @@ class ProductService
         
         return $this->productRepository->get_seller_product_variant_wise_price($data);
     }
+    public function varientwholesaleProduct($id){
+        return $this->productRepository->varientwholesaleProduct($id);
+    }
 
 }

@@ -17,7 +17,8 @@ use Modules\Shipping\Repositories\ShippingRepository;
 use Modules\Shipping\Rules\OrderAddressPostcode;
 use Modules\ShipRocket\Repositories\ShipRocketRepository;
 use Modules\UserActivityLog\Traits\LogActivity;
-
+use Illuminate\Support\Facades\Log;
+use PDF;
 class ShippingOrderController extends Controller
 {
     use GeneratePdf;
@@ -57,6 +58,68 @@ class ShippingOrderController extends Controller
         }
 
     }
+
+
+    // Bulk invoice import feature removed
+
+    public function bulkInvoiceDownload(Request $request)
+{
+    $invoiceIds = $request->invoice_ids;
+
+    if (empty($invoiceIds)) {
+        return response()->json([
+            'success' => false,
+            'message' => 'No invoices selected'
+        ], 400);
+    }
+
+    $orders = [];
+
+    foreach ($invoiceIds as $id) {
+        $order = $this->orderRepo->order($id);
+        if ($order) {
+            $orders[] = $order;
+        }
+    }
+
+    if (empty($orders)) {
+        return response()->json([
+            'success' => false,
+            'message' => 'No valid invoices found'
+        ], 404);
+    }
+
+    // generate single PDF with multiple invoices and force download
+    $config = ['instanceConfigurator' => function($mpdf) {
+        $mpdf->autoScriptToLang = true;
+        $mpdf->baseScript = 1;
+        $mpdf->autoVietnamese = true;
+        $mpdf->autoArabic = true;
+        $mpdf->autoLangToFont = true;
+    }];
+
+    $filename = 'bulk_invoices_' . now()->format('Ymd_His') . '.pdf';
+    $pdf = PDF::loadView('shipping::order.bulk_invoice_pdf', ['orders' => $orders], [], $config);
+
+    // Produce raw PDF content
+    $pdfContent = $pdf->output();
+
+    // Stream download response with headers forcing attachment. Using application/octet-stream
+    // increases chance browser shows "Save As" dialog instead of opening inline.
+    return response()->streamDownload(function() use ($pdfContent) {
+        echo $pdfContent;
+    }, $filename, [
+        'Content-Type' => 'application/octet-stream',
+        'Content-Length' => strlen($pdfContent),
+        'Content-Transfer-Encoding' => 'binary',
+        'Content-Disposition' => 'attachment; filename="' . $filename . '"'
+    ]);
+}
+
+
+    // Carrier import helpers removed
+
+
 
     public function singleOrderMethodChange($id)
     {

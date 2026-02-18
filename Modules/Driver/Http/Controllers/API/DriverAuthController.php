@@ -56,6 +56,8 @@ public function login(Request $request)
             'phone' => $driver->phone,
             'email' => $driver->email,
             'is_active' => $driver->is_active,
+            'seller_id' => $driver->seller_id,
+            'vehicle_number' => $driver->vehicle_number,
         ],
     ]);
 }

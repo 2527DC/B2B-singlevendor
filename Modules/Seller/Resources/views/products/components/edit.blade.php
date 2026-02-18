@@ -34,6 +34,11 @@ $LanguageList = getLanguageList();
                                     </div>
                                 </div>
                             </div>
+                            <!-- Hidden fields for discount data -->
+                            <input type="hidden" name="discount" value="{{ $product->discount ?? 0 }}">
+                            <input type="hidden" name="discount_type" value="{{ $product->discount_type ?? 0 }}">
+                            <input type="hidden" name="discount_start_date" value="{{ $product->discount_start_date ?? '' }}">
+                            <input type="hidden" name="discount_end_date" value="{{ $product->discount_end_date ?? '' }}">
                             @if($product->product->product_type ==1)
                                 <div class="row">
                                     @if ($product->stock_manage == 1)
@@ -53,6 +58,13 @@ $LanguageList = getLanguageList();
                                             <label class="primary_input_label" for=""> {{__("product.selling_price")}} <span class="text-danger">*</span></label>
                                             <input class="primary_input_field" name="selling_price" id="selling_price" placeholder="{{__("product.selling_price")}}" type="number" min="1" step="{{step_decimal()}}" value="{{$product->skus->first()->selling_price?$product->skus->first()->selling_price:''}}" required>
                                             <span class="text-danger">{{$errors->first('selling_price')}}</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="primary_input mb-15">
+                                            <label class="primary_input_label" for="">{{ __('product.mrp') }} <span class="text-danger">*</span></label>
+                                            <input class="primary_input_field" name="mrp" id="mrp" placeholder="{{ __('product.mrp') }}" type="number" min="1" step="0.001" value="{{$product->product->mrp?$product->product->mrp:''}}" required>
+                                            <span class="text-danger">{{$errors->first('mrp')}}</span>
                                         </div>
                                     </div>
                                     @if(isModuleActive('WholeSale'))
@@ -158,14 +170,14 @@ $LanguageList = getLanguageList();
                                     <div class="col-lg-6 @if(!app('general_setting')->product_subtitle_show) d-none @endif">
                                         <div class="primary_input mb-15">
                                             <label class="primary_input_label" for="subtitle_1"> {{ __('product.subtitle_1') }}</label>
-                                            <input class="primary_input_field" name="subtitle_1" id="subtitle_1" placeholder="{{ __('product.subtitle_1') }}" type="text" value="{{old('subtitle_1')?old('subtitle_1'):$product->subtitle_1}}">
+                                            <input class="primary_input_field" name="subtitle_1" id="subtitle_1" placeholder="{{ __('product.subtitle_1') }}" type="text" value="{{old('subtitle_1')?old('subtitle_1'):($product->subtitle_1 ?? '')}}">
                                             <span id="error_subtitle_1"class="text-danger">{{ $errors->first('subtitle_1') }}</span>
                                         </div>
                                     </div>
                                     <div class="col-lg-6 @if(!app('general_setting')->product_subtitle_show) d-none @endif">
                                         <div class="primary_input mb-15">
                                             <label class="primary_input_label" for="subtitle_2"> {{ __('product.subtitle_2') }}</label>
-                                            <input class="primary_input_field" name="subtitle_2" id="subtitle_2" placeholder="{{ __('product.subtitle_2') }}" type="text" value="{{old('subtitle_2')?old('subtitle_2'):$product->subtitle_2}}">
+                                            <input class="primary_input_field" name="subtitle_2" id="subtitle_2" placeholder="{{ __('product.subtitle_2') }}" type="text" value="{{old('subtitle_2')?old('subtitle_2'):($product->subtitle_2 ?? '')}}">
                                             <span id="error_subtitle_2" class="text-danger">{{ $errors->first('subtitle_2') }}</span>
                                         </div>
                                     </div>
@@ -189,10 +201,12 @@ $LanguageList = getLanguageList();
                                                 <input type="hidden" class="product_images_hidden" name="thumbnail_image" value="{{@$product->thumb_image_media->media_id}}">
                                             @endif
                                         </div>
+                                        <!-- Hidden field for thumbnail image source -->
+                                        <input type="hidden" name="thum_img_src" value="{{ $product->thum_img ?? '' }}">
                                     </div>
 
                                 </div>
-                                <div class="col-lg-3">
+                                <!-- <div class="col-lg-3">
                                     <div class="primary_input mb-15">
                                         <label class="primary_input_label" for=""> {{__("product.discount")}}</label>
                                         <input class="primary_input_field" name="discount" id="discount"
@@ -211,8 +225,8 @@ $LanguageList = getLanguageList();
                                             <option {{$product->discount_type == 0?'selected':''}} value="0">{{ __('product.percentage') }}</option>
                                         </select>
                                     </div>
-                                </div>
-                                <div class="col-lg-3">
+                                </div> -->
+                                <!-- <div class="col-lg-3">
                                     <div class="primary_input mb-15">
                                         <label class="primary_input_label"
                                                for="startDate">{{__('product.discount_start_date')}}</label>
@@ -229,8 +243,8 @@ $LanguageList = getLanguageList();
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="col-lg-3">
+                                </div> -->
+                                <!-- <div class="col-lg-3">
                                     <div class="primary_input mb-15">
                                         <label class="primary_input_label"
                                                for="endDate">{{__('product.discount_end_date')}}</label>
@@ -247,7 +261,7 @@ $LanguageList = getLanguageList();
                                             </div>
                                         </div>
                                     </div>
-                                </div>
+                                </div> -->
                                 <div class="col-lg-6">
                                     @include('seller::products.components._get_gst_list', ['product' => $product->product])
                                 </div>

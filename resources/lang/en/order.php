@@ -8,6 +8,7 @@
     'total_order' => 'Total Order',
     'print' => 'Print',
     'order_status' => 'Order Status',
+    'select_status' => 'Select Status',
     'confirmed' => 'Confirmed',
     'declined' => 'Declined',
     'pending' => 'Pending',

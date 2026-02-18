@@ -7,14 +7,16 @@ use Illuminate\Routing\Controller;
 use Modules\Driver\Entities\Driver;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 class DriverController extends Controller
 {
     public function index()
     {
         // Get real drivers from database instead of static data
-        $drivers = Driver::all();
+        $drivers = Driver::with('seller')->get();
+        $sellers = \App\Models\User::activeSeller()->get();
         
-        return view('driver::index', compact('drivers'));
+        return view('driver::index', compact('drivers', 'sellers'));
     }
 
     public function store(Request $request)
@@ -25,12 +27,15 @@ class DriverController extends Controller
             'password' => 'required|string|min:6',
         ]);
 
+        Log::info('Driver store request data', $request->all());
+
         Driver::create([
             'name' => $request->name,
             'phone' => $request->phone,
             'password' => Hash::make($request->password),
             'is_active' => $request->has('is_active') ? 1 : 0,
-            // Add other fields if needed
+            'seller_id' => $request->seller_id,
+            'vehicle_number' => $request->vehicle_number,
         ]);
 
         return redirect()->route('drivers.index')->with('success', 'Driver created successfully.');
@@ -38,17 +43,27 @@ class DriverController extends Controller
 
     public function update(Request $request, $id)
     {
+        Log::info('Driver update method hit', ['id' => $id, 'request' => $request->all()]);
+        
         $driver = Driver::findOrFail($id);
 
         $request->validate([
             'name' => 'required|string|max:255',
-            'phone' => 'required|string|unique:drivers,phone,' . $id,
+            'phone' => [
+                'required',
+                'string',
+                Rule::unique('drivers', 'phone')->ignore($id),
+            ],
         ]);
+
+        Log::info('Driver update passed validation');
 
         $driver->update([
             'name' => $request->name,
             'phone' => $request->phone,
             'is_active' => $request->has('is_active') ? 1 : 0,
+            'seller_id' => $request->seller_id,
+            'vehicle_number' => $request->vehicle_number,
         ]);
 
         return redirect()->route('drivers.index')->with('success', 'Driver updated successfully.');

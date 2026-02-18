@@ -21,7 +21,7 @@
                     </button>
                     <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenu2">
                         @if (permissionCheck('order_manage.process_update'))
-                            <a class="dropdown-item edit_reason" data-value="{{$item}}" type="button">{{ __('common.edit') }}</a>
+                            <a class="dropdown-item edit_reason" data-value='{{ json_encode($item) }}' type="button">{{ __('common.edit') }}</a>
                         @endif
                         @if (permissionCheck('order_manage.process_update'))
                             <a class="dropdown-item delete_item" data-value="{{route('order_manage.process_destroy',$item->id)}}" type="button">{{ __('common.delete') }}</a>

@@ -107,7 +107,7 @@ class CheckoutController extends Controller
             $request->validate([
                 'name' => 'required',
                 'address' => 'required',
-                'email' => 'required',
+                'email' => 'nullable|email',
                 'phone' => 'required',
                 'country' => 'required',
                 'g-recaptcha-response' => $g_recaptcha,
@@ -848,8 +848,6 @@ class CheckoutController extends Controller
             'coupon_id' => $coupon_id
         ];
     }
-
-
     private function reloadWithData()
     {
         $cartDataGroup = $this->checkoutService->getCartItem();

@@ -78,6 +78,7 @@ class ToppicksResource extends JsonResource
 
                 $allProductsSkus[] = [
                     "id" => $allProductsku->id,
+                    "mrp" => $allProductsku->mrp,
                     "user_id" => $allProductsku->user_id,
                     "product_id" => $allProductsku->product_id,
                     "product_sku_id" => $allProductsku->product_sku_id,
@@ -89,7 +90,7 @@ class ToppicksResource extends JsonResource
                     "created_at" => $allProductsku->created_at,
                     "updated_at" => $allProductsku->updated_at,
                     "product_variations" => $allPdtsSkuPdctVrans,
-                    "whole_sale_prices" => $allProductsku->wholeSalePrices,
+                     "whole_sale_prices" => $allProductsku->wholeSalePrices,
                 ];
             }
         }

@@ -35,6 +35,12 @@ class ProductController extends Controller
         if($product->status == 0 || $product->product->status == 0){
             return abort(404);
         }
+        \Illuminate\Support\Facades\Log::info('Product details view loaded. MRP check:', [
+            'product_id' => $product->id,
+            'slug' => $product->slug,
+            'mrp_on_seller_product' => $product->mrp ?? 'null',
+            'mrp_on_main_product' => $product->product->mrp ?? 'null'
+        ]);
         if (auth()->check()) {
             $this->productService->recentViewStore($product->id);
         } else {

@@ -103,10 +103,9 @@ class CategoryRepository
             $category->commission_rate = $data['commission_rate'];
             $category->searchable = $data['searchable'];
             $category->status = $data['status'];
-            $category->icon = isset($data['status']) ? $data['icon']:null;
+            $category->icon = isset($data['icon']) ? $data['icon']:null;
             $category->depth_level = $data['depth_level'];
             $category->parent_id = $data['parent_id'];
-            $category->depth_level = $data['depth_level'];
             if(isModuleActive('GoogleMerchantCenter')){
                 $category->google_product_category_id = $data['google_product_category_id'];
             }

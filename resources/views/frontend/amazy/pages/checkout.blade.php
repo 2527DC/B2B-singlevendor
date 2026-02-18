@@ -389,10 +389,10 @@
                 $('#error_address').text('{{__("validation.this_field_is_required")}}');
             }
 
-            if($('#email').val() == ''){
-                is_submit = 1;
-                $('#error_email').text('{{__("validation.this_field_is_required")}}');
-            }
+            // if($('#email').val() == ''){
+            //     is_submit = 1;
+            //     $('#error_email').text('{{__("validation.this_field_is_required")}}');
+            // }
 
             if($('#phone').val() == ''){
                 is_submit = 1;
@@ -553,10 +553,10 @@
                 $('#error_address').text('{{__("validation.this_field_is_required")}}');
             }
             @endif
-            if($('#email').val() == ''){
-                is_submit = 1;
-                $('#error_email').text('{{__("validation.this_field_is_required")}}');
-            }
+            // if($('#email').val() == ''){
+            //     is_submit = 1;
+            //     $('#error_email').text('{{__("validation.this_field_is_required")}}');
+            // }
             if($('#phone').val() == ''){
                 is_submit = 1;
                 $('#error_phone').text('{{__("validation.this_field_is_required")}}');

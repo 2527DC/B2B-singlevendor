@@ -16,6 +16,7 @@ use Modules\Driver\Repositories\CancelReasonRepository;
 use Modules\Driver\Services\OrderManageService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
+
 class DriverOrdersApiController extends Controller
 {
    
@@ -26,6 +27,15 @@ class DriverOrdersApiController extends Controller
       
         $this->ordermanageService = $ordermanageService;
     }
+
+
+
+
+
+    
+
+
+   
 
 
     public function verifyOrderOtp(Request $request, int $orderId)
@@ -112,19 +122,16 @@ class DriverOrdersApiController extends Controller
     public function driverOrders(Request $request)
     {
         try {
-            // Validate request
+            // Validate request - allow seller_id to be a single integer or array of integers
             $request->validate([
                 'order_date' => 'nullable|date',
+                'seller_id'  => 'nullable', // Can be single integer or array
             ]);
     
-            Log::info('Fetching confirmed orders', [
-                'order_date' => $request->order_date,
-                'ip_address' => $request->ip(),
-            ]);
-    
-            // Fetch confirmed orders with pagination (30 per page)
+            // Fetch CONFIRMED orders with pagination (30 per page)
             $orders = DriverOrders::with('addressDetails')
-             
+                ->where('is_confirmed', 1) // Only get confirmed orders (is_confirmed = 1)
+                ->where('driver_id', auth('sanctum')->id()) // Filter by logged-in driver
                 ->when(
                     $request->filled('order_date'),
                     function ($query) use ($request) {
@@ -132,8 +139,30 @@ class DriverOrdersApiController extends Controller
                         $query->whereDate('created_at', $request->order_date);
                     }   
                 )
+                ->when(
+                    $request->filled('seller_id'),
+                    function ($query) use ($request) {
+                        // Handle comma-separated string like "33,34,35" or single ID
+                        $sellerIdInput = $request->seller_id;
+                        
+                        if (is_string($sellerIdInput) && strpos($sellerIdInput, ',') !== false) {
+                            // Split comma-separated string into array
+                            $sellerIds = array_map('trim', explode(',', $sellerIdInput));
+                        } elseif (is_array($sellerIdInput)) {
+                            // Already an array
+                            $sellerIds = $sellerIdInput;
+                        } else {
+                            // Single ID
+                            $sellerIds = [$sellerIdInput];
+                        }
+                        
+                        $query->whereHas('packages', function ($q) use ($sellerIds) {
+                            $q->whereIn('seller_id', $sellerIds);
+                        });
+                    }
+                )
                 ->orderBy('created_at', 'desc')
-                ->paginate(30); // Changed from 10 to 30 per page
+                ->paginate(30);
     
             // Transform orders
             $transformedOrders = $orders->map(function ($order) {
@@ -236,7 +265,7 @@ class DriverOrdersApiController extends Controller
             // Response
             return response()->json([
                 'success' => true,
-                'message' => 'Orders fetched successfully',
+                'message' => 'Confirmed orders fetched successfully',
                 'data' => [
                     'orders' => $transformedOrders,
                     'pagination' => [
@@ -252,7 +281,7 @@ class DriverOrdersApiController extends Controller
     
         } catch (\Throwable $e) {
     
-            Log::error('Error fetching orders', [
+            Log::error('Error fetching confirmed orders', [
                 'error_message' => $e->getMessage(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
@@ -261,11 +290,186 @@ class DriverOrdersApiController extends Controller
     
             return response()->json([
                 'success' => false,
-                'message' => 'Something went wrong while fetching orders',
+                'message' => 'Something went wrong while fetching confirmed orders',
             ], 500);
         }
     }
 
+    public function cancelledOrders(Request $request)
+    {
+        try {
+            // Validate request
+            $request->validate([
+                'order_date' => 'nullable|date',
+                'seller_id'  => 'nullable',
+            ]);
+    
+            // Fetch CANCELLED orders with pagination (30 per page)
+            $orders = DriverOrders::with('addressDetails')
+                ->where('is_cancelled', 1) // Only get cancelled orders
+                ->where('driver_id', auth('sanctum')->id()) // Filter by logged-in driver
+                ->when(
+                    $request->filled('order_date'),
+                    function ($query) use ($request) {
+                        // Match ONLY created_at date
+                        $query->whereDate('created_at', $request->order_date);
+                    }   
+                )
+                ->when(
+                    $request->filled('seller_id'),
+                    function ($query) use ($request) {
+                        // Handle comma-separated string like "33,34,35" or single ID
+                        $sellerIdInput = $request->seller_id;
+                        
+                        if (is_string($sellerIdInput) && strpos($sellerIdInput, ',') !== false) {
+                            // Split comma-separated string into array
+                            $sellerIds = array_map('trim', explode(',', $sellerIdInput));
+                        } elseif (is_array($sellerIdInput)) {
+                            // Already an array
+                            $sellerIds = $sellerIdInput;
+                        } else {
+                            // Single ID
+                            $sellerIds = [$sellerIdInput];
+                        }
+                        
+                        $query->whereHas('packages', function ($q) use ($sellerIds) {
+                            $q->whereIn('seller_id', $sellerIds);
+                        });
+                    }
+                )
+                ->orderBy('created_at', 'desc')
+                ->paginate(30);
+    
+            // Transform orders (same as driverOrders method)
+            $transformedOrders = $orders->map(function ($order) {
+    
+                $orderData = $order->toArray();
+                $addressDetails = $order->addressDetails;
+    
+                if (!$addressDetails) {
+                    $orderData['address_details'] = null;
+                    return $orderData;
+                }
+    
+                $parseName = function ($nameJson) {
+                    if (is_string($nameJson)) {
+                        $decoded = json_decode($nameJson, true);
+                        return $decoded['en'] ?? $nameJson;
+                    }
+                    return $nameJson;
+                };
+    
+                // Shipping
+                $shippingCountry = Country::find($addressDetails->shipping_country_id);
+                $shippingState   = State::find($addressDetails->shipping_state_id);
+                $shippingCity    = City::find($addressDetails->shipping_city_id);
+    
+                // Billing
+                if ($addressDetails->bill_to_same_address == 1) {
+                    $billingCountry = $shippingCountry;
+                    $billingState   = $shippingState;
+                    $billingCity    = $shippingCity;
+                } else {
+                    $billingCountry = Country::find($addressDetails->billing_country_id);
+                    $billingState   = State::find($addressDetails->billing_state_id);
+                    $billingCity    = City::find($addressDetails->billing_city_id);
+                }
+    
+                $orderData['address_details'] = [
+                    'id' => $addressDetails->id,
+                    'order_id' => $addressDetails->order_id,
+                    'customer_id' => $addressDetails->customer_id,
+    
+                    'shipping' => [
+                        'name' => $addressDetails->shipping_name,
+                        'email' => $addressDetails->shipping_email,
+                        'phone' => $addressDetails->shipping_phone,
+                        'address' => $addressDetails->shipping_address,
+                        'country' => $shippingCountry ? [
+                            'id' => $shippingCountry->id,
+                            'code' => $shippingCountry->code,
+                            'name' => $parseName($shippingCountry->name),
+                            'phonecode' => $shippingCountry->phonecode,
+                            'flag' => $shippingCountry->flag,
+                        ] : null,
+                        'state' => $shippingState ? [
+                            'id' => $shippingState->id,
+                            'name' => $parseName($shippingState->name),
+                            'country_id' => $shippingState->country_id,
+                        ] : null,
+                        'city' => $shippingCity ? [
+                            'id' => $shippingCity->id,
+                            'name' => $parseName($shippingCity->name),
+                            'state_id' => $shippingCity->state_id,
+                        ] : null,
+                        'postcode' => $addressDetails->shipping_postcode,
+                    ],
+    
+                    'billing' => [
+                        'same_as_shipping' => $addressDetails->bill_to_same_address == 1,
+                        'name' => $addressDetails->billing_name,
+                        'email' => $addressDetails->billing_email,
+                        'phone' => $addressDetails->billing_phone,
+                        'address' => $addressDetails->billing_address,
+                        'country' => $billingCountry ? [
+                            'id' => $billingCountry->id,
+                            'code' => $billingCountry->code,
+                            'name' => $parseName($billingCountry->name),
+                            'phonecode' => $billingCountry->phonecode,
+                            'flag' => $billingCountry->flag,
+                        ] : null,
+                        'state' => $billingState ? [
+                            'id' => $billingState->id,
+                            'name' => $parseName($billingState->name),
+                            'country_id' => $billingState->country_id,
+                        ] : null,
+                        'city' => $billingCity ? [
+                            'id' => $billingCity->id,
+                            'name' => $parseName($billingCity->name),
+                            'state_id' => $billingCity->state_id,
+                        ] : null,
+                        'postcode' => $addressDetails->billing_postcode,
+                    ],
+    
+                    'created_at' => $addressDetails->created_at,
+                    'updated_at' => $addressDetails->updated_at,
+                ];
+    
+                return $orderData;
+            });
+    
+            // Response
+            return response()->json([
+                'success' => true,
+                'message' => 'Cancelled orders fetched successfully',
+                'data' => [
+                    'orders' => $transformedOrders,
+                    'pagination' => [
+                        'total' => $orders->total(),
+                        'per_page' => $orders->perPage(),
+                        'current_page' => $orders->currentPage(),
+                        'last_page' => $orders->lastPage(),
+                        'from' => $orders->firstItem(),
+                        'to' => $orders->lastItem(),
+                    ],
+                ],
+            ]);
+    
+        } catch (\Throwable $e) {
+    
+            Log::error('Error fetching cancelled orders', [
+                'error_message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'ip_address' => $request->ip(),
+            ]);
+    
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong while fetching cancelled orders',
+            ], 500);
+        }
+    }
 
 public function getPhotoProof(Request $request)
 {
@@ -295,11 +499,29 @@ public function getPhotoProof(Request $request)
 
     public function uploadPhotoProof(Request $request)
     {
-        $request->validate([
+        Log::info('uploadPhotoProof hit', [
+            'has_file' => $request->hasFile('photo_proof'),
+            'all_keys' => array_keys($request->all()),
+            'order_number' => $request->order_number,
+            'order_id' => $request->order_id,
+        ]);
+
+        $validator = Validator::make($request->all(), [
             'order_id'     => 'required',
             'order_number' => 'required|string',
             'photo_proof'  => 'required|image|mimes:jpg,jpeg,png|max:5120',
         ]);
+
+        if ($validator->fails()) {
+            Log::warning('uploadPhotoProof validation failed', [
+                'errors' => $validator->errors()->toArray()
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors'  => $validator->errors()
+            ], 422);
+        }
     
         $file = $request->file('photo_proof');
     
@@ -385,191 +607,6 @@ public function getPhotoProof(Request $request)
             'file_url'  => url('backend/signature_proof/' . $fileName),
         ],
     ]);
-}
-
-public function orderDetails($id)
- {
-    try {
-        $order = $this->ordermanageService->findOrderByID($id);
-        
-        // Load the necessary relationships if not already loaded
-        if (!$order->relationLoaded('packages')) {
-            $order->load([
-                'packages.products.seller_product_sku.sku.product',
-                'packages.products.giftCard',
-                'packages.seller',
-                'packages.delivery_process',
-                'packages.shipping',
-                'address',
-                'guest_info',
-                'customer',
-                'order_payment',
-                'gift_card_uses',
-                'affiliateUser.user',
-                'coupon'
-            ]);
-        }
-        
-        $formattedOrder = [
-            'order_details' => [
-                'basic_info' => $order->only(['id', 'order_number', 'order_type', 'payment_type', 'grand_total', 'sub_total']),
-                'customer_info' => $order->customer ? [
-                    'name' => $order->customer->first_name . ' ' . $order->customer->last_name,
-                    'email' => $order->customer->email,
-                    'phone' => $order->customer->phone
-                ] : ($order->guest_info ? [
-                    'name' => $order->guest_info->shipping_name,
-                    'email' => $order->guest_info->shipping_email,
-                    'phone' => $order->guest_info->shipping_phone
-                ] : null),
-                'packages' => $order->packages->map(function($package) {
-                    return [
-                        'package_code' => $package->package_code,
-                        'delivery_status' => $package->delivery_process ? $package->delivery_process->name : null,
-                        'seller' => $package->seller ? [
-                            'name' => $package->seller->first_name . ' ' . $package->seller->last_name,
-                            'shop_name' => $package->seller->SellerAccount->seller_shop_display_name ?? null
-                        ] : null,
-        'products' => $package->products->map(function ($product) use ($package) {
-
-            $sellerProductSkuId = $product->seller_product_sku->id ?? null;
-            $sellerId = $package->seller->id ?? null;
-            $price = $product->price;
-
-            // ✅ Refund format: packageId-skuId-sellerId-price
-            $refundProductKey = $package->id . '-' . $sellerProductSkuId . '-' . $sellerId . '-' . $price;
-
-            $productData = [
-                // Order product ID
-                'order_product_id' => $product->id,
-
-                // Seller Product SKU ID
-                'product_sku_id' => $sellerProductSkuId,
-
-                // Product ID
-                'product_id' => $product->seller_product_sku->sku->product->id ?? null,
-
-                // ✅ REQUIRED refund format
-                'refund_product_key' => $refundProductKey,
-
-                'type' => $product->type,
-                'quantity' => $product->qty,
-                'price' => $price,
-                'tax_amount' => $product->tax_amount,
-                'total' => ($price * $product->qty) + $product->tax_amount,
-            ];
-
-            if ($product->type === "gift_card") {
-                $productData['name'] = $product->giftCard->name ?? null;
-                $productData['thumbnail_image_source'] = $product->giftCard->thumbnail_image ?? null;
-            } else {
-                $productData['name'] =
-                    $product->seller_product_sku->sku->product->product_name ?? null;
-
-                $productData['thumbnail_image_source'] =
-                    $product->seller_product_sku->sku->product->thumbnail_image_source ?? null;
-
-                $productData['product_type'] =
-                    $product->seller_product_sku->sku->product->product_type ?? null;
-
-                $productData['model_number'] =
-                    $product->seller_product_sku->sku->product->model_number ?? null;
-
-                $productData['variations'] =
-                    $product->seller_product_sku->product_variations ?? [];
-            }
-
-            return $productData;
-        })
-
-
-                    ];
-                }),
-                'payment_info' => $order->order_payment ? [
-                    'amount' => $order->order_payment->amount,
-                    'payment_method' => $order->GatewayName,
-                    'transaction_id' => $order->order_payment->txn_id,
-                    'date' => $order->order_payment->created_at
-                ] : null,
-                'summary' => [
-                    'subtotal' => $order->sub_total,
-                    'discount' => $order->discount_total,
-                    'shipping' => $order->shipping_total,
-                    'tax' => $order->tax_amount,
-                    'grand_total' => $order->grand_total
-                ]
-            ]
-        ];
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Order details fetched successfully',
-            'data' => $formattedOrder
-        ], 200);
-
-    } catch (\Exception $e) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Order not found',
-            'error' => $e->getMessage()
-        ], 404);
-    }
-}
-
-
-public function salesInfoUpdateApi(Request $request, $id)
-{
-    Log::info('salesInfoUpdateApi called', [
-        'order_id' => $id,
-        'request_data' => $request->all(),
-    ]);
-
-    // Only pass what service expects
-    $data = $request->only([
-        'is_paid',
-        'is_confirmed',
-        'is_completed',
-        'delivery_status',
-        'cancel_reason_id',
-        'note'
-    ]);
-
-    // Remove null values to avoid overwriting with null
-    $data = array_filter($data, function($value) {
-        return $value !== null;
-    });
-
-    try {
-        Log::info('Calling orderInfoUpdate service (API)', [
-            'order_id' => $id,
-            'payload' => $data,
-        ]);
-
-        $result = $this->ordermanageService->orderInfoUpdate($data, $id);
-
-        Log::info('Order status updated successfully (API)', [
-            'order_id' => $id,
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Order status updated successfully',
-            'data' => $data
-        ], 200);
-
-    } catch (\Exception $e) {
-        Log::error('salesInfoUpdateApi exception', [
-            'order_id' => $id,
-            'message' => $e->getMessage(),
-            'line' => $e->getLine(),
-            'file' => $e->getFile(),
-        ]);
-
-        return response()->json([
-            'success' => false,
-            'message' => 'Operation failed: ' . $e->getMessage(),
-        ], 500);
-    }
 }
 
 

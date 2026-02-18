@@ -136,6 +136,8 @@ if ($data->hasFile('store_image')) {
     $fileName = time().'_store_'.uniqid().'.'.$file->getClientOriginalExtension();
     $file->move($uploadPath, $fileName);
 
+    
+
     $storeImagePath = 'uploads/images/store_images/'.$fileName;
 }
 

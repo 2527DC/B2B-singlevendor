@@ -19,6 +19,7 @@ Route::prefix('drivers')->group(function () {
         Route::get('profile', [DriverAuthController::class, 'profile']);
         Route::post('upload-photo-proof', [DriverOrdersApiController::class, 'uploadPhotoProof']);
         Route::post('order-refund/store', [OrderController::class, 'refundStore']);
+        Route::post('order-refund/store', [OrderController::class, 'driverRefundStore']);
 
         Route::get( 'photo-proof', [DriverOrdersApiController::class, 'getPhotoProof']);
         Route::get('orders-details/{id}', [DriverOrdersApiController::class, 'orderDetails']);
@@ -29,5 +30,12 @@ Route::prefix('drivers')->group(function () {
         Route::get('validate-token', [DriverAuthController::class, 'validateToken']);
         Route::post('refresh-token', [DriverAuthController::class, 'refreshToken']); // Optional
         Route::get('orders', [DriverOrdersApiController::class, 'driverOrders']);
+        Route::get('cancelled-orders', [DriverOrdersApiController::class, 'cancelledOrders']);
+
+        // Return Requests
+        Route::post('return-request/store', [\Modules\Refund\Http\Controllers\API\ReturnRequestApiController::class, 'store']);
+        Route::get('return-requests', [\Modules\Refund\Http\Controllers\API\ReturnRequestApiController::class, 'index']);
+        Route::post('return-request/{id}/update-status', [\Modules\Refund\Http\Controllers\API\ReturnRequestApiController::class, 'updateStatus']);
+        Route::get('return-request/{id}', [\Modules\Refund\Http\Controllers\API\ReturnRequestApiController::class, 'show']);
     });
 });

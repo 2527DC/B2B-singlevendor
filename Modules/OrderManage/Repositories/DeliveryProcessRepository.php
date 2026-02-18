@@ -40,12 +40,32 @@ class DeliveryProcessRepository
     public function update($data, $id)
     {
         $deliveryProcess = DeliveryProcess::findOrFail($id);
-        $deliveryProcess->update([
-            'name' => $data['name'],
-            'description' => $data['description']
-        ]);
+        
+        // Handle multi-language data
+        $name = $data['name'];
+        $description = $data['description'];
+        
+        // If name and description are arrays (multi-language), keep as is
+        // If they are strings (single language), wrap in array format if needed
+        if (is_array($name) && is_array($description)) {
+            $updateData = [
+                'name' => $name,
+                'description' => $description
+            ];
+        } else {
+            // Single language mode
+            $updateData = [
+                'name' => $name,
+                'description' => $description
+            ];
+        }
+        
+        $deliveryProcess->update($updateData);
+        
+        // Update notification setting with the first language name or string name
+        $eventName = is_array($name) ? reset($name) : $name;
         NotificationSetting::where('delivery_process_id',$deliveryProcess->id)->update([
-            'event' => $data['name'],
+            'event' => $eventName,
         ]);
     }
 

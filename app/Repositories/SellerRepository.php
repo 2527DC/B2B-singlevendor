@@ -25,6 +25,11 @@ class SellerRepository{
         return $this->seller::with('sellerReviews.customer','SellerAccount','SellerBusinessInformation.country','SellerBusinessInformation.state','SellerBusinessInformation.city')->where('is_active', 1)->where('role_id', $seller_id)->select('id','first_name','last_name','photo','phone','date_of_birth')->latest()->paginate(10);
     }
 
+    public function getAllSellersList(){
+        $seller_id = Role::where('type', 'seller')->first()->id;
+        return $this->seller::with('sellerReviews.customer','SellerAccount','SellerBusinessInformation.country','SellerBusinessInformation.state','SellerBusinessInformation.city')->where('is_active', 1)->where('role_id', $seller_id)->select('id','first_name','last_name','photo','phone','date_of_birth')->latest()->get();
+    }
+
     public function getBySellerID($id)
     {
         return $this->seller::with('seller_products.product')->where('id',$id)->firstOrfail();

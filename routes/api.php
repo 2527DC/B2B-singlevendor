@@ -148,6 +148,7 @@ Route::post('/forgot-password', [AuthController::class, 'forgotPasswordAPI'])->m
 
 // seller list api
 Route::get('/seller-list', [SellerController::class, 'sellerList']);
+Route::get('/all-seller-list', [SellerController::class, 'allSellerList']);
 Route::get('/seller-profile/{id}', [SellerController::class, 'getSellerById']);
 
 // filter from seller profile

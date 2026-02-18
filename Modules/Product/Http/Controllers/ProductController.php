@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Brian2694\Toastr\Facades\Toastr;
 use Modules\GST\Services\GSTService;
 use Modules\Product\Entities\Category;
+use Modules\Product\Entities\Product;
 use Modules\Setup\Services\TagService;
 use Illuminate\Support\Facades\Artisan;
 use Yajra\DataTables\Facades\DataTables;
@@ -955,6 +956,86 @@ class ProductController extends Controller
             return response()->json([
                 'success' => false,
                 'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getHistory(Request $request)
+    {
+        try {
+            $productId = $request->product_id;
+            $fromDate = $request->from_date;
+            $toDate = $request->to_date;
+
+            // Get product with its SKUs to find stock history
+            $product = Product::findOrFail($productId);
+            
+            // Get all SKU IDs for this product from product_sku table
+            $skuIds = DB::table('product_sku')
+                ->where('product_id', $productId)
+                ->pluck('id')
+                ->toArray();
+            
+            if (empty($skuIds)) {
+                return response()->json([
+                    'status' => true,
+                    'data' => [],
+                    'message' => 'No stock history found for this product'
+                ]);
+            }
+
+            // Query stock history for all SKUs of this product
+            $query = DB::table('stock_histories')
+                ->leftJoin('users', 'stock_histories.user_id', '=', 'users.id')
+                ->leftJoin('product_sku', 'stock_histories.product_sku_id', '=', 'product_sku.id')
+                ->whereIn('stock_histories.product_sku_id', $skuIds)
+                ->select(
+                    'stock_histories.id',
+                    'stock_histories.created_at',
+                    DB::raw("CONCAT(COALESCE(users.first_name, ''), ' ', COALESCE(users.last_name, '')) as user_name"),
+                    'stock_histories.type as action',
+                    'product_sku.sku',
+                    'stock_histories.quantity',
+                    'stock_histories.previous_stock as old_value',
+                    'stock_histories.new_stock as new_value',
+                    'stock_histories.note',
+                    'stock_histories.type'
+                );
+
+            if ($fromDate) {
+                $query->whereDate('stock_histories.created_at', '>=', $fromDate);
+            }
+
+            if ($toDate) {
+                $query->whereDate('stock_histories.created_at', '<=', $toDate);
+            }
+
+            $history = $query->orderByDesc('stock_histories.created_at')->get();
+
+            // Format history data
+            $formattedHistory = [];
+            foreach ($history as $log) {
+                $formattedHistory[] = [
+                    'created_at' => $log->created_at,
+                    'user_name' => trim($log->user_name) ?: 'System',
+                    'action' => ucfirst($log->action),
+                    'field_name' => 'SKU: ' . $log->sku . ' | Qty: ' . $log->quantity,
+                    'old_value' => $log->old_value ?? 'N/A',
+                    'new_value' => $log->new_value ?? 'N/A',
+                    'note' => $log->note ?? 'Stock ' . strtolower($log->action)
+                ];
+            }
+
+            return response()->json([
+                'status' => true,
+                'data' => $formattedHistory,
+                'message' => count($formattedHistory) > 0 ? 'History loaded successfully' : 'No history found'
+            ]);
+        } catch (\Exception $e) {
+            LogActivity::errorLog($e->getMessage());
+            return response()->json([
+                'status' => false,
+                'message' => 'Error fetching history: ' . $e->getMessage()
             ], 500);
         }
     }

@@ -13,10 +13,12 @@
             @php
                 $gst = \Modules\GST\Entities\GstTax::find($gst_id);
             @endphp
+            @if($gst)
             <tr>
                 <td class="info_tbl">{{$gst->name}}</td>
                 <td>: {{$percent}} %</td>
             </tr>
+            @endif
         @endforeach
         <tr>
             <td><strong>{{__('Outsite State TAX/GST List')}}</strong></td>
@@ -25,10 +27,12 @@
             @php
                 $gst = \Modules\GST\Entities\GstTax::find($gst_id);
             @endphp
+            @if($gst)
             <tr>
                 <td class="info_tbl">{{$gst->name}}</td>
                 <td>: {{$percent}} %</td>
             </tr>
+            @endif
         @endforeach
     </table>
 @else
@@ -47,10 +51,12 @@
                 @php
                     $gst = \Modules\GST\Entities\GstTax::find($gst_id);
                 @endphp
+                @if($gst)
                 <tr>
                     <td class="info_tbl">{{$gst->name}}</td>
                     <td>: {{$gst->tax_percentage}} %</td>
                 </tr>
+                @endif
             @endforeach
             <tr>
                 <td><strong>{{__('Outsite State TAX/GST List')}}</strong></td>
@@ -59,10 +65,12 @@
                 @php
                     $gst = \Modules\GST\Entities\GstTax::find($gst_id);
                 @endphp
+                @if($gst)
                 <tr>
                     <td class="info_tbl">{{$gst->name}}</td>
                     <td>: {{$gst->tax_percentage}} %</td>
                 </tr>
+                @endif
             @endforeach
         </table>
     @elseif(app('gst_config')['enable_gst'] == "flat_tax")
@@ -84,6 +92,7 @@
         @php
             $onlyTax = \Modules\GST\Entities\GstTax::where('id', $product->tax_id)->first();
         @endphp
+        @if($onlyTax)
              <table class="table-borderless clone_line_table">
                 <tr>
                     <td><strong>{{__('TAX/GST')}}</strong></td>
@@ -93,6 +102,7 @@
                     <td>: {{$onlyTax->tax_percentage}} %</td>
                 </tr>
             </table>
+        @endif
     @endif
 
 @endif

@@ -34,9 +34,10 @@
                                     <span class="text-danger" id="error_name"></span>
                                 </div>
                                 <div class="col-6 mb_25">
-                                    <label class="primary_label2 style4" for="Email_Address1">{{ __('common.email_address') }} <span>*</span></label>
+                                    <!-- <label class="primary_label2 style4" for="Email_Address1">{{ __('common.email_address') }} <span>*</span></label> -->
+                                     <label class="primary_label2 style4" for="Email_Address1">{{ __('common.email_address') }}</label>
                                     <input name="email" id="Email_Address1" placeholder="{{ __('common.email_address') }}" onfocus="this.placeholder = ''" onblur="this.placeholder = '{{ __('common.email_address') }}'" class="primary_input3 radius_3px style5" type="email" value="{{isset($primary_address->email)?$primary_address->email:''}}">
-                                    <span class="text-danger" id="error_email"></span>
+                                    <!-- <span class="text-danger" id="error_email"></span> -->
                                 </div>
                                 <div class="col-6 mb_25">
                                     <label class="primary_label2 style4" for="customer_phn">{{ __('common.phone_number') }} <span>*</span></label>

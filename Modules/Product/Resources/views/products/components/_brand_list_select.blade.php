@@ -9,8 +9,10 @@
         @php
             $old_selected_brand = \DB::table('brands')->where('id', old('brand_id'))->first();
         @endphp
+        @if($old_selected_brand)
         <option value="{{$old_selected_brand->id}}" selected>{{$old_selected_brand->name}}</option>
-        @elseif(isset($product))
+        @endif
+        @elseif(isset($product) && $product->brand)
             <option value="{{$product->brand_id}}" selected>{{$product->brand->name}}</option>
         @endif
     </select>

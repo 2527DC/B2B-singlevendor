@@ -17,7 +17,7 @@
                                 </div>
                             </div>
                             <div class="col-md-6 col-lg-6 text-right">
-                                <h4><a class="a_tag_color" href="{{route('order_manage.show_details',$refund_request->order_id)}}" target="_blank">{{__('common.order_id')}}: {{getNumberTranslate($refund_request->order->order_number)}}</a></h4>
+                            <h4><a class="a_tag_color" href="{{route('order_manage.show_details',$refund_request->order_id)}}" target="_blank">{{__('common.order_id')}}: {{getNumberTranslate(optional($refund_request->order)->order_number ?? 'N/A')}}</a></h4>
                             </div>
                         </div>
                         <div class="row mt-30">

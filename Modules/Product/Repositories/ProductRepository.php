@@ -161,9 +161,11 @@ class ProductRepository
         $user = Auth::user();
         if ($user->role->type == 'superadmin' || $user->role->type == 'admin' || $user->role->type == 'staff') {
             $data['is_approved'] = 1;
+            $data['status'] = isset($data['status']) ? $data['status'] : 1;
             $data['requested_by'] = $user->role_id;
         } else {
             $data['is_approved'] = 0;
+            $data['status'] = isset($data['status']) ? $data['status'] : 0;
             $data['requested_by'] = $user->role_id;
         }
         if ($data['is_physical'] == 0) {
@@ -291,17 +293,19 @@ class ProductRepository
             }
         }
         if ($data['product_type'] == 2) {
-            foreach ($data['track_sku'] as $key => $variant_sku) {
+            // Check if track_sku exists, otherwise use empty array to prevent errors
+            $track_skus = isset($data['track_sku']) ? $data['track_sku'] : (isset($data['sku']) ? $data['sku'] : []);
+            foreach ($track_skus as $key => $variant_sku) {
                 $product_sku = new ProductSku;
                 $product_sku->product_id = $product->id;
-                $product_sku->sku = $data['sku'][$key];
+                $product_sku->sku = isset($data['sku'][$key]) ? $data['sku'][$key] : '';
                 $product_sku->weight = isset($data['weight'])?$data['weight']:0;
                 $product_sku->length = isset($data['length'])?$data['length']:0;
                 $product_sku->breadth = isset($data['breadth'])?$data['breadth']:0;
                 $product_sku->height = isset($data['height'])?$data['height']:0;
-                $product_sku->track_sku = $data['track_sku'][$key];
-                $product_sku->selling_price = $data['selling_price_sku'][$key];
-                $product_sku->additional_shipping = $data['additional_shipping'];
+                $product_sku->track_sku = isset($data['track_sku'][$key]) ? $data['track_sku'][$key] : '';
+                $product_sku->selling_price = isset($data['selling_price_sku'][$key]) ? $data['selling_price_sku'][$key] : 0;
+                $product_sku->additional_shipping = isset($data['additional_shipping']) ? $data['additional_shipping'] : 0;
 
                 $image_increment = $key + 1;
                 $media_img = null;
@@ -341,7 +345,7 @@ class ProductRepository
                     }
                 }
                 $product_sku->product_stock = $stock;
-                $product_sku->in_app_purchase = $data['var_in_app_purchase_code'][$key];
+                $product_sku->in_app_purchase = isset($data['var_in_app_purchase_code'][$key]) ? $data['var_in_app_purchase_code'][$key] : '';
                 $product_sku->save();
                 if (isset($data['variant_image_' . $image_increment])) {
                     UsedMedia::create([
@@ -351,7 +355,7 @@ class ProductRepository
                         'used_for' => 'variant_image'
                     ]);
                 }
-                if ($data['is_physical'] == 0 && @$data['file_source'][$key]) {
+                if (isset($data['is_physical']) && $data['is_physical'] == 0 && @$data['file_source'][$key]) {
                     $digital_product->create([
                         'product_sku_id' => $product_sku->id,
                         'file_source' => $data['file_source'][$key],
@@ -415,8 +419,8 @@ class ProductRepository
             $sellerProduct->stock_manage = isset($data['stock_manage']) ? $data['stock_manage'] : 0;
             $sellerProduct->tax = $product->tax ?? 0;
             $sellerProduct->tax_type = $product->tax_type;
-            $sellerProduct->discount = $product->discount;
-            $sellerProduct->discount_type = $product->discount_type;
+            $sellerProduct->discount = isset($data['discount']) ? $data['discount'] : 0;
+            $sellerProduct->discount_type = isset($data['discount_type']) ? $data['discount_type'] : 1;
             $sellerProduct->user_id = 1;
             $sellerProduct->slug = $sellerProductName;
             $sellerProduct->is_approved = 1;
@@ -490,6 +494,13 @@ class ProductRepository
 
         $host = activeFileStorage();
         $product = Product::findOrFail($id);
+        
+        // Ensure status is set for admin/superadmin/staff
+        $user = Auth::user();
+        if ($user->role->type == 'superadmin' || $user->role->type == 'admin' || $user->role->type == 'staff') {
+            $data['status'] = isset($data['status']) ? $data['status'] : 1;
+        }
+        
         if(!isset($data['max_order_qty']) || $data['max_order_qty'] == null || $data['max_order_qty'] == 0){
             $data['max_order_qty'] = 999;
         }

@@ -276,5 +276,26 @@ return [
   "reasons" => "Reasons",
   'reported_products' => "Reported Product List",
   "report_reasons" => "Report Reasons",
-  "in_app_purchase_code" => "In app Purchase code"
+  "in_app_purchase_code" => "In app Purchase code",
+  
+  // Stock Management
+  "manage_stock" => "Manage Stock",
+  "manage_history" => "Manage History",
+  "product_history" => "Product History",
+  "stock_in" => "Stock In",
+  "stock_out" => "Stock Out",
+  "add_stock" => "Add Stock",
+  "subtract_stock" => "Subtract Stock",
+  "set_stock" => "Set Stock",
+  "current_stock" => "Current Stock",
+  "new_stock" => "New Stock",
+  "quantity" => "Quantity",
+  "note" => "Note",
+  "stock_type" => "Stock Type",
+  "stock_history" => "Stock History",
+  "update_sku_stock" => "Update SKU Stock",
+  "previous_stock" => "Previous Stock",
+  "type" => "Type",
+  "enter_note" => "Enter note (optional)",
+  "update_stock" => "Update Stock",
 ];

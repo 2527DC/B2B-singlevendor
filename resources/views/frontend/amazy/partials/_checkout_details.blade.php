@@ -512,8 +512,7 @@
                         </div>
                     @else
                         <div class="mb_20">
-                            <label for="name" class="primary_label2 style3">{{__('common.email')}} <span>*</span></label>
-                            <input class="primary_input3 style5 radius_3px" type="email" id="email" placeholder="{{__('common.email')}}"  value="{{$shipping_address?$shipping_address->email:''}}" name="email">
+                            <label for="name" class="primary_label2 style3">{{__('common.email')}}</label>                            <input class="primary_input3 style5 radius_3px" type="email" id="email" placeholder="{{__('common.email')}}"  value="{{$shipping_address?$shipping_address->email:''}}" name="email">
                         </div>
                     @endif
                     <div class="col-12 mb_25">
@@ -651,8 +650,7 @@
 
                             @if(auth()->check())
                             <div class="col-lg-6 mb_20">
-                                <label class="primary_label2 style3" for="email">{{__('common.email')}} <span>*</span></label>
-                                <input class="primary_input3 style5 radius_3px" type="email" name="email" id="email" placeholder="{{__('common.email')}}" value="{{$shipping_address?$shipping_address->email:$user_email}}">
+                                    <label class="primary_label2 style3" for="email">{{__('common.email')}}</label>                                <input class="primary_input3 style5 radius_3px" type="email" name="email" id="email" placeholder="{{__('common.email')}}" value="{{$shipping_address?$shipping_address->email:$user_email}}">
                                 <span class="text-danger" id="error_email">{{ $errors->first('email') }}</span>
                             </div>
                             @endif

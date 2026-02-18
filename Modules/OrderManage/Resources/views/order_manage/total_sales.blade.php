@@ -3,6 +3,91 @@
 
 <link rel="stylesheet" href="{{asset(asset_path('modules/ordermanage/css/style.css'))}}" />
 
+<style>
+    /* SELECT ALL Checkbox Column */
+    .checkbox-column-all {
+        width: 60px !important;
+        text-align: center;
+        padding: 12px 8px !important;
+        background-color: #e8f1ff;
+        border-right: 2px solid #2196F3;
+        font-weight: 600;
+        color: #1976D2;
+    }
+    
+    #confirmedTable tbody td.checkbox-column-all {
+        text-align: center;
+        padding: 12px 8px !important;
+        background-color: #f5f9ff;
+        border-right: 2px solid #2196F3;
+        vertical-align: middle;
+    }
+    
+    .checkbox-column-all::before {
+        content: "ALL";
+        display: block;
+        font-size: 10px;
+        font-weight: 700;
+        margin-bottom: 6px;
+        letter-spacing: 1px;
+        color: #1976D2;
+    }
+    
+    .checkbox-column-all input[type="checkbox"] {
+        cursor: pointer;
+        width: 20px;
+        height: 20px;
+        margin: 0;
+        vertical-align: middle;
+    }
+    
+    /* Individual Select Checkbox Column */
+    .checkbox-column-item {
+        width: 60px !important;
+        text-align: center;
+        padding: 12px 8px !important;
+        background-color: #f0f4f8;
+        border-right: 2px solid #9E9E9E;
+        font-weight: 600;
+        color: #666;
+    }
+    
+    #confirmedTable tbody td.checkbox-column-item {
+        text-align: center;
+        padding: 12px 8px !important;
+        background-color: #fafafa;
+        border-right: 2px solid #9E9E9E;
+        vertical-align: middle;
+    }
+    
+    .checkbox-column-item::before {
+        content: "SELECT";
+        display: block;
+        font-size: 10px;
+        font-weight: 700;
+        margin-bottom: 6px;
+        letter-spacing: 0.5px;
+        color: #666;
+    }
+    
+    .checkbox-column-item input[type="checkbox"] {
+        cursor: pointer;
+        width: 18px;
+        height: 18px;
+        margin: 0;
+        vertical-align: middle;
+    }
+    
+    /* Hover effects */
+    #confirmedTable tbody tr:hover td.checkbox-column-all {
+        background-color: #e3f2fd;
+    }
+    
+    #confirmedTable tbody tr:hover td.checkbox-column-item {
+        background-color: #f5f5f5;
+    }
+</style>
+
 @endsection
 @section('mainContent')
 
@@ -71,6 +156,7 @@
                                             <table class="table" id="orderPendingTable">
                                                 <thead>
                                                     <tr>
+                                                        <!-- <th><input type="checkbox" id="select_all_pending"></th> -->
                                                         <th>{{__('common.sl')}}</th>
                                                         <th width="10%">{{__('common.date')}}</th>
                                                         <th>{{__('common.order_id')}}</th>
@@ -98,6 +184,21 @@
                                         <h3 class="mb-0 mr-30 mb_xs_15px mb_sm_20px">{{__('order.confirmed_orders')}}</h3>
                                     </div>
                                 </div>
+
+                                <div class="d-flex mb-3 align-items-center">
+                                    <div class="mr-2">
+                                        <select class="form-control" id="bulk_delivery_status_confirmed">
+                                            <option value="">{{__('order.select_status')}}</option>
+                                            @foreach($processes as $process)
+                                                <option value="{{ $process->id }}">{{ $process->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="mr-2">
+                                        <button type="button" class="btn btn-primary" id="apply_bulk_delivery_confirmed">{{__('common.apply')}}</button>
+                                    </div>
+                                </div>
+
                                 <div class="QA_section QA_section_heading_custom check_box_table">
                                     <div class="QA_table">
 
@@ -105,6 +206,8 @@
                                             <table class="table" id="confirmedTable">
                                                 <thead>
                                                     <tr>
+                                                        <th class="checkbox-column-all"><input type="checkbox" id="select_all_confirmed" title="{{__('order.select_all_orders')}}"></th>
+                                                        <th class="checkbox-column-item"></th>
                                                         <th>{{__('common.sl')}}</th>
                                                         <th width="10%">{{__('common.date')}}</th>
                                                         <th>{{__('common.order_id')}}</th>
@@ -132,6 +235,21 @@
                                         <h3 class="mb-0 mr-30 mb_xs_15px mb_sm_20px">{{__('order.completed_orders')}}</h3>
                                     </div>
                                 </div>
+
+                                <div class="d-flex mb-3 align-items-center">
+                                    <div class="mr-2">
+                                        <select class="form-control" id="bulk_delivery_status_completed">
+                                            <option value="">{{__('order.select_status')}}</option>
+                                            @foreach($processes as $process)
+                                                <option value="{{ $process->id }}">{{ $process->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="mr-2">
+                                        <button type="button" class="btn btn-primary" id="apply_bulk_delivery_completed">{{__('common.apply')}}</button>
+                                    </div>
+                                </div>
+
                                 <div class="QA_section QA_section_heading_custom check_box_table">
                                     <div class="QA_table">
 
@@ -139,6 +257,7 @@
                                             <table class="table" id="completedTable">
                                                 <thead>
                                                     <tr>
+                                                        <th><input type="checkbox" id="select_all_completed"></th>
                                                         <th>{{__('common.sl')}}</th>
                                                         <th width="10%">{{__('common.date')}}</th>
                                                         <th>{{__('common.order_id')}}</th>
@@ -167,6 +286,20 @@
                                     </div>
                                 </div>
 
+                                <div class="d-flex mb-3 align-items-center">
+                                    <div class="mr-2">
+                                        <select class="form-control" id="bulk_delivery_status_pending_payment">
+                                            <option value="">{{__('order.select_status')}}</option>
+                                            @foreach($processes as $process)
+                                                <option value="{{ $process->id }}">{{ $process->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="mr-2">
+                                        <button type="button" class="btn btn-primary" id="apply_bulk_delivery_pending_payment">{{__('common.apply')}}</button>
+                                    </div>
+                                </div>
+
                                 <div class="QA_section QA_section_heading_custom check_box_table">
                                     <div class="QA_table">
 
@@ -174,6 +307,7 @@
                                             <table class="table" id="pendingPaymentTable">
                                                 <thead>
                                                     <tr>
+                                                        <th><input type="checkbox" id="select_all_pending_payment"></th>
                                                         <th>{{__('common.sl')}}</th>
                                                         <th width="10%">{{__('common.date')}}</th>
                                                         <th>{{__('common.order_id')}}</th>
@@ -202,6 +336,20 @@
                                     </div>
                                 </div>
 
+                                <div class="d-flex mb-3 align-items-center">
+                                    <div class="mr-2">
+                                        <select class="form-control" id="bulk_delivery_status_cancelled">
+                                            <option value="">{{__('order.select_status')}}</option>
+                                            @foreach($processes as $process)
+                                                <option value="{{ $process->id }}">{{ $process->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="mr-2">
+                                        <button type="button" class="btn btn-primary" id="apply_bulk_delivery_cancelled">{{__('common.apply')}}</button>
+                                    </div>
+                                </div>
+
                                 <div class="QA_section QA_section_heading_custom check_box_table">
                                     <div class="QA_table">
 
@@ -209,6 +357,7 @@
                                             <table class="table" id="canceledTable">
                                                 <thead>
                                                     <tr>
+                                                        <th><input type="checkbox" id="select_all_canceled"></th>
                                                         <th>{{__('common.sl')}}</th>
                                                         <th width="10%">{{__('common.date')}}</th>
                                                         <th>{{__('common.order_id')}}</th>
@@ -237,6 +386,20 @@
                                     </div>
                                 </div>
 
+                                <div class="d-flex mb-3 align-items-center">
+                                    <div class="mr-2">
+                                        <select class="form-control" id="bulk_delivery_status_inhouse">
+                                            <option value="">{{__('order.select_status')}}</option>
+                                            @foreach($processes as $process)
+                                                <option value="{{ $process->id }}">{{ $process->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="mr-2">
+                                        <button type="button" class="btn btn-primary" id="apply_bulk_delivery_inhouse">{{__('common.apply')}}</button>
+                                    </div>
+                                </div>
+
                                 <div class="QA_section QA_section_heading_custom check_box_table">
                                     <div class="QA_table">
 
@@ -244,6 +407,7 @@
                                             <table class="table" id="inhouseOrderTable">
                                                 <thead>
                                                     <tr>
+                                                        <th><input type="checkbox" id="select_all_inhouse"></th>
                                                         <th>{{__('common.sl')}}</th>
                                                         <th width="10%">{{__('common.date')}}</th>
                                                         <th>{{__('common.order_id')}}</th>
@@ -298,7 +462,7 @@
                         }},
                         { data: 'date', name: 'date' },
                         { data: 'order_number', name: 'order_number' },
-                        { data: 'customer_name', name: 'customer_phone' },
+                        { data: 'customer_name', name: 'customer_name' },
                         { data: 'customer_phone', name: 'customer_phone' },
                         { data: 'email', name: 'customer.email' },
                         { data: 'total_qty', name: 'total_qty' },
@@ -398,12 +562,21 @@
 
                     },
                     columns: [
+                        { data: null, orderable: false, searchable: false, render: function(data,type,row){
+                                var html = '';
+                                if(row.packages && row.packages.length){
+                                    row.packages.forEach(function(p){
+                                        html += '<label style="display:block;margin-bottom:2px;"><input type="checkbox" class="bulk-select" data-package-id="'+p.id+'"> '+(p.package_number || ('#'+p.id))+'</label>';
+                                    });
+                                }
+                                return html;
+                            }},
                         { data: 'DT_RowIndex', name: 'id' ,render:function(data){
                             return numbertrans(data)
                         }},
                         { data: 'date', name: 'date' },
                         { data: 'order_number', name: 'order_number' },
-                        { data: 'customer_name', name: 'customer_phone' },
+                        { data: 'customer_name', name: 'customer_name' },
                         { data: 'customer_phone', name: 'customer_phone' },
                         { data: 'email', name: 'customer.email' },
                         { data: 'total_qty', name: 'total_qty' },
@@ -507,12 +680,18 @@
     },
 
     columns: [
+        { data: null, orderable: false, searchable: false, render: function(data,type,row){
+                return '';
+            }, className: 'checkbox-column-all'},
+        { data: null, orderable: false, searchable: false, render: function(data,type,row){
+                return '<input type="checkbox" class="bulk-select-confirmed" data-order-id="'+row.id+'" />';
+            }, className: 'checkbox-column-item'},
         { data: 'DT_RowIndex', name: 'id', render: function (data) {
             return numbertrans(data);
         }},
         { data: 'date', name: 'date' },
         { data: 'order_number', name: 'order_number' },
-        { data: 'customer_name', name: 'customer_phone' },
+        { data: 'customer_name', name: 'customer_name' },
         { data: 'customer_phone', name: 'customer_phone' },
         { data: 'email', name: 'customer.email' },
         { data: 'total_qty', name: 'total_qty' },
@@ -539,12 +718,21 @@
 
                     },
                     columns: [
+                        { data: null, orderable: false, searchable: false, render: function(data,type,row){
+                                var html = '';
+                                if(row.packages && row.packages.length){
+                                    row.packages.forEach(function(p){
+                                        html += '<label style="display:block;margin-bottom:2px;"><input type="checkbox" class="bulk-select" data-package-id="'+p.id+'"> '+(p.package_number || ('#'+p.id))+'</label>';
+                                    });
+                                }
+                                return html;
+                            }},
                         { data: 'DT_RowIndex', name: 'id' ,render:function(data){
                             return numbertrans(data)
                         }},
                         { data: 'date', name: 'date' },
                         { data: 'order_number', name: 'order_number' },
-                        { data: 'customer_name', name: 'customer_phone' },
+                        { data: 'customer_name', name: 'customer_name' },
                         { data: 'customer_phone', name: 'customer_phone' },
                         { data: 'email', name: 'customer.email' },
                         { data: 'total_qty', name: 'total_qty' },
@@ -644,12 +832,21 @@
 
                     },
                     columns: [
+                        { data: null, orderable: false, searchable: false, render: function(data,type,row){
+                                var html = '';
+                                if(row.packages && row.packages.length){
+                                    row.packages.forEach(function(p){
+                                        html += '<label style="display:block;margin-bottom:2px;"><input type="checkbox" class="bulk-select" data-package-id="'+p.id+'"> '+(p.package_number || ('#'+p.id))+'</label>';
+                                    });
+                                }
+                                return html;
+                            }},
                         { data: 'DT_RowIndex', name: 'id' ,render:function(data){
                             return numbertrans(data)
                         }},
                         { data: 'date', name: 'date' },
                         { data: 'order_number', name: 'order_number' },
-                        { data: 'customer_name', name: 'customer_phone' },
+                        { data: 'customer_name', name: 'customer_name' },
                         { data: 'customer_phone', name: 'customer_phone' },
                         { data: 'email', name: 'customer.email' },
                         { data: 'total_qty', name: 'total_qty' },
@@ -749,12 +946,13 @@
 
                     },
                     columns: [
+                        { data: null, orderable: false, searchable: false, render: function(data,type,row){ return '<input type="checkbox" class="bulk-select" data-order-id="'+row.id+'" />'; }},
                         { data: 'DT_RowIndex', name: 'id' ,render:function(data){
                             return numbertrans(data)
                         }},
                         { data: 'date', name: 'date' },
                         { data: 'order_number', name: 'order_number' },
-                        { data: 'customer_name', name: 'customer_phone' },
+                        { data: 'customer_name', name: 'customer_name' },
                         { data: 'customer_phone', name: 'customer_phone' }, 
                         { data: 'email', name: 'customer.email' },
                         { data: 'total_qty', name: 'total_qty' },
@@ -845,5 +1043,213 @@
 
             });
         })(jQuery);
+                $(document).on('change', '#select_all_pending', function(){
+                    var checked = $(this).is(':checked');
+                    $('#orderPendingTable').find('.bulk-select').prop('checked', checked);
+                });
+                $(document).on('change', '#select_all_confirmed', function(){
+                    var checked = $(this).is(':checked');
+                    $('#confirmedTable').find('.bulk-select-confirmed').prop('checked', checked);
+                });
+                $(document).on('change', '#select_all_completed', function(){
+                    var checked = $(this).is(':checked');
+                    $('#completedTable').find('.bulk-select').prop('checked', checked);
+                });
+                $(document).on('change', '#select_all_pending_payment', function(){
+                    var checked = $(this).is(':checked');
+                    $('#pendingPaymentTable').find('.bulk-select').prop('checked', checked);
+                });
+                $(document).on('change', '#select_all_canceled', function(){
+                    var checked = $(this).is(':checked');
+                    $('#canceledTable').find('.bulk-select').prop('checked', checked);
+                });
+                $(document).on('change', '#select_all_inhouse', function(){
+                    var checked = $(this).is(':checked');
+                    $('#inhouseOrderTable').find('.bulk-select').prop('checked', checked);
+                });
+
+                $('#apply_bulk_delivery_confirmed').on('click', function(){
+                    var status = $('#bulk_delivery_status_confirmed').val();
+                    if(!status){
+                        alert('{{ __('order.select_status') }}');
+                        return;
+                    }
+                    var selected = [];
+                    $('.bulk-select-confirmed:checked').each(function(){
+                        selected.push($(this).data('order-id'));
+                    });
+                    if(selected.length == 0){
+                        alert('{{ __('order.select_at_least_one') }}');
+                        return;
+                    }
+
+                    var csrfToken = $('meta[name="csrf-token"]').attr('content') || $('meta[name="_token"]').attr('content');
+                    $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': csrfToken } });
+                    $.ajax({
+                        url: "{{ route('order_manage.bulk_update_delivery') }}",
+                        method: 'POST',
+                        data: { order_ids: selected, delivery_status: status },
+                        beforeSend: function(){
+                            $('#apply_bulk_delivery_confirmed').prop('disabled', true);
+                        },
+                        success: function(res){
+                            alert(res.message || '{{ __('common.updated_successfully') }}');
+                            $('#apply_bulk_delivery_confirmed').prop('disabled', false);
+                            // reload confirmed table
+                            $('#confirmedTable').DataTable().ajax.reload();
+                        },
+                        error: function(err){
+                            alert('{{ __('common.operation_failed') }}');
+                            $('#apply_bulk_delivery_confirmed').prop('disabled', false);
+                        }
+                    });
+                });
+
+                $('#apply_bulk_delivery_completed').on('click', function(){
+                    var status = $('#bulk_delivery_status_completed').val();
+                    if(!status){
+                        alert('{{ __('order.select_status') }}');
+                        return;
+                    }
+                    var selected = [];
+                    $('.bulk-select:checked').each(function(){
+                        var tableId = $(this).closest('table').attr('id');
+                        if(tableId === 'completedTable'){
+                            selected.push($(this).data('order-id'));
+                        }
+                    });
+                    if(selected.length == 0){
+                        alert('{{ __('order.select_at_least_one') }}');
+                        return;
+                    }
+
+                    var csrfToken = $('meta[name="csrf-token"]').attr('content') || $('meta[name="_token"]').attr('content');
+                    $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': csrfToken } });
+                    $.ajax({
+                        url: "{{ route('order_manage.bulk_update_delivery') }}",
+                        method: 'POST',
+                        data: { order_ids: selected, delivery_status: status },
+                        beforeSend: function(){
+                            $('#apply_bulk_delivery_completed').prop('disabled', true);
+                        },
+                        success: function(res){
+                            alert(res.message || '{{ __('common.updated_successfully') }}');
+                            $('#apply_bulk_delivery_completed').prop('disabled', false);
+                            $('#completedTable').DataTable().ajax.reload();
+                        },
+                        error: function(err){
+                            alert('{{ __('common.operation_failed') }}');
+                            $('#apply_bulk_delivery_completed').prop('disabled', false);
+                        }
+                    });
+                });
+
+                $('#apply_bulk_delivery_pending_payment').on('click', function(){
+                    var status = $('#bulk_delivery_status_pending_payment').val();
+                    if(!status){
+                        alert('{{ __('order.select_status') }}');
+                        return;
+                    }
+                    var selected = [];
+                    $('#pendingPaymentTable').find('.bulk-select:checked').each(function(){
+                        selected.push($(this).data('package-id'));
+                    });
+                    if(selected.length == 0){
+                        alert('{{ __('order.select_at_least_one') }}');
+                        return;
+                    }
+
+                    var csrfToken = $('meta[name="csrf-token"]').attr('content') || $('meta[name="_token"]').attr('content');
+                    $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': csrfToken } });
+                    $.ajax({
+                        url: "{{ route('order_manage.bulk_update_delivery') }}",
+                        method: 'POST',
+                        data: { package_ids: selected, delivery_status: status },
+                        beforeSend: function(){
+                            $('#apply_bulk_delivery_pending_payment').prop('disabled', true);
+                        },
+                        success: function(res){
+                            alert(res.message || '{{ __('common.updated_successfully') }}');
+                            $('#apply_bulk_delivery_pending_payment').prop('disabled', false);
+                            $('#pendingPaymentTable').DataTable().ajax.reload();
+                        },
+                        error: function(err){
+                            alert('{{ __('common.operation_failed') }}');
+                            $('#apply_bulk_delivery_pending_payment').prop('disabled', false);
+                        }
+                    });
+                });
+
+                $('#apply_bulk_delivery_cancelled').on('click', function(){
+                    var status = $('#bulk_delivery_status_cancelled').val();
+                    if(!status){
+                        alert('{{ __('order.select_status') }}');
+                        return;
+                    }
+                    var selected = [];
+                    $('#canceledTable').find('.bulk-select:checked').each(function(){
+                        selected.push($(this).data('package-id'));
+                    });
+                    if(selected.length == 0){
+                        alert('{{ __('order.select_at_least_one') }}');
+                        return;
+                    }
+
+                    var csrfToken = $('meta[name="csrf-token"]').attr('content') || $('meta[name="_token"]').attr('content');
+                    $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': csrfToken } });
+                    $.ajax({
+                        url: "{{ route('order_manage.bulk_update_delivery') }}",
+                        method: 'POST',
+                        data: { package_ids: selected, delivery_status: status },
+                        beforeSend: function(){
+                            $('#apply_bulk_delivery_cancelled').prop('disabled', true);
+                        },
+                        success: function(res){
+                            alert(res.message || '{{ __('common.updated_successfully') }}');
+                            $('#apply_bulk_delivery_cancelled').prop('disabled', false);
+                            $('#canceledTable').DataTable().ajax.reload();
+                        },
+                        error: function(err){
+                            alert('{{ __('common.operation_failed') }}');
+                            $('#apply_bulk_delivery_cancelled').prop('disabled', false);
+                        }
+                    });
+                });
+
+                $('#apply_bulk_delivery_inhouse').on('click', function(){
+                    var status = $('#bulk_delivery_status_inhouse').val();
+                    if(!status){
+                        alert('{{ __('order.select_status') }}');
+                        return;
+                    }
+                    var selected = [];
+                    $('#inhouseOrderTable').find('.bulk-select:checked').each(function(){
+                        selected.push($(this).data('order-id'));
+                    });
+                    if(selected.length == 0){
+                        alert('{{ __('order.select_at_least_one') }}');
+                        return;
+                    }
+
+                    var csrfToken = $('meta[name="csrf-token"]').attr('content') || $('meta[name="_token"]').attr('content');
+                    $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': csrfToken } });
+                    $.ajax({
+                        url: "{{ route('order_manage.bulk_update_delivery') }}",
+                        method: 'POST',
+                        data: { order_ids: selected, delivery_status: status },
+                        beforeSend: function(){
+                            $('#apply_bulk_delivery_inhouse').prop('disabled', true);
+                        },
+                        success: function(res){
+                            alert(res.message || '{{ __('common.updated_successfully') }}');
+                            $('#apply_bulk_delivery_inhouse').prop('disabled', false);
+                            $('#inhouseOrderTable').DataTable().ajax.reload();
+                        },
+                        error: function(err){
+                            alert('{{ __('common.operation_failed') }}');
+                            $('#apply_bulk_delivery_inhouse').prop('disabled', false);
+                        }
+                    });
+                });
     </script>
 @endpush

@@ -18,6 +18,7 @@ Route::prefix('seller')->group(function () {
 
     Route::resource('products', 'API\ProductController')->only('index', 'show');
     Route::post('/product/get-sku-wise-price','API\ProductController@getSKUWisePrice');
+    Route::get('/product/variant-wholesale-product/{id}','API\ProductController@varientwholesaleProduct');
     Route::get('/product/recomanded-product','API\ProductController@recomandedProduct');
     Route::get('/product/top-picks','API\ProductController@topPicks');
     Route::get('/product/sort-before-filter', 'API\ProductController@sortProductBeforeFilter');

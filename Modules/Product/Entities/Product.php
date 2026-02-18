@@ -63,6 +63,7 @@ class Product extends Model
         'stock_manage' => "string",
         'subtitle_1' => "string",
         'subtitle_2' => "string",
+        'mrp' => 'double',
         'created_at' => "datetime",
         'updated_at' => "datetime",
     ];

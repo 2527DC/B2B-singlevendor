@@ -209,6 +209,7 @@
     </section>
     <div class="product_detail_view_div">
     </div>
+    @include('product::products.manage_history')
     <div id="sku_modal">
         <div class="modal fade" id="sku_edit">
             <div class="modal-dialog modal_800px modal-dialog-centered">
@@ -269,6 +270,8 @@
     </div>
 @include('backEnd.partials._deleteModalForAjax',['item_name' => __('common.product'),'form_id' =>
 'product_delete_form','modal_id' => 'product_delete_modal', 'delete_item_id' => 'product_delete_id'])
+@include('product::products.stock.manage_stock')
+@include('product::products.stock.stock_history')
 @endsection
 @push('scripts')
 <script type="text/javascript">
@@ -1449,7 +1452,212 @@
             let url = $(this).attr('href');
 
         });
+
+        // ===== MANAGE STOCK FUNCTIONALITY =====
+        var currentProductId = null;
+        var currentProductType = null;
+        var currentSkuId = null;
+
+        // Open manage stock modal
+        $(document).on('click', '.manage_stock', function(event) {
+            event.preventDefault();
+            currentProductId = $(this).data('id');
+            currentProductType = $(this).data('type');
+            let productName = $(this).data('name');
+            
+            $('#product_id').val(currentProductId);
+            $('#product_type').val(currentProductType);
+            $('#product_name').val(productName);
+            
+            // Reset form
+            $('#stock_type').val('add');
+            $('#quantity').val(1);
+            $('#note').val('');
+            
+            // Load SKU data
+            loadProductSkus(currentProductId);
+            
+            $('#manageStockModal').modal('show');
+        });
+
+        function loadProductSkus(productId) {
+            $('#pre-loader').removeClass('d-none');
+            $.ajax({
+                url: "{{ route('product.stock.get-skus') }}",
+                type: "POST",
+                data: {
+                    _token: "{{ csrf_token() }}",
+                    product_id: productId
+                },
+                success: function(response) {
+                    $('#pre-loader').addClass('d-none');
+                    if (response.success) {
+                        if (response.product_type == 1) {
+                            // Simple product - show simple stock section
+                            $('#simple_stock_section').show();
+                            $('#variable_stock_section').hide();
+                            
+                            if (response.skus.length > 0) {
+                                let sku = response.skus[0];
+                                currentSkuId = sku.id;
+                                $('#sku').val(sku.sku);
+                                $('#current_stock').val(sku.current_stock);
+                                updateNewStock();
+                            }
+                        } else {
+                            // Variable product - show SKU table
+                            $('#simple_stock_section').hide();
+                            $('#variable_stock_section').show();
+                            
+                            let tableBody = '';
+                            response.skus.forEach(function(sku) {
+                                tableBody += '<tr>';
+                                tableBody += '<td>' + sku.sku + '</td>';
+                                tableBody += '<td>' + (sku.variation || '-') + '</td>';
+                                tableBody += '<td><span class="badge badge-primary sku-stock-' + sku.id + '">' + sku.current_stock + '</span></td>';
+                                tableBody += '<td><button type="button" class="btn btn-sm btn-primary edit-sku-stock" data-id="' + sku.id + '" data-sku="' + sku.sku + '" data-stock="' + sku.current_stock + '"><i class="fa fa-edit"></i></button></td>';
+                                tableBody += '</tr>';
+                            });
+                            $('#skuStockTable tbody').html(tableBody);
+                        }
+                    } else {
+                        toastr.error(response.error || "{{ __('common.error_message') }}");
+                    }
+                },
+                error: function(response) {
+                    $('#pre-loader').addClass('d-none');
+                    toastr.error("{{ __('common.error_message') }}");
+                }
+            });
+        }
+
+        // Calculate new stock on type/quantity change
+        function updateNewStock() {
+            let currentStock = parseInt($('#current_stock').val()) || 0;
+            let quantity = parseInt($('#quantity').val()) || 0;
+            let stockType = $('#stock_type').val();
+            let newStock = 0;
+            
+            switch (stockType) {
+                case 'add':
+                    newStock = currentStock + quantity;
+                    break;
+                case 'subtract':
+                    newStock = Math.max(0, currentStock - quantity);
+                    break;
+                case 'set':
+                    newStock = quantity;
+                    break;
+            }
+            
+            $('#new_stock').val(newStock);
+        }
+
+        $(document).on('change', '#stock_type, #quantity', updateNewStock);
+        $(document).on('input', '#quantity', updateNewStock);
+
+        // Update stock for simple product
+        $(document).on('click', '#updateStockBtn', function() {
+            if (!currentSkuId) {
+                toastr.error("{{ __('common.error_message') }}");
+                return;
+            }
+            
+            updateSkuStock(currentSkuId, $('#stock_type').val(), $('#quantity').val(), $('#note').val());
+        });
+
+        // Open SKU stock modal for variable products
+        $(document).on('click', '.edit-sku-stock', function() {
+            let skuId = $(this).data('id');
+            let skuName = $(this).data('sku');
+            let currentStock = $(this).data('stock');
+            
+            $('#sku_id').val(skuId);
+            $('#sku_product_id').val(currentProductId);
+            $('#sku_name').val(skuName);
+            $('#sku_current_stock').val(currentStock);
+            $('#sku_stock_type').val('add');
+            $('#sku_quantity').val(1);
+            $('#sku_note').val('');
+            updateSkuNewStock();
+            
+            $('#skuStockModal').modal('show');
+        });
+
+        // Calculate new stock for SKU modal
+        function updateSkuNewStock() {
+            let currentStock = parseInt($('#sku_current_stock').val()) || 0;
+            let quantity = parseInt($('#sku_quantity').val()) || 0;
+            let stockType = $('#sku_stock_type').val();
+            let newStock = 0;
+            
+            switch (stockType) {
+                case 'add':
+                    newStock = currentStock + quantity;
+                    break;
+                case 'subtract':
+                    newStock = Math.max(0, currentStock - quantity);
+                    break;
+                case 'set':
+                    newStock = quantity;
+                    break;
+            }
+            
+            $('#sku_new_stock').val(newStock);
+        }
+
+        $(document).on('change', '#sku_stock_type, #sku_quantity', updateSkuNewStock);
+        $(document).on('input', '#sku_quantity', updateSkuNewStock);
+
+        // Update stock for specific SKU
+        $(document).on('click', '#updateSkuStockBtn', function() {
+            let skuId = $('#sku_id').val();
+            updateSkuStock(skuId, $('#sku_stock_type').val(), $('#sku_quantity').val(), $('#sku_note').val(), true);
+        });
+
+        function updateSkuStock(skuId, stockType, quantity, note, isSkuModal = false) {
+            $('#pre-loader').removeClass('d-none');
+            $.ajax({
+                url: "{{ route('product.stock.update') }}",
+                type: "POST",
+                data: {
+                    _token: "{{ csrf_token() }}",
+                    sku_id: skuId,
+                    stock_type: stockType,
+                    quantity: quantity,
+                    note: note
+                },
+                success: function(response) {
+                    $('#pre-loader').addClass('d-none');
+                    if (response.success) {
+                        toastr.success(response.message || "{{ __('common.updated_successfully') }}");
+                        
+                        if (isSkuModal) {
+                            // Update the stock in the table
+                            $('.sku-stock-' + skuId).text(response.new_stock);
+                            $('.edit-sku-stock[data-id="' + skuId + '"]').data('stock', response.new_stock);
+                            $('#skuStockModal').modal('hide');
+                        } else {
+                            // Update current stock display
+                            $('#current_stock').val(response.new_stock);
+                            updateNewStock();
+                        }
+                        
+                        // Refresh DataTable
+                        $('#mainProductTable').DataTable().ajax.reload(null, false);
+                    } else {
+                        toastr.error(response.error || "{{ __('common.error_message') }}");
+                    }
+                },
+                error: function(response) {
+                    $('#pre-loader').addClass('d-none');
+                    toastr.error(response.responseJSON?.error || "{{ __('common.error_message') }}");
+                }
+            });
+        }
+        // ===== END MANAGE STOCK FUNCTIONALITY =====
     });
     })(jQuery);
 </script>
 @endpush
+

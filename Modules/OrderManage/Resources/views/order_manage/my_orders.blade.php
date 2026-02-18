@@ -3,6 +3,91 @@
 
 <link rel="stylesheet" href="{{asset(asset_path('modules/ordermanage/css/style.css'))}}" />
 
+<style>
+    /* SELECT ALL Checkbox Column */
+    .checkbox-column-all {
+        width: 60px !important;
+        text-align: center;
+        padding: 12px 8px !important;
+        background-color: #e8f1ff;
+        border-right: 2px solid #2196F3;
+        font-weight: 600;
+        color: #1976D2;
+    }
+    
+    #orderConfimedTable tbody td.checkbox-column-all {
+        text-align: center;
+        padding: 12px 8px !important;
+        background-color: #f5f9ff;
+        border-right: 2px solid #2196F3;
+        vertical-align: middle;
+    }
+    
+    .checkbox-column-all::before {
+        content: "ALL";
+        display: block;
+        font-size: 10px;
+        font-weight: 700;
+        margin-bottom: 6px;
+        letter-spacing: 1px;
+        color: #1976D2;
+    }
+    
+    .checkbox-column-all input[type="checkbox"] {
+        cursor: pointer;
+        width: 20px;
+        height: 20px;
+        margin: 0;
+        vertical-align: middle;
+    }
+    
+    /* Individual Select Checkbox Column */
+    .checkbox-column-item {
+        width: 60px !important;
+        text-align: center;
+        padding: 12px 8px !important;
+        background-color: #f0f4f8;
+        border-right: 2px solid #9E9E9E;
+        font-weight: 600;
+        color: #666;
+    }
+    
+    #orderConfimedTable tbody td.checkbox-column-item {
+        text-align: center;
+        padding: 12px 8px !important;
+        background-color: #fafafa;
+        border-right: 2px solid #9E9E9E;
+        vertical-align: middle;
+    }
+    
+    .checkbox-column-item::before {
+        content: "SELECT";
+        display: block;
+        font-size: 10px;
+        font-weight: 700;
+        margin-bottom: 6px;
+        letter-spacing: 0.5px;
+        color: #666;
+    }
+    
+    .checkbox-column-item input[type="checkbox"] {
+        cursor: pointer;
+        width: 18px;
+        height: 18px;
+        margin: 0;
+        vertical-align: middle;
+    }
+    
+    /* Hover effects */
+    #orderConfimedTable tbody tr:hover td.checkbox-column-all {
+        background-color: #e3f2fd;
+    }
+    
+    #orderConfimedTable tbody tr:hover td.checkbox-column-item {
+        background-color: #f5f5f5;
+    }
+</style>
+
 @endsection
 
 @section('mainContent')
@@ -52,6 +137,37 @@
                                         <h3 class="mb-0 mr-30 mb_xs_15px mb_sm_20px">{{__('order.confirmed_orders')}}</h3>
                                     </div>
                                 </div>
+
+                                <div class="d-flex mb-2 align-items-center">
+                                    <div class="mr-2">
+                                        <select class="form-control" id="bulk_delivery_status_confirmed">
+                                            <option value="">{{__('order.select_status')}}</option>
+                                            @foreach($processes as $process)
+                                                @if($process->id <= 3)
+                                                    <option value="{{ $process->id }}">{{ $process->name }}</option>
+                                                @endif
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="mr-2">
+                                        <button type="button" class="btn btn-primary" id="apply_bulk_delivery_confirmed">{{__('common.apply')}}</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex mb-3 align-items-center">
+                                    <div class="mr-2">
+                                        <select class="form-control" id="bulk_driver_confirmed">
+                                            <option value="">Select Driver</option>
+                                            @foreach($drivers as $driver)
+                                                <option value="{{ $driver->id }}">{{ $driver->name }}@if($driver->vehicle_number) - {{$driver->vehicle_number}}@endif</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="mr-2">
+                                        <button type="button" class="btn btn-success" id="apply_bulk_driver_confirmed">Assign Driver</button>
+                                    </div>
+                                </div>
+
                                 <div class="QA_section QA_section_heading_custom check_box_table">
                                     <div class="QA_table">
 
@@ -59,11 +175,13 @@
                                             <table class="table shadow_none" id="orderConfimedTable">
                                                 <thead>
                                                     <tr>
+                                                        <th class="checkbox-column-all"><input type="checkbox" id="select_all_confirmed" title="{{__('order.select_all_orders')}}"></th>
+                                                        <th class="checkbox-column-item"></th>
                                                         <th>{{__('common.sl')}}</th>
                                                         <th width="10%">{{__('common.date')}}</th>
                                                         <th>{{__('common.order_id')}}</th>
                                                         <th>{{__('common.email')}}</th>
-                                                        <th>{{__('order.order_state')}}</th>
+                                                        <th>{{__('order.delivery_status')}}</th>
                                                         <th>{{__('common.total_amount')}}</th>
                                                         <th>{{__('order.order_status')}}</th>
                                                         <th>{{__('common.action')}}</th>
@@ -202,6 +320,12 @@
 
                     },
                     columns: [
+                        { data: null, orderable: false, searchable: false, render: function(data,type,row){
+                                return '';
+                            }, className: 'checkbox-column-all'},
+                        { data: null, orderable: false, searchable: false, render: function(data,type,row){
+                                return '<input type="checkbox" class="bulk-select-confirmed" data-package-id="'+row.id+'" data-order-id="'+row.order_id+'" />';
+                            }, className: 'checkbox-column-item'},
                         { data: 'DT_RowIndex', name: 'id',render:function(data){
                             return numbertrans(data)
                         }},
@@ -600,5 +724,84 @@
                 });
             });
         })(jQuery);
+
+        $(document).on('change', '#select_all_confirmed', function(){
+            var checked = $(this).is(':checked');
+            $('#orderConfimedTable').find('.bulk-select-confirmed').prop('checked', checked);
+        });
+
+        $('#apply_bulk_delivery_confirmed').on('click', function(){
+            var status = $('#bulk_delivery_status_confirmed').val();
+            if(!status){
+                alert('{{ __('order.select_status') }}');
+                return;
+            }
+            var selected = [];
+            $('.bulk-select-confirmed:checked').each(function(){
+                selected.push($(this).data('package-id'));
+            });
+            if(selected.length == 0){
+                alert('{{ __('order.select_at_least_one') }}');
+                return;
+            }
+
+            var csrfToken = $('meta[name="csrf-token"]').attr('content') || $('meta[name="_token"]').attr('content');
+            $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': csrfToken } });
+            $.ajax({
+                url: "{{ route('order_manage.bulk_update_delivery_seller') }}",
+                method: 'POST',
+                data: { package_ids: selected, delivery_status: status },
+                beforeSend: function(){
+                    $('#apply_bulk_delivery_confirmed').prop('disabled', true);
+                },
+                success: function(res){
+                    alert(res.message || '{{ __('common.updated_successfully') }}');
+                    $('#apply_bulk_delivery_confirmed').prop('disabled', false);
+                    $('#orderConfimedTable').DataTable().ajax.reload();
+                },
+                error: function(err){
+                    alert('{{ __('common.operation_failed') }}');
+                    $('#apply_bulk_delivery_confirmed').prop('disabled', false);
+                }
+            });
+        });
+
+        // Bulk driver assignment
+        $('#apply_bulk_driver_confirmed').on('click', function(){
+            var driverId = $('#bulk_driver_confirmed').val();
+            if(driverId == '') driverId = null;
+            var selected = [];
+            $('.bulk-select-confirmed:checked').each(function(){
+                selected.push($(this).data('order-id'));
+            });
+            if(selected.length == 0){
+                alert('{{__('order.select_at_least_one')}}');
+                return;
+            }
+
+            var csrfToken = $('meta[name="csrf-token"]').attr('content') || $('meta[name="_token"]').attr('content');
+            $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': csrfToken } });
+            $.ajax({
+                url: "{{ route('order_manage.bulk_assign_driver') }}",
+                method: 'POST',
+                data: { order_ids: selected, driver_id: driverId },
+                beforeSend: function(){
+                    $('#apply_bulk_driver_confirmed').prop('disabled', true);
+                },
+                success: function(res){
+                    alert(res.message || 'Driver assigned successfully');
+                    $('#apply_bulk_driver_confirmed').prop('disabled', false);
+                    $('#orderConfimedTable').DataTable().ajax.reload();
+                },
+                error: function(err){
+                    var msg = 'Operation failed';
+                    if(err.responseJSON && err.responseJSON.message) {
+                        msg = err.responseJSON.message;
+                    }
+                    alert(msg);
+                    $('#apply_bulk_driver_confirmed').prop('disabled', false);
+                }
+            });
+        });
     </script>
 @endpush
