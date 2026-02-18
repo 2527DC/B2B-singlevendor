@@ -207,67 +207,59 @@
                                     @endif
                                 </div>
                                 <div class="destils_prise_information_box mb_20">
-                                    @if(isGuestAddtoCart() == true)
-                                    <h2 class="pro_details_prise d-flex align-items-center  m-0">
-                                        <span>
-                                            {{getProductDiscountedPrice($product)}}
-                                        </span>
-                                    </h2>
-                                    @endif
-                                    <div class="pro_details_disPrise d-flex align-items-center gap_15">
-                                        @if(isGuestAddtoCart() == true)
-                                            <h4 class="discount_prise  m-0  ">
-                                                <span class="text-decoration-line-through">
-                                                    @if($product->hasDeal || $product->hasDiscount == 'yes')
-                                                        <span>{{single_price($product->skus->max('sell_price'))}}</span>
-                                                    @endif
-                                                </span>
-                                            </h4>
-                                        @endif
-                                        @if(isGuestAddtoCart() == true)
-                                            @if(@$product->hasDeal)
-                                                @if(@$product->hasDeal->discount > 0)
-                                                    @if(@$product->hasDeal->discount_type == 0)
-                                                        <span class="diccount_percents">
-                                                            -{{getNumberTranslate(@$product->hasDeal->discount)}}%
-                                                        </span>
-                                                    @else
-                                                        <span class="diccount_percents">
-                                                            -{{single_price(@$product->hasDeal->discount)}}
-                                                        </span>
-                                                    @endif
-                                                @endif
-                                            @else
-                                                @if(@$product->hasDiscount == 'yes')
-                                                    @if($product->discount > 0)
-                                                        @if($product->discount_type == 0)
-                                                        <span class="diccount_percents">
-                                                            -{{getNumberTranslate($product->discount)}}%
-                                                        </span>
-                                                        @else
-                                                        <span class="diccount_percents">
-                                                            -{{single_price($product->discount)}}
-                                                        </span>
-                                                        @endif
-                                                    @endif
-                                                @endif
-                                            @endif
-                                        @endif
-                                    </div>
-                                    <input type="hidden" name="product_sku_id" id="product_sku_id" value="{{$product->product->product_type == 1?$product->skus->where('status',1)->first()->id : $product->skus->where('status',1)->first()->id}}">
-                                    <input type="hidden" name="seller_id" id="seller_id" value="{{$product->user_id}}">
-                                    <input type="hidden" id="owner" value="{{encrypt($product->user_id)}}">
-                                    <input type="hidden" name="stock_manage_status" id="stock_manage_status" value="{{$product->stock_manage}}">
-                                    <p class="pro_details_text">
-                                        <span class="text-uppercase">{{__('common.tag')}}:</span>
-                                        @php
-                                            $total_tag = count($product->product->tags);
-                                        @endphp
-                                        @foreach($product->product->tags as $key => $tag)
-                                            <a class="tag_link" href="{{route('frontend.category-product',['slug' => $tag->name, 'item' =>'tag'])}}">{{$tag->name}}</a>
-                                        @endforeach
-                                    </p>
-                                </div>
+    @if(isGuestAddtoCart())
+        {{-- Selling Price --}}
+        <h2 class="pro_details_prise m-0">
+            {{ getProductDiscountedPrice($product) }}
+        </h2>
+
+        {{-- MRP (Strikethrough) --}}
+        @if(isset($product->product->mrp) || optional($product->skus->first())->mrp)
+            <h4 class="discount_prise m-0">
+                <del class="text-muted">
+                    {{ single_price($product->product->mrp ?? optional($product->skus->first())->mrp) }}
+                </del>
+            </h4>
+        @endif
+
+        {{-- Discount Percentage --}}
+        <div class="pro_details_disPrise d-flex align-items-center gap_15">
+            @if($product->hasDeal && $product->hasDeal->discount > 0)
+                <span class="diccount_percents">
+                    @if($product->hasDeal->discount_type == 0)
+                        -{{ getNumberTranslate($product->hasDeal->discount) }}%
+                    @else
+                        -{{ single_price($product->hasDeal->discount) }}
+                    @endif
+                </span>
+            @elseif($product->hasDiscount == 'yes' && $product->discount > 0)
+                <span class="diccount_percents">
+                    @if($product->discount_type == 0)
+                        -{{ getNumberTranslate($product->discount) }}%
+                    @else
+                        -{{ single_price($product->discount) }}
+                    @endif
+                </span>
+            @endif
+        </div>
+    @endif
+    
+    {{-- ADD THESE HIDDEN INPUTS HERE --}}
+    <input type="hidden" name="product_sku_id" id="product_sku_id" value="{{$product->product->product_type == 1?$product->skus->where('status',1)->first()->id : $product->skus->where('status',1)->first()->id}}">
+    <input type="hidden" name="seller_id" id="seller_id" value="{{$product->user_id}}">
+    <input type="hidden" id="owner" value="{{encrypt($product->user_id)}}">
+    <input type="hidden" name="stock_manage_status" id="stock_manage_status" value="{{$product->stock_manage}}">
+    
+    <p class="pro_details_text">
+        <span class="text-uppercase">{{__('common.tag')}}:</span>
+        @php
+            $total_tag = count($product->product->tags);
+        @endphp
+        @foreach($product->product->tags as $key => $tag)
+            <a class="tag_link" href="{{route('frontend.category-product',['slug' => $tag->name, 'item' =>'tag'])}}">{{$tag->name}}</a>
+        @endforeach
+    </p>
+</div>
                                 <input type="hidden" name="product_type" class="product_type" value="{{ $product->product->product_type }}">
 
                                 @if($product->product->product_type == 2 && session()->get('item_details') != '')

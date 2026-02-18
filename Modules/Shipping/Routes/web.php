@@ -12,6 +12,8 @@
 */
 
 use Illuminate\Support\Facades\Route;
+Route::post('shipping/bulk-invoice-download', 'ShippingOrderController@bulkInvoiceDownload')
+->name('shipping.bulk_invoice_download');
 
 Route::middleware(['auth','seller'])->prefix('shipping')->group(function() {
     Route::get('/rate', 'ShippingController@index')->name('shipping_methods.index')->middleware(['permission']);
@@ -22,6 +24,7 @@ Route::middleware(['auth','seller'])->prefix('shipping')->group(function() {
     Route::post('/update-status', 'ShippingController@update_status')->name('shipping_methods.update_status')->middleware(['permission','prohibited_demo_mode']);
     Route::post('/update-approve-status', 'ShippingController@update_approve_status')->name('shipping_methods.update_approve_status')->middleware(['permission','prohibited_demo_mode']);
     Route::post('/delete', 'ShippingController@destroy')->name('shipping_methods.destroy')->middleware(['permission','prohibited_demo_mode']);
+  
 });
 
 Route::middleware(['auth','seller'])->prefix('shipping')->as('shipping.')->group(function() {

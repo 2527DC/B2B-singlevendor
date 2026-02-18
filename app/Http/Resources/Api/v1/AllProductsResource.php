@@ -64,6 +64,7 @@ class AllProductsResource extends JsonResource
                 "tax_id" => $pdctsPdct->tax_id,
                 "tax" => $pdctsPdct->tax,
                 "pdf" => $pdctsPdct->pdf,
+                "mrp" => $pdctsPdct->mrp,
                 "video_provider" => $pdctsPdct->video_provider,
                 "video_link" => $pdctsPdct->video_link,
                 "description" => $pdctsPdct->description,

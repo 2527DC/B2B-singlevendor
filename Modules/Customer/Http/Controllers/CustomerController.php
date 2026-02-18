@@ -140,13 +140,35 @@ class CustomerController extends Controller
                 'unique:users,username',
                 'check_unique_phone'
             ],
+             'store_name' => 'required|string|max:255',
+              'store_image' => 'required|image|mimes:jpg,jpeg,png|max:2048',
+             'document' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
             'password' => 'required|confirmed|min:8',
             'referral_code' => ['sometimes', 'nullable', Rule::exists('referral_codes', 'referral_code')->where('status', 1)],
             'status' => 'required'
         ]);
     
         try {
-            $this->customerService->store($request->except('_token'));
+            // $this->customerService->store($request->except('_token'));
+              // ✅ ADD THIS PART HERE
+        $data = $request->except('_token');
+
+        if ($request->hasFile('document')) {
+            $file = $request->file('document');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('uploads/customer_documents'), $filename);
+            $data['document'] = 'uploads/customer_documents/' . $filename;
+        }
+        // 🖼 Store Image upload  ✅ ADD THIS
+if ($request->hasFile('store_image')) {
+    $file = $request->file('store_image');
+    $filename = time() . '_store_' . uniqid() . '.' . $file->getClientOriginalExtension();
+    $file->move(public_path('uploads/customer_store_images'), $filename);
+    $data['store_image'] = 'uploads/customer_store_images/' . $filename;
+}
+
+        // ✅ PASS PROCESSED DATA TO SERVICE
+        $this->customerService->store($data);
     
             Toastr::success(__('Customer created successfully'), __('Success'));
             LogActivity::successLog('Customer Created Successfully.');

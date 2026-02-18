@@ -23,6 +23,7 @@ class AuthRepository{
         // Generate username: prefer phone, fallback to part before @ of email
         $username = $phone ?? ($email ? explode('@', $email)[0] : null);
     
+        // ✅ Add store_name, document_type, and document_path to user creation
         $user = User::create([
             'first_name'    => $data['first_name'],
             'last_name'     => $data['last_name'] ?? null,
@@ -34,6 +35,11 @@ class AuthRepository{
             'currency_id'   => app('general_setting')->currency,
             'lang_code'     => app('general_setting')->language_code,
             'currency_code' => app('general_setting')->currency_code,
+            'store_name'    => $data['store_name'] ?? null, // ✅ Add store name
+            // 'document_type' => $data['document_type'] ?? null, // ✅ Add document type
+            'document'      => $data['document_path'] ?? null, // ✅ Add document path
+            'store_image'      => $data['store_image'] ?? null, // ✅ Add document path
+
         ]);
     
         // User Notification Setting
@@ -63,8 +69,6 @@ class AuthRepository{
     
         return $user;
     }
-    
-    
     public function getRegister(array $user)
     {
         if (!isset($user['phone'])) {

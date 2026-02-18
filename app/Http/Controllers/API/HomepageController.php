@@ -31,7 +31,7 @@ class HomepageController extends Controller
     {
         $homepagesection = HomePageSection::where('section_name', 'feature_categories')->first();
 
-        $categories = Category::with(['sellerProducts.product', 'sellerProducts.seller', 'categoryImage', 'parentCategory', 'subCategories'])->whereHas('sellerProducts');
+        $categories = Category::with(['sellerProducts.product', 'sellerProducts.seller', 'categoryImage', 'parentCategory', 'subCategories']);
         if ($homepagesection->type == 1) {
             $categories = $categories->orderByDesc('total_sale');
         }

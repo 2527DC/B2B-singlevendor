@@ -40,7 +40,7 @@
     "FormBuilder": true,
     "MultiVendor": true,
     "Driver": true,
-    "Otp": true,
+    "Otp": false,
     "Affiliate": true,
     "WholeSale": true,
     "CheckPincode": true

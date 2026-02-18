@@ -46,6 +46,11 @@ class CustomerRepository
             'last_name' => $data['last_name'],
             'username' => isset($phone) ? $phone : NULL,
             'email' => isset($email) ? $email : NULL,
+             // ✅ ADD THESE TWO LINES
+            'store_name' => $data['store_name'],
+            'store_image' => $data['store_image'] ?? null,
+
+            'document'   => $data['document'] ?? null,
             'verify_code' => sha1(time()),
             'password' => Hash::make($data['password']),
             'role_id' => 4,
