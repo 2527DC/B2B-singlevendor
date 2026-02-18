@@ -1,1 +1,0 @@
-<span class="<?php echo e($category->status==1?'badge_1':'badge_2'); ?>"><?php echo e(showStatus($category->status)); ?></span><?php /**PATH /var/www/DhatriProduction/Modules/Product/Resources/views/category/components/_status_td.blade.php ENDPATH**/ ?>
