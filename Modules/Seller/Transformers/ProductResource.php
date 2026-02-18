@@ -251,6 +251,7 @@ class ProductResource extends JsonResource
                                         "created_at" => $sku->created_at,
                                         "updated_at" => $sku->updated_at,
                                         "product_variations" => $skuProductVariantions,
+                                        "whole_sale_prices" => $sku->wholeSalePrices,
                                     ];
                                 }
                             }
@@ -612,6 +613,7 @@ class ProductResource extends JsonResource
                     "created_at" => $sku->created_at,
                     "updated_at" => $sku->updated_at,
                     "product_variations" => $skuProductVariations,
+                    "whole_sale_prices" => $sku->wholeSalePrices,
                 ];
             }
         }

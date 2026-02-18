@@ -1,3 +1,4 @@
 cache
 session* 
-framework/views/*
+logs/*
+views/*
