@@ -45,6 +45,15 @@ Route::prefix('refund')->group(function() {
         Route::post('/update-refund-state-info/{id}', 'RefundController@update_refund_state_by_seller')->name('refund.update_refund_detail_state_by_seller')->middleware(['prohibited_demo_mode']);
         Route::get('/seller-refund-request-details/{id}', 'RefundController@seller_show')->name('refund.seller_refund_show_details');
         Route::get('/seller-pending-refund-request-data', 'RefundController@seller_refund_request_data')->name('refund.seller_refund_request_data');
+
+        Route::get('/seller-return-request-list', 'ReturnRequestController@seller_return_request_list')->name('refund.seller_return_request_list');
+        Route::get('/seller-return-request-data', 'ReturnRequestController@seller_return_request_data')->name('refund.seller_return_request_data');
+        Route::get('/seller-return-request/{id}/complete', 'ReturnRequestController@complete')->name('refund.seller_return_request_complete');
+        Route::get('/seller-return-request/{id}/show', 'ReturnRequestController@show')->name('refund.seller_return_request_show');
+        Route::post('/seller-return-request/assign-driver', 'ReturnRequestController@assign_driver')->name('refund.seller_return_request_assign_driver');
+        Route::post('/seller-return-request/bulk-assign-driver', 'ReturnRequestController@bulk_assign_driver')->name('refund.seller_return_request_bulk_assign_driver');
+        Route::post('/seller-return-request/bulk-update-status', 'ReturnRequestController@bulk_update_status')->name('refund.seller_return_request_bulk_update_status');
+        Route::post('/seller-return-request/update-status', 'ReturnRequestController@update_status')->name('refund.seller_return_request_update_status');
     });
     Route::post('/get-refund-package-data', 'RefundController@getRefundPackage')->name('refund.get_refund_package_data');
 

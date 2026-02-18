@@ -54,4 +54,8 @@
     'refund_setting' => 'Refund Setting',
     'refund_order_form' => 'Refund Order Form',
     'status_is_changable_after_confirmed_the_refund_request' => 'Status is changable after confirmed the refund request',
+    'return_request' => 'Return Request',
+    'driver' => 'Driver',
+    'picked_up' => 'Picked Up',
+    'at_warehouse' => 'At Warehouse',
 ];

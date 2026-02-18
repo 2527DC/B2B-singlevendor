@@ -636,6 +636,27 @@ class OrderManageController extends Controller
                 $order->driver_id = $driverId;
                 $saved = $order->save();
                 Log::info('Save result', ['order_id' => $orderId, 'saved' => $saved, 'driver_id_after_save' => $order->driver_id]);
+
+                // Automatically change status to 'shipped' (ID 3) when driver is assigned
+                if ($driverId && $saved) {
+                    foreach ($order->packages as $package) {
+                        // Only update packages belonging to this seller
+                        if ($package->seller_id == auth()->id()) {
+                            if ($package->delivery_status != 3) {
+                                try {
+                                    $this->ordermanageService->updateDeliveryStatus([
+                                        'delivery_status' => 3,
+                                        'note' => 'System: Automatically marked as Shipped on driver assignment.'
+                                    ], $package->id);
+                                    Log::info('Auto-shipped package', ['package_id' => $package->id, 'order_id' => $orderId]);
+                                } catch (\Exception $e) {
+                                    Log::error('Auto-shipped failed', ['package_id' => $package->id, 'error' => $e->getMessage()]);
+                                }
+                            }
+                        }
+                    }
+                }
+
                 $processedOrders++;
             }
 
