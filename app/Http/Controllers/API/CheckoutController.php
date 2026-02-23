@@ -15,6 +15,7 @@ use Modules\Marketing\Entities\Coupon;
 use App\Repositories\CheckoutRepository;
 
 use Modules\Marketing\Entities\CouponUse;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\API\OrderController;
 use Modules\Marketing\Entities\CouponProduct;
 use Modules\Shipping\Entities\ShippingMethod;
@@ -199,6 +200,7 @@ class CheckoutController extends Controller
 
     public function list(Request $request)
     {
+        Log::info('checkout list request: ', $request->all());
 
         $query = Cart::where('user_id', $request->user()->id)->where('product_type', 'product')->where('is_select', 1)->whereHas('product', function ($query) {
             return $query->where('status', 1)->whereHas('product', function ($q) {
@@ -252,7 +254,7 @@ class CheckoutController extends Controller
                 ];
             }
 
-            return response()->json([
+            $response = [
                 'packages' => $package_with_shipping_method,
                 'same_state_gst_list' => $same_state_gst_list,
                 'differant_state_gst_list' => $differant_state_gst_list,
@@ -260,11 +262,15 @@ class CheckoutController extends Controller
                 'is_gst_enable' => $is_gst_enable,
                 'is_gst_module_enable' => $is_gst_module_enable,
                 'message' => 'success'
-            ]);
+            ];
+            Log::info('checkout list response: ', $response);
+            return response()->json($response);
         } else {
-            return response()->json([
+            $response = [
                 'message' => 'cart is emprty.'
-            ], 404);
+            ];
+            Log::info('checkout list response: ', $response);
+            return response()->json($response, 404);
         }
     }
 
