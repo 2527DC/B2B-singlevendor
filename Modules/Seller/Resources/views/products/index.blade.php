@@ -150,5 +150,8 @@
     <div id="product_detail_view_div"></div>
     @include('backEnd.partials._deleteModalForAjax',['item_name' => __('common.product '),'form_id' =>
 'product_delete_form','modal_id' => 'product_delete_modal', 'delete_item_id' => 'product_delete_id'])
+    @include('product::products.stock.manage_stock')
+    @include('product::products.stock.stock_history')
+    @include('product::products.manage_history')
 @endsection
 @include('seller::products.components.scripts')

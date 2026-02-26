@@ -681,6 +681,227 @@
                 $('#product_delete_id').val(id);
                 $('#product_delete_modal').modal('show');
             });
+
+            // ===== MANAGE STOCK FUNCTIONALITY =====
+            var currentProductId = null;
+            var currentProductType = null;
+            var currentSkuId = null;
+
+            // Open manage stock modal
+            $(document).on('click', '.manage_stock', function(event) {
+                event.preventDefault();
+                currentProductId = $(this).data('id');
+                currentProductType = $(this).data('type');
+                let productName = $(this).data('name');
+
+                $('#product_id').val(currentProductId);
+                $('#product_type').val(currentProductType);
+                $('#product_name').val(productName);
+
+                // Reset form
+                $('#stock_type').val('add');
+                $('#quantity').val(1);
+                $('#note').val('');
+
+                loadProductSkus(currentProductId);
+                $('#manageStockModal').modal('show');
+            });
+
+            function loadProductSkus(productId) {
+                $('#pre-loader').removeClass('d-none');
+                $.ajax({
+                    url: "{{ route('product.stock.get-skus') }}",
+                    type: "POST",
+                    data: {
+                        _token: "{{ csrf_token() }}",
+                        product_id: productId
+                    },
+                    success: function(response) {
+                        $('#pre-loader').addClass('d-none');
+                        if (response.success) {
+                            if (response.product_type == 1) {
+                                $('#simple_stock_section').show();
+                                $('#variable_stock_section').hide();
+                                if (response.skus.length > 0) {
+                                    let sku = response.skus[0];
+                                    currentSkuId = sku.id;
+                                    $('#sku').val(sku.sku);
+                                    $('#current_stock').val(sku.current_stock);
+                                    updateNewStock();
+                                }
+                            } else {
+                                $('#simple_stock_section').hide();
+                                $('#variable_stock_section').show();
+                                let tableBody = '';
+                                response.skus.forEach(function(sku) {
+                                    tableBody += '<tr>';
+                                    tableBody += '<td>' + sku.sku + '</td>';
+                                    tableBody += '<td>' + (sku.variation || '-') + '</td>';
+                                    tableBody += '<td><span class="badge badge-primary sku-stock-' + sku.id + '">' + sku.current_stock + '</span></td>';
+                                    tableBody += '<td><button type="button" class="btn btn-sm btn-primary edit-sku-stock" data-id="' + sku.id + '" data-sku="' + sku.sku + '" data-stock="' + sku.current_stock + '"><i class="fa fa-edit"></i></button></td>';
+                                    tableBody += '</tr>';
+                                });
+                                $('#skuStockTable tbody').html(tableBody);
+                            }
+                        } else {
+                            toastr.error(response.error || "{{ __('common.error_message') }}");
+                        }
+                    },
+                    error: function() {
+                        $('#pre-loader').addClass('d-none');
+                        toastr.error("{{ __('common.error_message') }}");
+                    }
+                });
+            }
+
+            function updateNewStock() {
+                let currentStock = parseInt($('#current_stock').val()) || 0;
+                let quantity = parseInt($('#quantity').val()) || 0;
+                let stockType = $('#stock_type').val();
+                let newStock = stockType === 'add' ? currentStock + quantity
+                             : stockType === 'subtract' ? Math.max(0, currentStock - quantity)
+                             : quantity;
+                $('#new_stock').val(newStock);
+            }
+
+            $(document).on('change input', '#stock_type, #quantity', updateNewStock);
+
+            $(document).on('click', '#updateStockBtn', function() {
+                if (!currentSkuId) { toastr.error("{{ __('common.error_message') }}"); return; }
+                updateSkuStock(currentSkuId, $('#stock_type').val(), $('#quantity').val(), $('#note').val());
+            });
+
+            $(document).on('click', '.edit-sku-stock', function() {
+                let skuId = $(this).data('id');
+                $('#sku_id').val(skuId);
+                $('#sku_product_id').val(currentProductId);
+                $('#sku_name').val($(this).data('sku'));
+                $('#sku_current_stock').val($(this).data('stock'));
+                $('#sku_stock_type').val('add');
+                $('#sku_quantity').val(1);
+                $('#sku_note').val('');
+                updateSkuNewStock();
+                $('#skuStockModal').modal('show');
+            });
+
+            function updateSkuNewStock() {
+                let currentStock = parseInt($('#sku_current_stock').val()) || 0;
+                let quantity = parseInt($('#sku_quantity').val()) || 0;
+                let stockType = $('#sku_stock_type').val();
+                let newStock = stockType === 'add' ? currentStock + quantity
+                             : stockType === 'subtract' ? Math.max(0, currentStock - quantity)
+                             : quantity;
+                $('#sku_new_stock').val(newStock);
+            }
+
+            $(document).on('change input', '#sku_stock_type, #sku_quantity', updateSkuNewStock);
+
+            $(document).on('click', '#updateSkuStockBtn', function() {
+                let skuId = $('#sku_id').val();
+                updateSkuStock(skuId, $('#sku_stock_type').val(), $('#sku_quantity').val(), $('#sku_note').val(), true);
+            });
+
+            function updateSkuStock(skuId, stockType, quantity, note, isSkuModal) {
+                $('#pre-loader').removeClass('d-none');
+                $.ajax({
+                    url: "{{ route('product.stock.update') }}",
+                    type: "POST",
+                    data: {
+                        _token: "{{ csrf_token() }}",
+                        sku_id: skuId,
+                        stock_type: stockType,
+                        quantity: quantity,
+                        note: note
+                    },
+                    success: function(response) {
+                        $('#pre-loader').addClass('d-none');
+                        if (response.success) {
+                            toastr.success(response.message || "{{ __('common.updated_successfully') }}");
+                            if (isSkuModal) {
+                                $('.sku-stock-' + skuId).text(response.new_stock);
+                                $('.edit-sku-stock[data-id="' + skuId + '"]').data('stock', response.new_stock);
+                                $('#skuStockModal').modal('hide');
+                            } else {
+                                $('#current_stock').val(response.new_stock);
+                                updateNewStock();
+                            }
+                            $('#sellerProductTable').DataTable().ajax.reload(null, false);
+                        } else {
+                            toastr.error(response.error || "{{ __('common.error_message') }}");
+                        }
+                    },
+                    error: function(response) {
+                        $('#pre-loader').addClass('d-none');
+                        toastr.error(response.responseJSON?.error || "{{ __('common.error_message') }}");
+                    }
+                });
+            }
+            // ===== END MANAGE STOCK FUNCTIONALITY =====
+
+            // ===== MANAGE HISTORY FUNCTIONALITY =====
+            var currentHistoryProductId = null;
+
+            $(document).on('click', '.manage_history', function(e) {
+                e.preventDefault();
+                currentHistoryProductId = $(this).data('id');
+                $('#history_from_date').val('');
+                $('#history_to_date').val('');
+                $('#manageHistoryModal').modal('show');
+                loadProductHistory(currentHistoryProductId);
+            });
+
+            function loadProductHistory(productId, fromDate, toDate) {
+                let url = "{{ route('product.history.get') }}?product_id=" + productId;
+                if (fromDate) url += '&from_date=' + fromDate;
+                if (toDate) url += '&to_date=' + toDate;
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    success: function(response) {
+                        if (response.status) {
+                            if (response.data.length === 0) {
+                                $('#history_tbody').html('<tr><td colspan="7" class="text-center">{{ __("common.no_data_found") }}</td></tr>');
+                                return;
+                            }
+                            let html = '';
+                            $.each(response.data, function(i, item) {
+                                let date = new Date(item.created_at);
+                                html += '<tr><td>' + date.toLocaleDateString() + ' ' + date.toLocaleTimeString() + '</td>'
+                                      + '<td>' + item.user_name + '</td>'
+                                      + '<td><span class="badge badge-primary">' + item.action + '</span></td>'
+                                      + '<td><small>' + item.field_name + '</small></td>'
+                                      + '<td>' + item.old_value + '</td>'
+                                      + '<td>' + item.new_value + '</td>'
+                                      + '<td><small>' + item.note + '</small></td></tr>';
+                            });
+                            $('#history_tbody').html(html);
+                        } else {
+                            $('#history_tbody').html('<tr><td colspan="7" class="text-center text-danger">' + response.message + '</td></tr>');
+                        }
+                    },
+                    error: function() {
+                        $('#history_tbody').html('<tr><td colspan="7" class="text-center text-danger">{{ __("common.error_message") }}</td></tr>');
+                    }
+                });
+            }
+
+            $('#filter_history_btn').on('click', function() {
+                let from = $('#history_from_date').val();
+                let to = $('#history_to_date').val();
+                if (from && to && from > to) {
+                    alert('{{ __("common.from_date_must_be_before_to_date") }}');
+                    return;
+                }
+                loadProductHistory(currentHistoryProductId, from, to);
+            });
+
+            $('#reset_history_btn').on('click', function() {
+                $('#history_from_date').val('');
+                $('#history_to_date').val('');
+                loadProductHistory(currentHistoryProductId);
+            });
+            // ===== END MANAGE HISTORY FUNCTIONALITY =====
+
         });
     })(jQuery);
 </script>

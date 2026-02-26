@@ -822,31 +822,74 @@ class ProductController extends Controller
     public function getProductSkus(Request $request)
     {
         try {
-            $product = $this->productService->findById($request->product_id);
-            $skus = $product->skus->map(function($sku) use ($product) {
-                $variation = '';
-                if ($product->product_type == 2) {
-                    $variations = $sku->product_variations->map(function($var) {
-                        return $var->attribute->name . ': ' . $var->attribute_value->name;
-                    });
-                    $variation = $variations->implode(', ');
+            if (isModuleActive('MultiVendor')) {
+                // Multi-vendor: Retrieve the SellerProduct
+                $product = \Modules\Seller\Entities\SellerProduct::with([
+                    'product', 
+                    'skus.sku', 
+                    'skus.product_variations.attribute', 
+                    'skus.product_variations.attribute_value'
+                ])->find($request->product_id);
+
+                if (!$product) {
+                    return response()->json([
+                        'success' => false,
+                        'error' => 'Product not found'
+                    ], 404);
                 }
+
+                $skus = $product->skus->map(function($sellerSku) use ($product) {
+                    $variation = '';
+                    if ($product->product && $product->product->product_type == 2) {
+                        $variations = $sellerSku->product_variations->map(function($var) {
+                            return ($var->attribute->name ?? '') . ': ' . ($var->attribute_value->name ?? '');
+                        });
+                        $variation = $variations->implode(', ');
+                    }
+                    
+                    return [
+                        'id' => $sellerSku->id,
+                        'sku' => $sellerSku->sku->sku ?? '',
+                        'variation' => $variation,
+                        'current_stock' => $sellerSku->product_stock ?? 0,
+                        'selling_price' => $sellerSku->selling_price,
+                    ];
+                });
                 
-                return [
-                    'id' => $sku->id,
-                    'sku' => $sku->sku,
-                    'variation' => $variation,
-                    'current_stock' => $sku->product_stock ?? 0,
-                    'selling_price' => $sku->selling_price,
-                ];
-            });
-            
-            return response()->json([
-                'success' => true,
-                'product_name' => $product->product_name,
-                'product_type' => $product->product_type,
-                'skus' => $skus
-            ]);
+                return response()->json([
+                    'success' => true,
+                    'product_name' => is_array($product->product_name) ? collect($product->product_name)->first() : $product->product_name,
+                    'product_type' => $product->product->product_type ?? 1,
+                    'skus' => $skus
+                ]);
+            } else {
+                // Single-vendor: Retrieve the original Product map
+                $product = clone $this->productService->findById($request->product_id);
+                $skus = $product->skus->map(function($sku) use ($product) {
+                    $variation = '';
+                    if ($product->product_type == 2) {
+                        $variations = $sku->product_variations->map(function($var) {
+                            return $var->attribute->name . ': ' . $var->attribute_value->name;
+                        });
+                        $variation = $variations->implode(', ');
+                    }
+                    
+                    return [
+                        'id' => $sku->id,
+                        'sku' => $sku->sku,
+                        'variation' => $variation,
+                        'current_stock' => $sku->product_stock ?? 0,
+                        'selling_price' => $sku->selling_price,
+                    ];
+                });
+                
+                return response()->json([
+                    'success' => true,
+                    'product_name' => is_array($product->product_name) ? collect($product->product_name)->first() : $product->product_name,
+                    'product_type' => $product->product_type,
+                    'skus' => $skus
+                ]);
+            }
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -868,7 +911,14 @@ class ProductController extends Controller
 
         DB::beginTransaction();
         try {
-            $sku = $this->productService->findProductSkuById($request->sku_id);
+            if (isModuleActive('MultiVendor')) {
+                // Multi-vendor mode uses the seller_product_s_k_us table
+                $sku = \Modules\Seller\Entities\SellerProductSKU::findOrFail($request->sku_id);
+            } else {
+                // Single-vendor mode uses the product_sku table
+                $sku = \Modules\Product\Entities\ProductSku::findOrFail($request->sku_id);
+            }
+            
             $previousStock = $sku->product_stock ?? 0;
             
             // Calculate new stock based on type
@@ -904,7 +954,9 @@ class ProductController extends Controller
             
             DB::commit();
             
-            LogActivity::successLog('Stock updated for SKU: ' . $sku->sku);
+            // Handle logging when relation sku might not exist depending on the model
+            $skuCode = $sku->sku->sku ?? (isset($sku->sku) && is_string($sku->sku) ? $sku->sku : 'Unknown');
+            LogActivity::successLog('Stock updated for SKU: ' . $skuCode);
             
             return response()->json([
                 'success' => true,
@@ -967,34 +1019,44 @@ class ProductController extends Controller
             $fromDate = $request->from_date;
             $toDate = $request->to_date;
 
-            // Get product with its SKUs to find stock history
-            $product = Product::findOrFail($productId);
-            
-            // Get all SKU IDs for this product from product_sku table
-            $skuIds = DB::table('product_sku')
-                ->where('product_id', $productId)
-                ->pluck('id')
-                ->toArray();
+            $skuIds = [];
+            $skuTableName = 'product_sku';
+
+            if (isModuleActive('MultiVendor')) {
+                // Get all SKU IDs for this product from seller_product_s_k_us table
+                $skuIds = DB::table('seller_product_s_k_us')
+                    ->where('product_id', $productId)
+                    ->pluck('id')
+                    ->toArray();
+                $skuTableName = 'seller_product_s_k_us';
+            } else {
+                // Get all SKU IDs for this product from product_sku table
+                $skuIds = DB::table('product_sku')
+                    ->where('product_id', $productId)
+                    ->pluck('id')
+                    ->toArray();
+            }
             
             if (empty($skuIds)) {
-                return response()->json([
+                $response = [
                     'status' => true,
                     'data' => [],
                     'message' => 'No stock history found for this product'
-                ]);
+                ];
+                \Illuminate\Support\Facades\Log::info("Stock History Load (Empty): ", $response);
+                return response()->json($response);
             }
 
             // Query stock history for all SKUs of this product
             $query = DB::table('stock_histories')
                 ->leftJoin('users', 'stock_histories.user_id', '=', 'users.id')
-                ->leftJoin('product_sku', 'stock_histories.product_sku_id', '=', 'product_sku.id')
+                ->leftJoin($skuTableName . ' as current_sku_table', 'stock_histories.product_sku_id', '=', 'current_sku_table.id')
                 ->whereIn('stock_histories.product_sku_id', $skuIds)
                 ->select(
                     'stock_histories.id',
                     'stock_histories.created_at',
                     DB::raw("CONCAT(COALESCE(users.first_name, ''), ' ', COALESCE(users.last_name, '')) as user_name"),
                     'stock_histories.type as action',
-                    'product_sku.sku',
                     'stock_histories.quantity',
                     'stock_histories.previous_stock as old_value',
                     'stock_histories.new_stock as new_value',
@@ -1015,16 +1077,33 @@ class ProductController extends Controller
             // Format history data
             $formattedHistory = [];
             foreach ($history as $log) {
+                // Resolve original SKU name
+                $skuNumber = 'Unknown';
+                if (isModuleActive('MultiVendor')) {
+                    $sellerSku = \Modules\Seller\Entities\SellerProductSKU::find($log->id ?? 0);
+                    if ($sellerSku && $sellerSku->sku) {
+                        $skuNumber = $sellerSku->sku->sku;
+                    }
+                } else {
+                    $originalSku = \Modules\Product\Entities\ProductSku::find($log->id ?? 0);
+                    if ($originalSku) {
+                        $skuNumber = $originalSku->sku;
+                    }
+                }
+
                 $formattedHistory[] = [
                     'created_at' => $log->created_at,
                     'user_name' => trim($log->user_name) ?: 'System',
                     'action' => ucfirst($log->action),
-                    'field_name' => 'SKU: ' . $log->sku . ' | Qty: ' . $log->quantity,
+                    'field_name' => 'SKU: ' . $skuNumber . ' | Qty: ' . $log->quantity,
                     'old_value' => $log->old_value ?? 'N/A',
                     'new_value' => $log->new_value ?? 'N/A',
                     'note' => $log->note ?? 'Stock ' . strtolower($log->action)
                 ];
             }
+
+            // LOG CONTENT HERE AS REQUESTED
+            \Illuminate\Support\Facades\Log::info("Manage History fetched for product {$productId}: ", $formattedHistory);
 
             return response()->json([
                 'status' => true,
@@ -1032,6 +1111,10 @@ class ProductController extends Controller
                 'message' => count($formattedHistory) > 0 ? 'History loaded successfully' : 'No history found'
             ]);
         } catch (\Exception $e) {
+            // LOG EXCEPTION HERE AS REQUESTED
+            \Illuminate\Support\Facades\Log::error("Manage History Error for Product {$request->product_id}: " . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error($e->getTraceAsString());
+            
             LogActivity::errorLog($e->getMessage());
             return response()->json([
                 'status' => false,

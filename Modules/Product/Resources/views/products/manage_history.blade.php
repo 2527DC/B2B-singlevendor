@@ -1,5 +1,5 @@
 <div class="modal fade admin-query" id="manageHistoryModal">
-    <div class="modal-dialog modal_1200px modal-dialog-centered">
+    <div class="modal-dialog modal_1200px modal-dialog-centered" style="max-width: 1400px;">
         <div class="modal-content">
             <div class="modal-header">
                 <h4 class="modal-title">{{ __('product.product_history') }}</h4>

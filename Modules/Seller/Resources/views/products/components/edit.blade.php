@@ -42,7 +42,7 @@ $LanguageList = getLanguageList();
                             @if($product->product->product_type ==1)
                                 <div class="row">
                                     @if ($product->stock_manage == 1)
-                                        <div class="col-xl-6">
+                                  <div class="col-xl-6 d-none">
                                             <div class="primary_input mb-25">
                                                 <label class="primary_input_label" for="product_stock">{{__('product.product_stock')}} <span class="text-danger">*</span></label>
                                                 <input class="primary_input_field" name="product_stock" id="product_stock" placeholder="{{__("product.product_stock")}}" type="number" min="0" step="0" value="{{$product->skus->first()->product_stock??0}}" required>
