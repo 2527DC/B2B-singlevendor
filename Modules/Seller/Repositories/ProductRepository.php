@@ -46,14 +46,14 @@ class ProductRepository {
     public function getPointProduct(){
         return $this->mainProduct::where('is_approved', 1)->where('status', 1)->latest()->get();
     }
-    public function getRecomandedProduct(){
+    public function getRecomandedProduct($seller_id = null){
         $section = HomePageSection::where('section_name', 'more_products')->first();
-        return $section->getApiProductByQuery();
+        return $section->getApiProductByQuery($seller_id);
     }
 
-    public function getTopPicks(){
+    public function getTopPicks($seller_id = null){
         $section = HomePageSection::where('section_name', 'top_picks')->first();
-        return $section->getApiProductByQuery();
+        return $section->getApiProductByQuery($seller_id);
     }
 
     public function getAllSellerProduct(){

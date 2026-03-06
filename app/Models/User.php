@@ -83,7 +83,8 @@ class User extends Authenticatable
         'currency_id',
         'lang_code',
         'currency_code',
-        'club_point'
+        'club_point',
+        'warehouse_id',
     ];
 
     /**

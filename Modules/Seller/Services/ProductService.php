@@ -24,12 +24,12 @@ class ProductService
         return $this->productRepository->getAllSellerProduct();
     }
 
-    public function getRecomandedProduct(){
-        return $this->productRepository->getRecomandedProduct();
+    public function getRecomandedProduct($seller_id = null){
+        return $this->productRepository->getRecomandedProduct($seller_id);
     }
 
-    public function getTopPicks(){
-        return $this->productRepository->getTopPicks();
+    public function getTopPicks($seller_id = null){
+        return $this->productRepository->getTopPicks($seller_id);
     }
 
     public function getSellerProductById($id){

@@ -244,11 +244,17 @@ class CategoryController extends Controller
         $filterRepo = new FilterRepository();
         $brands = $filterRepo->filterBrandCategoryWise($id, $category_ids);
         $category_ids = array_merge($category_ids,[intval($id)]);
-        $catProducts = SellerProduct::where('status', 1)->whereHas('product', function($query) use ($id, $category_ids){
+        $catProductsQuery = SellerProduct::where('status', 1)->whereHas('product', function($query) use ($id, $category_ids){
             return $query->Wherehas('categories',function($q)use($category_ids){
                 return $q->whereIn('category_id', $category_ids);
             });
-        })->pluck('id')->toArray();
+        });
+
+        if (request()->has('seller_id')) {
+            $catProductsQuery->where('user_id', request()->seller_id);
+        }
+
+        $catProducts = $catProductsQuery->pluck('id')->toArray();
         $lowest_price = $filterRepo->filterProductMinPrice($catProducts);
         $height_price = $filterRepo->filterProductMaxPrice($catProducts);
         if($category){

@@ -38,7 +38,7 @@
     "Backup": true,
     "Utilities": true,
     "FormBuilder": true,
-    "MultiVendor": false,
+    "MultiVendor": true,
     "Driver": true,
     "Otp": false,
     "Affiliate": true,

@@ -80,9 +80,15 @@ class Brand extends Model
 
     public function sellerProductsAll()
     {
-        return SellerProduct::where('status', 1)->whereHas('product', function ($query) {
+        $query = SellerProduct::where('status', 1)->whereHas('product', function ($query) {
             return $query->where('brand_id', $this->id);
-        })->activeSeller()->get();
+        })->activeSeller();
+
+        if (request()->has('seller_id')) {
+            $query->where('user_id', request()->seller_id);
+        }
+
+        return $query->get();
     }
     public function sellerProducts()
     {
@@ -132,9 +138,15 @@ class Brand extends Model
     //for api
     public function getAllProductsAttribute()
     {
-        return SellerProduct::with('product')->whereHas('product', function ($query) {
+        $query = SellerProduct::with('product')->whereHas('product', function ($query) {
             return $query->where('brand_id', $this->id);
-        })->activeSeller()->paginate(10);
+        })->activeSeller();
+
+        if (request()->has('seller_id')) {
+            $query->where('user_id', request()->seller_id);
+        }
+
+        return $query->paginate(10);
     }
 
     protected static function factory()

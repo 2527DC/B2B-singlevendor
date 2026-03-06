@@ -26,6 +26,8 @@ use Modules\GeneralSetting\Entities\NotificationSetting;
 use Modules\MultiVendor\Repositories\CommisionRepository;
 use Modules\GeneralSetting\Entities\UserNotificationSetting;
 use Modules\MultiVendor\Http\Requests\SellerPassordChangeRequest;
+use Modules\MultiVendor\Entities\SellerAccount;
+use Modules\MultiVendor\Entities\SellerWarehouseAddress;
 
 class MerchantController extends Controller
 {
@@ -527,6 +529,36 @@ class MerchantController extends Controller
         } catch (Exception $e) {
             LogActivity::errorLog($e->getMessage());
             return response()->json(['error' => $e->getMessage()],503);
+        }
+    }
+    public function sellerlistapi()
+    {
+        try {
+            $merchants = SellerAccount::with(['user.SellerWarehouseAddress'])
+                ->whereHas('user', function($q){
+                    $q->where('is_active', 1)->whereHas('role', function($q2){
+                        $q2->where('type', 'seller');
+                    });
+                })
+                ->get()
+                ->map(function($seller_account){
+                    $warehouse = $seller_account->user->SellerWarehouseAddress;
+                    unset($seller_account->user);
+                    return [
+                        'seller_account' => $seller_account,
+                        'seller_warehouse_address' => $warehouse
+                    ];
+                });
+                
+            return response()->json([
+                'merchants' => $merchants,
+                'message' => 'success'
+            ], 200);
+        } catch (Exception $e) {
+            LogActivity::errorLog($e->getMessage());
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 }

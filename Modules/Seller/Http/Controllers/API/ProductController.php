@@ -825,8 +825,8 @@ public function varientwholesaleProduct($id)
      *       }
      * }
      */
-    public function recomandedProduct(){
-        $products = $this->productService->getRecomandedProduct();
+    public function recomandedProduct(Request $request){
+        $products = $this->productService->getRecomandedProduct($request->seller_id);
         if(count($products) > 0){
             return ToppicksResource::collection($products);
         }else{
@@ -941,8 +941,8 @@ public function varientwholesaleProduct($id)
      *       }
      * }
      */
-    public function topPicks(){
-        $products = $this->productService->getTopPicks();
+    public function topPicks(Request $request){
+        $products = $this->productService->getTopPicks($request->seller_id);
         //dd($products);
         return ToppicksResource::collection($products);
     }

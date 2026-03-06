@@ -13,6 +13,9 @@ use Illuminate\Http\Request;
 |
 */
 
+
+
+ Route::get('/customer/merchants', 'MerchantController@sellerlistapi')->name('customer.merchants_list');
 Route::middleware('auth:api')->get('/multivendor', function (Request $request) {
     return $request->user();
 });

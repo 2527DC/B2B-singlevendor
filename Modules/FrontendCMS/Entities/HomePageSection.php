@@ -115,7 +115,7 @@ class HomePageSection extends Model
         return $brands->distinct('brands.id')->take($paginate)->get();
     }
 
-    public function getApiProductByQuery()
+    public function getApiProductByQuery($seller_id = null)
     {
         $products = SellerProduct::with(
             'product.shippingMethods.shippingMethod',
@@ -131,6 +131,10 @@ class HomePageSection extends Model
             'product.tags',
             'product.gallary_images'
         )->activeSeller();
+
+        if($seller_id){
+            $products = $products->where('user_id', $seller_id);
+        }
 
         if ($this->type == 1) {
             $products->whereHas('product',function($query){

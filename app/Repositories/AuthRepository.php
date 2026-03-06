@@ -38,8 +38,8 @@ class AuthRepository{
             'store_name'    => $data['store_name'] ?? null, // ✅ Add store name
             // 'document_type' => $data['document_type'] ?? null, // ✅ Add document type
             'document'      => $data['document_path'] ?? null, // ✅ Add document path
-            'store_image'      => $data['store_image'] ?? null, // ✅ Add document path
-
+            'store_image'   => $data['store_image'] ?? null,   // ✅ Add store image path
+            'warehouse_id'  => $data['warehouse_id'] ?? null,  // ✅ Add warehouse_id
         ]);
     
         // User Notification Setting

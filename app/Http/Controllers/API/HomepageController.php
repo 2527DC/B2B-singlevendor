@@ -27,11 +27,15 @@ use App\Http\Resources\Api\v1\RecommendedProductListResource;
 
 class HomepageController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $seller_id = $request->get('seller_id');
         $homepagesection = HomePageSection::where('section_name', 'feature_categories')->first();
 
-        $categories = Category::with(['sellerProducts.product', 'sellerProducts.seller', 'categoryImage', 'parentCategory', 'subCategories']);
+        $categories = Category::with(['sellerProducts' => function($q) {
+            $q->with('product', 'seller');
+        }, 'categoryImage', 'parentCategory', 'subCategories']);
+
         if ($homepagesection->type == 1) {
             $categories = $categories->orderByDesc('total_sale');
         }
@@ -77,8 +81,9 @@ class HomepageController extends Controller
 
         $section = HomePageSection::where('section_name', 'top_picks')->first();
 
+        $top_picks = [];
         if ($section) {
-            $top_picks =   ToppicksResource::collection($section->getApiProductByQuery());
+            $top_picks =   ToppicksResource::collection($section->getApiProductByQuery($seller_id));
         }
 
         return response()->json([

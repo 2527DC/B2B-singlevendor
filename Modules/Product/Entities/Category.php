@@ -156,11 +156,17 @@ class Category extends Model
     }
     //for api
     public function getAllProductsAttribute(){
-        return SellerProduct::with('product','reviews')->whereHas('product', function($query){
+        $query = SellerProduct::with('product', 'reviews')->whereHas('product', function($query){
             return $query->whereHas('categories', function($q){
                 $q->where('category_id', $this->id);
             })->where('status', 1);
-        })->activeSeller()->where('status', 1)->paginate(10);
+        })->activeSeller()->where('status', 1);
+
+        if (request()->has('seller_id')) {
+            $query->where('user_id', request()->seller_id);
+        }
+
+        return $query->paginate(10);
     }
     public function affiliateCategoryCommission()
     {

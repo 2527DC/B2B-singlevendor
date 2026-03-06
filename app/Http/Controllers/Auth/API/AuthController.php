@@ -501,9 +501,10 @@ public function register(Request $request)
             'user_type'     => $request->input('user_type'),
             'device_token'  => $request->input('device_token'),
             'store_name'    => $request->input('store_name'),
-            'store_image'   => $storeImagePath, // Add store image path
-            'document_path' => $documentPath, // Add the document path
+            'store_image'   => $storeImagePath,               // Add store image path
+            'document_path' => $documentPath,                  // Add the document path
             'referral_code' => $request->input('referral_code'),
+            'warehouse_id'  => $request->input('warehouse_id'), // warehouse_id (added via SQL, registered here)
         ];
 
         // Check if user already exists by phone or email
