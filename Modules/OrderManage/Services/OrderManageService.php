@@ -22,6 +22,11 @@ class OrderManageService
         return $this->ordermanageRepository->myCompletedSalesList();
     }
 
+    public function myPendingSalesList()
+    {
+        return $this->ordermanageRepository->myPendingSalesList();
+    }
+
     public function myPendingPaymentSalesList()
     {
         return $this->ordermanageRepository->myPendingPaymentSalesList();

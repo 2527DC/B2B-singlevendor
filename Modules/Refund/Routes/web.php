@@ -54,6 +54,12 @@ Route::prefix('refund')->group(function() {
         Route::post('/seller-return-request/bulk-assign-driver', 'ReturnRequestController@bulk_assign_driver')->name('refund.seller_return_request_bulk_assign_driver');
         Route::post('/seller-return-request/bulk-update-status', 'ReturnRequestController@bulk_update_status')->name('refund.seller_return_request_bulk_update_status');
         Route::post('/seller-return-request/update-status', 'ReturnRequestController@update_status')->name('refund.seller_return_request_update_status');
+        
+        Route::get('/seller-rvp-data', 'RefundController@seller_rvp_data')->name('refund.seller_rvp_data');
+        Route::get('/seller-rvp/request-products', 'RefundController@rvp_request_products')->name('refund.rvp_request_products');
+        Route::post('/rvp/bulk-assign-driver', 'RefundController@rvp_bulk_assign_driver')->name('refund.rvp_bulk_assign_driver');
+
+        Route::post('/rvp/bulk-complete', 'RefundController@rvp_bulk_complete')->name('refund.rvp_bulk_complete');
     });
     Route::post('/get-refund-package-data', 'RefundController@getRefundPackage')->name('refund.get_refund_package_data');
 

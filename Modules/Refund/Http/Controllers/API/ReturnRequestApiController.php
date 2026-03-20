@@ -32,7 +32,7 @@ class ReturnRequestApiController extends Controller
      *      "data": {
      *          "id": 1,
      *          "order_id": 10,
-     *          "status": "pending",
+     *          "status": "picked_up",
      *          ...
      *      }
      * }
@@ -80,7 +80,7 @@ class ReturnRequestApiController extends Controller
                 'customer_id' => $order->customer_id,
                 'seller_id' => $seller_id,
                 'driver_id' => auth('sanctum')->id(), // Authenticated driver
-                'status' => 'pending',
+                'status' => 'picked_up',
                 'return_type' => $request->return_type,
                 'reason' => $request->reason,
                 'note' => $request->note,
@@ -229,6 +229,77 @@ class ReturnRequestApiController extends Controller
                 'message' => 'Return request not found or access denied',
                 'error' => $e->getMessage()
             ], 404);
+        }
+    }
+
+    /**
+     * Get RTO Requests for a Driver
+     * 
+     * @queryParam driver_id integer required The ID of the driver.
+     * 
+     * @response {
+     *      "message": "success",
+     *      "data": [
+     *          {
+     *              "id": 1,
+     *              "order_id": 10,
+     *              "driver_id": 5,
+     *              ...
+     *          }
+     *      ]
+     * }
+     */
+    public function getRtoRequests(Request $request)
+    {
+        $request->validate([
+            'driver_id' => 'required|integer|exists:drivers,id',
+        ]);
+
+        try {
+            $requests = \Modules\Refund\Entities\RefundRequest::with(['order', 'customer', 'refund_details'])
+                ->where('driver_id', $request->driver_id)
+                ->latest()
+                ->get();
+
+            return response()->json([
+                'data' => $requests,
+                'message' => 'success'
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Something went wrong',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Update Refund Request Status to picked_up
+     * 
+     * @response {
+     *      "message": "Refund request updated to picked_up successfully",
+     *      "data": { ... }
+     * }
+     */
+    public function updateRefundStatus($id)
+    {
+        try {
+            $refundRequest = \Modules\Refund\Entities\RefundRequest::findOrFail($id);
+            $refundRequest->update([
+                'delivery_status' => 'picked_up'
+            ]);
+
+            return response()->json([
+                'message' => 'Refund request updated to picked_up successfully',
+                'data' => $refundRequest
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Something went wrong',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 }

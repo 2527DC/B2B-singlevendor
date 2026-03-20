@@ -13,6 +13,9 @@ use Brian2694\Toastr\Facades\Toastr;
 use Modules\Refund\Http\Requests\RefundCreateRequest;
 use Modules\UserActivityLog\Traits\LogActivity;
 use Yajra\DataTables\Facades\DataTables;
+use Modules\Refund\Entities\RefundProduct;
+use Modules\Refund\Entities\RefundRequestDetail;
+use Modules\Refund\Entities\RefundRequest;
 
 class RefundController extends Controller
 {
@@ -79,8 +82,12 @@ class RefundController extends Controller
     }
     public function seller_refund_request_list()
     {
-         $refund_request_details = $this->refundService->getRequestSeller();
-        return view('refund::seller.refund_requests.index',compact('refund_request_details'));
+        $seller_id = getParentSellerId();
+        $refund_request_details = $this->refundService->getRequestSeller();
+        $drivers = \Modules\Driver\Entities\Driver::where('seller_id', $seller_id)
+            ->where('is_active', 1)
+            ->get();
+        return view('refund::seller.refund_requests.index',compact('refund_request_details', 'drivers'));
     }
     public function seller_refund_request_data()
     {
@@ -281,5 +288,111 @@ class RefundController extends Controller
         $refundProcessRepo = new RefundProcessRepository;
         $processes = $refundProcessRepo->getAll();
         return view('refund::admin.refund_requests.components._modal_for_package_manage',compact('refund_detail','processes'));
+    }
+    public function seller_rvp_data(Request $request)
+    {
+        $seller_id = getParentSellerId();
+        $type = $request->type; // assigned or unassigned
+        $query = RefundRequest::with(['order', 'driver', 'refund_details' => function($q) use($seller_id){
+                $q->where('seller_id', $seller_id);
+            }])
+            ->where('is_confirmed', 1)
+            ->whereHas('refund_details', function($q) use($seller_id){
+                $q->where('seller_id', $seller_id);
+            });
+
+        if($type == 'assigned'){
+            $query->whereNotNull('driver_id');
+        }elseif($type == 'unassigned'){
+            $query->whereNull('driver_id');
+        }
+
+        $query = $query->latest();
+
+        return DataTables::of($query)
+            ->addIndexColumn()
+            ->addColumn('order_id', function ($data) {
+                return getNumberTranslate(optional($data->order)->order_number ?? 'N/A');
+            })
+            ->addColumn('total_amount', function ($data) {
+                return single_price($data->total_return_amount);
+            })
+            ->addColumn('date', function ($data) {
+                return dateConvert($data->created_at);
+            })
+            ->addColumn('vehicle_number', function ($data) {
+                return optional($data->driver)->vehicle_number ?? 'N/A';
+            })
+            ->addColumn('delivery_status', function ($data) {
+                $status = $data->delivery_status ?? 'processing';
+                $color = 'orange';
+                if($status == 'picked_up') $color = 'blue';
+                if($status == 'completed') $color = 'green';
+                return '<span class="badge badge-'. $color .'">'. __("common." . $status) .'</span>';
+            })
+            ->addColumn('refund_status', function ($data) {
+                return $data->is_refunded == 1 ? '<span class="badge badge-green">'.__("common.paid").'</span>' : '<span class="badge badge-orange">'.__("common.pending").'</span>';
+            })
+            ->addColumn('action', function ($data) {
+                return '<button type="button" class="primary-btn radius_30px mr-10 fix-gr-bg expand_request" data-id="' . $data->id . '">'.__('common.details').'</button>';
+            })
+            ->addColumn('checkbox', function ($data) {
+                return '<input type="checkbox" class="rvp_checkbox" name="rvp_ids[]" value="' . $data->id . '">';
+            })
+            ->rawColumns(['checkbox', 'action', 'delivery_status', 'refund_status'])
+            ->toJson();
+    }
+
+    public function rvp_request_products(Request $request)
+    {
+        $seller_id = getParentSellerId();
+        $request_id = $request->request_id;
+        
+        $products = RefundProduct::with(['seller_product_sku.product'])
+            ->whereHas('refund_request_detail', function($q) use($seller_id, $request_id){
+                $q->where('seller_id', $seller_id)->where('refund_request_id', $request_id);
+            })->get();
+
+        return view('refund::seller.refund_requests.components._rvp_products_list', compact('products'));
+    }
+
+    public function rvp_bulk_assign_driver(Request $request)
+    {
+        try{
+            $request_ids = $request->ids; // These are RefundRequest IDs
+            $driver_id = $request->driver_id;
+            
+            if(!empty($request_ids)){
+                RefundRequest::whereIn('id', $request_ids)->update(['driver_id' => $driver_id]);
+                return response()->json(['message' => __('common.operation_successful')], 200);
+            }
+            
+            return response()->json(['message' => 'No valid refund requests found for selection.'], 404);
+            
+        }catch(\Exception $e){
+            \Log::error($e->getMessage());
+            return response()->json(['message' => __('common.operation_failed')], 500);
+        }
+    }
+
+    public function rvp_bulk_complete(Request $request)
+    {
+        try{
+            $request_ids = $request->ids; // These are RefundRequest IDs
+            
+            if(!empty($request_ids)){
+                RefundRequest::whereIn('id', $request_ids)->update([
+                    'is_completed' => 1,
+                    'delivery_status' => 'completed'
+                ]);
+                return response()->json(['message' => __('common.operation_successful')], 200);
+            }
+            
+            return response()->json(['message' => 'No valid refund requests found for selection.'], 404);
+            
+        }catch(\Exception $e){
+            \Log::error($e->getMessage());
+            return response()->json(['message' => __('common.operation_failed')], 500);
+        }
     }
 }

@@ -54,4 +54,5 @@
     'refund_setting' => 'Refund Setting',
     'refund_order_form' => 'Refund Order Form',
     'status_is_changable_after_confirmed_the_refund_request' => 'Status is changable after confirmed the refund request',
+    'manage_rvp' => 'Manage RVP',
 ];

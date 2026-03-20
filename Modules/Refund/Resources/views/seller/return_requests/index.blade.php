@@ -70,18 +70,6 @@
                         <div class="action_stack">
                             <div class="d-flex align-items-center flex-wrap">
                                 <div class="primary_input mr-10" style="min-width: 250px;">
-                                    <select class="primary_select" id="bulk_driver_id">
-                                        <option value="">Select Driver</option>
-                                        @foreach($drivers as $driver)
-                                            <option value="{{ $driver->id }}">{{ $driver->name }}@if($driver->vehicle_number) - {{$driver->vehicle_number}}@endif</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <button type="button" id="apply_bulk_assign" class="primary-btn fix-gr-bg">Assign Driver</button>
-                            </div>
-
-                            <div class="d-flex align-items-center flex-wrap">
-                                <div class="primary_input mr-10" style="min-width: 250px;">
                                     <select class="primary_select" id="bulk_status">
                                         <option value="">Select Status</option>
                                         <option value="at_warehouse">At Warehouse</option>
@@ -171,43 +159,6 @@
             $(document).on('click', '#selectAll', function(){
                 var checked = $(this).is(':checked');
                 $('.bulk-select').prop('checked', checked);
-            });
-
-            $(document).on('click', '#apply_bulk_assign', function(){
-                var driverId = $('#bulk_driver_id').val();
-                if(driverId == '') driverId = null;
-                var selected = [];
-                $('.bulk-select:checked').each(function(){
-                    selected.push($(this).val());
-                });
-                if(selected.length == 0){
-                    alert('{{__('order.select_at_least_one')}}');
-                    return;
-                }
-
-                var csrfToken = $('meta[name="csrf-token"]').attr('content') || $('meta[name="_token"]').attr('content');
-                $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': csrfToken } });
-                $.ajax({
-                    url: "{{ route('refund.seller_return_request_bulk_assign_driver') }}",
-                    method: 'POST',
-                    data: { ids: selected, driver_id: driverId },
-                    beforeSend: function(){
-                        $('#apply_bulk_assign').prop('disabled', true);
-                    },
-                    success: function(res){
-                        toastr.success(res.message || 'Driver assigned successfully', 'Success');
-                        $('#apply_bulk_assign').prop('disabled', false);
-                        $('#returnTable').DataTable().ajax.reload();
-                    },
-                    error: function(err){
-                        var msg = 'Operation failed';
-                        if(err.responseJSON && err.responseJSON.message) {
-                            msg = err.responseJSON.message;
-                        }
-                        toastr.error(msg, 'Error');
-                        $('#apply_bulk_assign').prop('disabled', false);
-                    }
-                });
             });
 
             $(document).on('click', '#apply_bulk_status', function(){

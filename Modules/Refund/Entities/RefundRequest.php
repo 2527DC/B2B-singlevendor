@@ -61,4 +61,8 @@ class RefundRequest extends Model
             return "Pending";
         }
     }
+    public function driver()
+    {
+        return $this->belongsTo(\Modules\Driver\Entities\Driver::class, 'driver_id', 'id');
+    }
 }

@@ -740,6 +740,16 @@ return [
     "value" => "Value",
     "please_select" => "Please Select",
     "languages" => "Languages",
-    "operation_successful" => "Operation Successful"
-
+    "operation_successful" => "Operation Successful",
+    "select_driver" => "Select Driver",
+    "assign_driver" => "Assign Driver",
+    "product_name" => "Product Name",
+    "vehicle_no" => "Vehicle No",
+    "assigned" => "Assigned",
+    "unassigned" => "Unassigned",
+    "completed" => "Completed",
+    "processing" => "Processing",
+    "picked_up" => "Picked Up",
+    "delivery_status" => "Delivery Status",
+    "refund_status" => "Refund Status"
 ];

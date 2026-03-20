@@ -44,6 +44,14 @@ class OrderManageRepository
         })->where('order_package_details.is_cancelled', 0)->with('order', 'seller', 'order.customer')->where('seller_id', $seller_id)->select('order_package_details.*')->latest();
     }
 
+    public function myPendingSalesList()
+    {
+        $seller_id = getParentSellerId();
+        return OrderPackageDetail::whereHas('order', function ($q) {
+            $q->where('orders.is_cancelled', 0)->where('is_confirmed', 0);
+        })->where('order_package_details.is_cancelled', 0)->with('order', 'seller', 'order.customer')->where('seller_id', $seller_id)->select('order_package_details.*')->latest();
+    }
+
     public function myPendingPaymentSalesList()
     {
         $seller_id = getParentSellerId();

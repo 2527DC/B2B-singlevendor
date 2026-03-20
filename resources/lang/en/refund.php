@@ -58,4 +58,6 @@
     'driver' => 'Driver',
     'picked_up' => 'Picked Up',
     'at_warehouse' => 'At Warehouse',
+    'manage_rvp' => 'Manage RVP',
+    'refund_reason' => 'Refund Reason',
 ];

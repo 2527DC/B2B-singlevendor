@@ -51,6 +51,8 @@ class OrderManageController extends Controller
             $table = $_GET['table'];
             if ($table == 'pending_payment') {
                 $order_package = $this->ordermanageService->myPendingPaymentSalesList();
+            } elseif ($table == 'pending') {
+                $order_package = $this->ordermanageService->myPendingSalesList();
             } elseif ($table == 'confirmed') {
                 $order_package = $this->ordermanageService->myConfirmedSalesList();
             } elseif ($table == 'completed') {
@@ -81,10 +83,13 @@ class OrderManageController extends Controller
                 ->addColumn('order_status', function ($order_package) {
                     return view('ordermanage::order_manage.components._my_order_status_td', compact('order_package'));
                 })
+                ->addColumn('vehicle_no', function ($order_package) {
+                    return @$order_package->order->driver->vehicle_number ?? '--';
+                })
                 ->addColumn('action', function ($order_package) {
                     return view('ordermanage::order_manage.components._my_order_action_td', compact('order_package'));
                 })
-                ->rawColumns(['order_status', 'is_paid', 'action'])
+                ->rawColumns(['order_status', 'is_paid', 'action', 'vehicle_no'])
                 ->toJson();
         }
     }
@@ -492,6 +497,40 @@ class OrderManageController extends Controller
             Toastr::error(__('common.operation_failed'));
             LogActivity::errorLog($e->getMessage());
             return back();
+        }
+    }
+
+    public function bulk_confirm_pending(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'order_ids' => 'required|array'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' => __('validation.failed'), 'errors' => $validator->errors()], 422);
+        }
+
+        DB::beginTransaction();
+        try {
+            $orderIds = $request->input('order_ids');
+            $processedOrders = 0;
+
+            foreach ($orderIds as $orderId) {
+                // orderConfirm handles order level confirmation
+                $result = $this->ordermanageService->orderConfirm($orderId);
+                if ($result == 'done') {
+                    $processedOrders++;
+                }
+            }
+
+            DB::commit();
+            LogActivity::successLog('Bulk confirm pending orders completed.');
+            return response()->json(['message' => __('common.updated_successfully'), 'processed_orders' => $processedOrders], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('bulk_confirm_pending exception', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            LogActivity::errorLog($e->getMessage());
+            return response()->json(['message' => __('common.operation_failed')], 500);
         }
     }
 

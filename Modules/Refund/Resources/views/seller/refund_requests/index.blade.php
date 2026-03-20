@@ -7,11 +7,16 @@
                 <div class="box_header common_table_header">
                     <div class="main-title d-md-flex">
                         <h3 class="mb-0 mr-30 mb_xs_15px mb_sm_20px">{{ __('common.my') }} {{ __('refund.pending_refund_requests') }}</h3>
+                        <ul class="d-flex">
+                            <li><button type="button" id="manage_rvp_btn" class="primary-btn radius_30px mr-10 fix-gr-bg">{{ __('refund.manage_rvp') }}</button></li>
+                        </ul>
                     </div>
                 </div>
-                <div class="QA_section QA_section_heading_custom check_box_table">
-                    <div class="QA_table ">
-                        <table id="refundTable" class="table Crm_table_active3">
+                @include('refund::seller.refund_requests.manage_rvp')
+                <div id="main_refund_section">
+                    <div class="QA_section QA_section_heading_custom check_box_table">
+                        <div class="QA_table ">
+                            <table id="refundTable" class="table Crm_table_active3">
                             <thead>
                                 <tr>
                                     <th>{{ __('common.sl') }}</th>
@@ -26,6 +31,7 @@
                             </thead>
                         </table>
                     </div>
+                </div>
                 </div>
             </div>
             </div>

@@ -467,35 +467,114 @@ class RefundRepository
     }
     public function updateRefundStateBySeller($data, $id)
     {
-        $refund = RefundRequestDetail::findOrFail($id);
+        $refund_detail = RefundRequestDetail::findOrFail($id);
+        $refund_request = $refund_detail->refund_request;
+
         $last_refund_process = RefundProcess::orderByDesc('id')->first();
-        $refund->update([
-            'processing_state' => $data['processing_state']
-        ]);
-        if(!$refund->refund_request->is_refunded && $data['processing_state'] == $last_refund_process->id){
-            $refund_infos['seller_id'] = $refund->seller_id;
-            $refund_infos['amount'] = $refund->refund_request->total_return_amount;
+
+        // 1. Handle Refund Money Status (Wallet/Bank transaction)
+        if ($refund_request->is_refunded == 0 && isset($data['is_refunded']) && $data['is_refunded'] == 1) {
+            $refund_infos['seller_id'] = $refund_detail->seller_id;
+            $refund_infos['amount'] = $refund_request->total_return_amount;
             $refund_infos['type'] = 'Refund';
-            if ($refund->refund_request->refund_method == "wallet") {
+            if ($refund_request->refund_method == "wallet") {
                 $walletRepo = new WalletRepository;
-                $walletRepo->walletRefundPaymentTransaction($refund->refund_request->id, $refund_infos, $refund->refund_request->customer_id);
-                $this->sendMailTest($refund->refund_request->customer->email, "Refund Money Back to You", "Your Money has been added in your wallet for refund purpose.");
+                $walletRepo->walletRefundPaymentTransaction($refund_request->id, $refund_infos, $refund_request->customer_id);
+                $this->sendMailTest($refund_request->customer->email, "Refund Money Back to You", "Your Money has been added in your wallet for refund purpose.");
             } else {
                 $walletRepo = new WalletRepository;
-                $walletRepo->walletRefundPaymentTransaction($refund->refund_request->id, $refund_infos, null);
-                $this->sendMailTest($refund->refund_request->customer->email, "Refund Money Back to You", "Your Money has been returned in your provided bank Account for refund purpose.");
+                $walletRepo->walletRefundPaymentTransaction($refund_request->id, $refund_infos, null);
+                $this->sendMailTest($refund_request->customer->email, "Refund Money Back to You", "Your Money has been returned in your provided bank Account for refund purpose.");
             }
-            $refund->refund_request->update([
-                'is_refunded' => 1,
-                'is_completed' => 1
-            ]);
         }
-        RefundState::create([
-            'refund_request_detail_id' => $id,
-            'state' => $data['processing_state']
-        ]);
-        if (app('business_settings')->where('type', 'mail_notification')->first()->status == 1) {
-            $this->sendOrderRefundorDeliveryProcessMail(@$refund->refund_request->order, "Modules\Refund\Entities\RefundProcess", $data['processing_state']);
+
+        // 2. Automated refund logic triggered by processing_state (existing seller logic)
+        if (!$refund_request->is_refunded && isset($data['processing_state']) && $data['processing_state'] == $last_refund_process->id) {
+            $refund_infos['seller_id'] = $refund_detail->seller_id;
+            $refund_infos['amount'] = $refund_request->total_return_amount;
+            $refund_infos['type'] = 'Refund';
+            if ($refund_request->refund_method == "wallet") {
+                $walletRepo = new WalletRepository;
+                $walletRepo->walletRefundPaymentTransaction($refund_request->id, $refund_infos, $refund_request->customer_id);
+                $this->sendMailTest($refund_request->customer->email, "Refund Money Back to You", "Your Money has been added in your wallet for refund purpose.");
+            } else {
+                $walletRepo = new WalletRepository;
+                $walletRepo->walletRefundPaymentTransaction($refund_request->id, $refund_infos, null);
+                $this->sendMailTest($refund_request->customer->email, "Refund Money Back to You", "Your Money has been returned in your provided bank Account for refund purpose.");
+            }
+            $refund_request->is_refunded = 1;
+            $refund_request->is_completed = 1;
+        }
+
+        // 3. Handle Notifications for Refund Status changes
+        if (isset($data['is_refunded']) && $refund_request->is_refunded != $data['is_refunded']) {
+            if (app('business_settings')->where('type', 'mail_notification')->first()->status == 1) {
+                switch ($data['is_refunded']) {
+                    case 0:
+                        $this->sendOrderRefundInfoUpdateMail($refund_request->order, 12);
+                        break;
+                    case 1:
+                        $this->sendOrderRefundInfoUpdateMail($refund_request->order, 11);
+                        break;
+                }
+            }
+        }
+
+        // 4. Update Processing State
+        if (isset($data['processing_state']) && $refund_detail->processing_state != $data['processing_state']) {
+            $refund_detail->processing_state = $data['processing_state'];
+            $refund_detail->save();
+
+            RefundState::create([
+                'refund_request_detail_id' => $id,
+                'state' => $data['processing_state']
+            ]);
+
+            if (app('business_settings')->where('type', 'mail_notification')->first()->status == 1) {
+                $this->sendOrderRefundorDeliveryProcessMail(@$refund_request->order, "Modules\Refund\Entities\RefundProcess", $data['processing_state']);
+            }
+        }
+
+        // 5. Handle Request Confirmation Status
+        if (isset($data['is_confirmed']) && $refund_request->is_confirmed != $data['is_confirmed']) {
+            if (app('business_settings')->where('type', 'mail_notification')->first()->status == 1) {
+                switch ($data['is_confirmed']) {
+                    case 0:
+                        $this->sendOrderRefundInfoUpdateMail($refund_request->order, 8);
+                        break;
+                    case 1:
+                        $this->sendOrderRefundInfoUpdateMail($refund_request->order, 9);
+                        break;
+                    case 2:
+                        $this->sendOrderRefundInfoUpdateMail($refund_request->order, 10);
+                        break;
+                }
+            }
+            if ($data['is_confirmed'] == 1) {
+                $refund_detail->update([
+                    'processing_state' => 2
+                ]);
+            }
+        }
+
+        // 6. Handle Completion Status Notification
+        if (isset($data['is_completed']) && $refund_request->is_completed != $data['is_completed']) {
+            if (app('business_settings')->where('type', 'mail_notification')->first()->status == 1) {
+                if ($data['is_completed'] == 1) {
+                    $this->sendOrderRefundInfoUpdateMail($refund_request->order, 13);
+                }
+            }
+        }
+
+        // 7. Save main Request changes
+        $refund_request->is_confirmed = isset($data['is_confirmed']) ? $data['is_confirmed'] : $refund_request->is_confirmed;
+        $refund_request->is_completed = isset($data['is_completed']) ? $data['is_completed'] : $refund_request->is_completed;
+        $refund_request->is_refunded = isset($data['is_refunded']) ? $data['is_refunded'] : $refund_request->is_refunded;
+        $refund_request->save();
+
+        if (isset($data['is_confirmed']) && $data['is_confirmed'] == 1) {
+            $refundOrderSyncController = new RefundOrderSyncWithCarrierController();
+            $refundOrderSyncController->refundOrderSyncWithCarrier($refund_request->id);
         }
     }
     public function getActiveShippingRate()

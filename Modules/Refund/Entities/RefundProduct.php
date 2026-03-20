@@ -22,4 +22,9 @@ class RefundProduct extends Model
     {
         return $this->belongsTo(RefundReason::class, 'refund_reason_id', 'id');
     }
+
+    public function refund_request_detail()
+    {
+        return $this->belongsTo(RefundRequestDetail::class, 'refund_request_detail_id', 'id');
+    }
 }

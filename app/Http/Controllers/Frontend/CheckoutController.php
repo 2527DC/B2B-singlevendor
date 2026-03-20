@@ -40,6 +40,11 @@ class CheckoutController extends Controller
             'referer' => $request->header('referer'),
             'params' => $request->all()
         ]);
+
+        if (empty($request->email)) {
+            $request->merge(['email' => 'dummy_email@gmail.com']);
+        }
+
         if(isset($request->checkout_type) && base64_decode($request->checkout_type) == 'buy_it_now'){
             Log::info('Method checkout inside if of checkout_type  called');
             session()->put('buy_it_now', 'yes');

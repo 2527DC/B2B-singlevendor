@@ -194,19 +194,31 @@
                     <form action="{{ route('refund.update_refund_detail_state_by_seller', $refund_detail->id) }}" method="post">
                         @csrf
                         <div class="row white_box p-25 ml-0 mr-0 box_shadow_white">
-                            @if($refund_detail->refund_request->is_confirmed == 0)
-                            <div class="col-lg-12">
-                                <div class="primary_input">
-                                    <label class="primary_selectlabel alert alert-warning">
-                                        {{__('refund.status_is_changable_after_confirmed_the_refund_request')}}
-                                    </label>
+                            <div class="col-lg-12 p-0">
+                                <div class="primary_input mb-25">
+                                    <label class="primary_input_label" for=""> <strong>{{ __('refund.request_confirmation') }}</strong> </label>
+                                    <select class="primary_select mb-25" name="is_confirmed" id="is_confirmed">
+                                        <option value="0" @if ($refund_detail->refund_request->is_confirmed == 0) selected @endif>{{ __('order.pending') }}</option>
+                                        <option value="1" @if ($refund_detail->refund_request->is_confirmed == 1) selected @endif>{{ __('order.confirmed') }}</option>
+                                        <option value="2" @if ($refund_detail->refund_request->is_confirmed == 2) selected @endif>{{ __('order.declined') }}</option>
+                                    </select>
                                 </div>
                             </div>
-                            @endif
+
+                            <div class="col-lg-12 p-0">
+                                <div class="primary_input mb-25">
+                                    <label class="primary_input_label" for=""> <strong>{{ __('refund.refund_money_status') }}</strong> </label>
+                                    <select class="primary_select mb-25" name="is_refunded" id="is_refunded">
+                                        <option value="0" @if ($refund_detail->refund_request->is_refunded == 0) selected @endif>{{ __('order.pending') }}</option>
+                                        <option value="1" @if ($refund_detail->refund_request->is_refunded == 1) selected @endif>{{ __('order.paid') }}</option>
+                                    </select>
+                                </div>
+                            </div>
+
                             <div class="col-lg-12 p-0">
                                 <div class="primary_input mb-25">
                                     <label class="primary_input_label" for=""> <strong>{{ __('refund.processing_state') }}</strong> </label>
-                                    <select required class="primary_select mb-25" name="processing_state" id="processing_state" @if($refund_detail->refund_request->is_confirmed == 0 || $refund_detail->refund_request->is_confirmed == 2 || $refund_detail->processing_state == 3) disabled @endif>
+                                    <select required class="primary_select mb-25" name="processing_state" id="processing_state">
                                         <option value="">{{ __('common.select')}}</option>
                                         @foreach ($processes as $key => $process)
                                             <option value="{{ $process->id }}" @if ($refund_detail->processing_state == $process->id) selected @endif>{{ $process->name }}</option>
@@ -214,7 +226,18 @@
                                     </select>
                                 </div>
                             </div>
+
                             <div class="col-lg-12 p-0">
+                                <div class="primary_input mb-25">
+                                    <label class="primary_input_label" for=""> <strong>{{ __('refund.is_completed') }}</strong> </label>
+                                    <select class="primary_select mb-25" name="is_completed" id="is_completed">
+                                        <option value="0" @if ($refund_detail->refund_request->is_completed == 0) selected @endif>{{ __('order.pending') }}</option>
+                                        <option value="1" @if ($refund_detail->refund_request->is_completed == 1) selected @endif>{{ __('refund.completed') }}</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-12 p-0 d-flex justify-content-center">
                                 <button class="primary_btn_2"><i class="ti-check"></i>{{ __('common.update') }}
                                 </button>
                             </div>

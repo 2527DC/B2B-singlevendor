@@ -22,5 +22,9 @@ Route::prefix('refund')->group(function(){
     // process
     Route::get('/process-list','API\RefundController@processList');
     Route::get('/process/{id}','API\RefundController@process');
+ 
+    // RTO Requests
+    Route::get('/rto-requests', 'API\ReturnRequestApiController@getRtoRequests');
+    Route::post('/update-refund-status/{id}', 'API\ReturnRequestApiController@updateRefundStatus');
 
 });

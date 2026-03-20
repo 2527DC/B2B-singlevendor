@@ -30,6 +30,45 @@ use Modules\Product\Http\Controllers\API\CategoryController;
 */
 
 
+use Illuminate\Support\Facades\Log;
+
+Route::any('/ss', function (Illuminate\Http\Request $request) {
+    
+    // Create detailed log entry
+    $logData = [
+        'timestamp' => now()->toDateTimeString(),
+        'method' => $request->method(),
+        'device_serial' => $request->input('SN') ?? $request->query('SN') ?? 'unknown',
+        'ip_address' => $request->ip(),
+        'headers' => $request->headers->all(),
+        'query_params' => $request->query(),
+        'raw_data' => $request->getContent(),
+    ];
+    
+    // Log to Laravel log
+    Log::channel('daily')->info('🔵 SECUREYE DEVICE PUSH RECEIVED', $logData);
+    
+    // Also save to a dedicated file for easy viewing
+    $logEntry = sprintf(
+        "[%s] SN: %s | IP: %s | Method: %s | Data: %s\n",
+        $logData['timestamp'],
+        $logData['device_serial'],
+        $logData['ip_address'],
+        $logData['method'],
+        trim(preg_replace('/\s+/', ' ', $logData['raw_data']))
+    );
+    
+    file_put_contents(
+        storage_path('logs/secureye-' . now()->format('Y-m-d') . '.log'),
+        $logEntry,
+        FILE_APPEND
+    );
+    
+    // IMPORTANT: Always return OK (200) - Device expects this
+    return response('OK', 200)
+        ->header('Content-Type', 'text/plain');
+});
+
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/customer-login', [AuthController::class, 'customerLogin']);
 Route::post('/social-login', [AuthController::class, 'socialLogin']);
