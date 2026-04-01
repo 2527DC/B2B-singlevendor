@@ -1,3 +1,5 @@
 storage/framework/views/
 storage/logs/laravel.log
 storage/logs/driver-auth-*.log
+public/backend/photo_proof/*
+!public/backend/photo_proof/.gitkeep

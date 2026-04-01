@@ -531,34 +531,95 @@ class MerchantController extends Controller
             return response()->json(['error' => $e->getMessage()],503);
         }
     }
-    public function sellerlistapi()
-    {
-        try {
-            $merchants = SellerAccount::with(['user.SellerWarehouseAddress'])
-                ->whereHas('user', function($q){
-                    $q->where('is_active', 1)->whereHas('role', function($q2){
-                        $q2->where('type', 'seller');
-                    });
-                })
-                ->get()
-                ->map(function($seller_account){
-                    $warehouse = $seller_account->user->SellerWarehouseAddress;
-                    unset($seller_account->user);
-                    return [
-                        'seller_account' => $seller_account,
-                        'seller_warehouse_address' => $warehouse
-                    ];
-                });
+  public function sellerlistapi()
+{
+    \Log::info('SellerController@sellerlistapi - Start');
+    
+    try {
+        // Log the start of query building
+        \Log::debug('Building seller accounts query');
+        
+        $merchants = SellerAccount::with(['user.SellerWarehouseAddress'])
+            ->whereHas('user', function($q){
+                \Log::debug('Applying user filters', [
+                    'is_active' => 1,
+                    'role_type' => 'seller'
+                ]);
                 
-            return response()->json([
-                'merchants' => $merchants,
-                'message' => 'success'
-            ], 200);
-        } catch (Exception $e) {
-            LogActivity::errorLog($e->getMessage());
-            return response()->json([
-                'message' => $e->getMessage()
-            ], 500);
-        }
+                $q->where('is_active', 1)->whereHas('role', function($q2){
+                    $q2->where('type', 'seller');
+                });
+            })
+            ->get();
+        
+        // Log raw query result
+        \Log::debug('Seller accounts fetched from database', [
+            'count' => $merchants->count(),
+            'raw_ids' => $merchants->pluck('id')->toArray()
+        ]);
+        
+        // Process and transform the data
+        \Log::debug('Processing merchant data with warehouse addresses');
+        
+        $processedMerchants = $merchants->map(function($seller_account){
+            \Log::debug('Processing individual seller', [
+                'seller_account_id' => $seller_account->id,
+                'has_user' => !is_null($seller_account->user),
+                'has_warehouse' => !is_null($seller_account->user->SellerWarehouseAddress ?? null)
+            ]);
+            
+            $warehouse = $seller_account->user->SellerWarehouseAddress ?? null;
+            unset($seller_account->user);
+            
+            if (!$warehouse) {
+                \Log::warning('Seller has no warehouse address', [
+                    'seller_account_id' => $seller_account->id
+                ]);
+            }
+            
+            return [
+                'seller_account' => $seller_account,
+                'seller_warehouse_address' => $warehouse
+            ];
+        });
+        
+        // Log final result
+        \Log::info('Seller list API completed successfully', [
+            'total_merchants' => $processedMerchants->count(),
+            'merchants_with_warehouse' => $processedMerchants->filter(function($item) {
+                return !is_null($item['seller_warehouse_address']);
+            })->count(),
+            'merchants_without_warehouse' => $processedMerchants->filter(function($item) {
+                return is_null($item['seller_warehouse_address']);
+            })->count()
+        ]);
+        
+        return response()->json([
+            'merchants' => $processedMerchants,
+            'message' => 'success'
+        ], 200);
+        
+    } catch (Exception $e) {
+        // Enhanced error logging
+        \Log::error('SellerController@sellerlistapi - Error occurred', [
+            'message' => $e->getMessage(),
+            'code' => $e->getCode(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => $e->getTraceAsString(),
+            'class' => get_class($e)
+        ]);
+        
+        // Keep existing LogActivity call but add more context
+        LogActivity::errorLog($e->getMessage() . ' | File: ' . $e->getFile() . ' | Line: ' . $e->getLine());
+        
+        // Return appropriate error response based on environment
+        $errorMessage = config('app.debug') ? $e->getMessage() : 'An error occurred while fetching sellers';
+        
+        return response()->json([
+            'message' => $errorMessage,
+            'success' => false
+        ], 500);
     }
+}
 }

@@ -204,7 +204,7 @@ class OrderController extends Controller
         }elseif ($payment_method == "RazorPay") {
             $data['gateway_id'] = encrypt(6);
             $razorpayController = new RazorpayController;
-            $response = $razorpayController->paynment($request->all());
+            $response = $razorpayController->payment($request->all());
         }elseif ($payment_method == "Paypal") {
             $data['gateway_id'] = encrypt(3);
             $paypalController = new PayPalController;

@@ -201,12 +201,14 @@ class AuthController extends Controller
             $response = [
                 'user' => $user,
                 'token' => $token,
+                'seller_id' => $user->warehouse_id,
                 'message' => 'Successfully logged in'
             ];
     
             \Log::info('Login successful', [
                 'user_id' => $user->id,
-                'token_created' => true
+                'token_created' => true,
+                'seller_id' => $user->warehouse_id
             ]);
     
             return response($response, 200);
