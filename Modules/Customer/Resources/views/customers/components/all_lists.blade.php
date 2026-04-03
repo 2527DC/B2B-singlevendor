@@ -9,6 +9,7 @@
             <th>{{ __('common.is_active') }}</th>
             <th>{{ __('common.wallet_balance') }}</th>
             <th>{{ __('common.total_orders') }}</th>
+            <th>Warehouse Selected</th>
             <th>{{ __('common.action') }}</th>
         </tr>
     </thead>

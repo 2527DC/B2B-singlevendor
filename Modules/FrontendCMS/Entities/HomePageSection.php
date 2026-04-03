@@ -11,7 +11,7 @@ use Spatie\Translatable\HasTranslations;
 
 class HomePageSection extends Model
 {
-    use HasFactory,HasTranslations;
+    use HasFactory, HasTranslations;
     protected $guarded = ['id'];
     public $translatable = ['title'];
     public function __construct(array $attributes = [])
@@ -39,7 +39,7 @@ class HomePageSection extends Model
     {
         $filterRepo = new FilterRepository();
         $data = $filterRepo->getSectionProducts($this->section_name);
-        return $data['products']->with('skus','product.gallary_images')->take(12)->get();
+        return $data['products']->with('skus', 'product.gallary_images')->take(12)->get();
     }
 
     public function getHomePageProductByQuery()
@@ -47,10 +47,10 @@ class HomePageSection extends Model
         $filterRepo = new FilterRepository();
         $data = $filterRepo->getSectionProducts($this->section_name);
         $paginate = 18;
-        if(app('theme')->folder_path == 'amazy'){
+        if (app('theme')->folder_path == 'amazy') {
             $paginate = 20;
         }
-        return $data['products']->with('skus','wishList','product.shippingMethods')->paginate($paginate);
+        return $data['products']->with('skus', 'wishList', 'product.shippingMethods')->paginate($paginate);
     }
 
     public function getCategoryByQuery()
@@ -73,10 +73,10 @@ class HomePageSection extends Model
         }
         if ($this->type == 6) {
             $category_ids = HomepageCustomCategory::where('section_id', $this->id)->pluck('category_id')->toArray();
-            $categories = $categories->whereRaw("id in ('". implode("','",$category_ids)."')");
+            $categories = $categories->whereRaw("id in ('" . implode("','", $category_ids) . "')");
         }
         $paginate = 12;
-        if(app('theme')->folder_path == 'amazy'){
+        if (app('theme')->folder_path == 'amazy') {
             $paginate = 8;
         }
         return $categories = $categories->take($paginate)->get();
@@ -84,11 +84,15 @@ class HomePageSection extends Model
 
     public function getBrandByQuery()
     {
-        $brands = Brand::select('brands.*')->where('brands.status', 1)->join('products',function($q){
-            $q->on('products.brand_id','=', 'brands.id')->join('seller_products', function($q1){
+        $brands = Brand::select('brands.*')->where('brands.status', 1)->join('products', function ($q) {
+            $q->on('products.brand_id', '=', 'brands.id')->join('seller_products', function ($q1) {
                 $q1->on('seller_products.product_id', '=', 'products.id');
             });
         });
+
+        // if (auth()->check() && auth()->user()->warehouse_id && $this->section_name == 'top_brands') {
+        //     $brands->where('seller_products.user_id', auth()->user()->warehouse_id);
+        // }
         if ($this->type == 1) {
             $brands = $brands->orderByDesc('brands.total_sale');
         }
@@ -109,7 +113,7 @@ class HomePageSection extends Model
             $brands = $brands->whereIn('brands.id', $brand_ids);
         }
         $paginate = 12;
-        if(app('theme')->folder_path == 'amazy'){
+        if (app('theme')->folder_path == 'amazy') {
             $paginate = 10;
         }
         return $brands->distinct('brands.id')->take($paginate)->get();
@@ -132,18 +136,18 @@ class HomePageSection extends Model
             'product.gallary_images'
         )->activeSeller();
 
-        if($seller_id){
+        if ($seller_id) {
             $products = $products->where('user_id', $seller_id);
         }
 
         if ($this->type == 1) {
-            $products->whereHas('product',function($query){
-                $query->whereHas('categories', function($q){
+            $products->whereHas('product', function ($query) {
+                $query->whereHas('categories', function ($q) {
                     $q->orderByDesc('category_id');
-                })->where('status',1);
+                })->where('status', 1);
             });
-        }else{
-            $products = $products->whereHas('product', function($query){
+        } else {
+            $products = $products->whereHas('product', function ($query) {
                 $query->where('status', 1);
             });
         }
@@ -171,7 +175,8 @@ class HomePageSection extends Model
         return $products->paginate(10);
     }
 
-    public function customSection(){
-        return $this->hasOne(HomePageCustomSection::class,'section_id', 'id');
+    public function customSection()
+    {
+        return $this->hasOne(HomePageCustomSection::class, 'section_id', 'id');
     }
 }

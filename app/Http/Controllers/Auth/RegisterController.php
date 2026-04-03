@@ -33,6 +33,7 @@ use Exception;
 use Modules\FrontendCMS\Entities\LoginPage;
 use Modules\GeneralSetting\Entities\NotificationSetting;
 use App\Rules\RealEmaill;
+use Modules\MultiVendor\Entities\SellerWarehouseAddress;
 class RegisterController extends Controller
 {
     use Notification, Otp, SendMail, RegistersUsers;
@@ -42,7 +43,7 @@ class RegisterController extends Controller
         if (app('business_settings')->where('type', 'email_verification')->first()->status == 1) {
             return '/user-email-verify';
         }
-        if(session()->has('from_checkout')){
+        if (session()->has('from_checkout')) {
             $next_url = session()->get('from_checkout');
             session()->forget('from_checkout');
             return $next_url;
@@ -60,33 +61,37 @@ class RegisterController extends Controller
     {
         if (env('NOCAPTCHA_FOR_REG') == "true" && app('theme')->folder_path == 'amazy') {
             $g_recaptcha = 'required';
-        }else{
+        } else {
             $g_recaptcha = 'nullable';
         }
         if (filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-           $email = ['required', 'string', 'max:255','email',new RealEmail(),'unique:users,email'];
-        }elseif (preg_match("/^\\+?\\d{1,4}?[-.\\s]?\\(?\\d{1,3}?\\)?[-.\\s]?\\d{1,4}[-.\\s]?\\d{1,4}[-.\\s]?\\d{1,9}$/",$data['email'])) {
-            $email = ['required', 'string','min:7', 'max:16','unique:users,phone'];
-        }else {
-            $email = ['required', 'string', 'max:255','email',new RealEmail()];
+            $email = ['required', 'string', 'max:255', 'email', new RealEmail(), 'unique:users,email'];
+        } elseif (preg_match("/^\\+?\\d{1,4}?[-.\\s]?\\(?\\d{1,3}?\\)?[-.\\s]?\\d{1,4}[-.\\s]?\\d{1,4}[-.\\s]?\\d{1,9}$/", $data['email'])) {
+            $email = ['required', 'string', 'min:7', 'max:16', 'unique:users,phone'];
+        } else {
+            $email = ['required', 'string', 'max:255', 'email', new RealEmail()];
         }
 
-        return Validator::make($data, [
-            'first_name' => ['required', 'string', 'max:255'],
-            'email' => $email,
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'store_name' => ['required', 'string', 'max:191'],
-            // 'document_type' => ['required', Rule::in(['GST','MSME'])],
-            'store_image' => ['required', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
-            'document' => ['required','file','mimes:jpg,jpeg,png,pdf','max:2048'],
+        return Validator::make(
+            $data,
+            [
+                'first_name' => ['required', 'string', 'max:255'],
+                'email' => $email,
+                'password' => ['required', 'string', 'min:8', 'confirmed'],
+                'store_name' => ['required', 'string', 'max:191'],
+                // 'document_type' => ['required', Rule::in(['GST','MSME'])],
+                'store_image' => ['required', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
+                'document' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
+                'warehouse_id' => ['required', 'exists:seller_return_addresses,user_id'],
 
-            'g-recaptcha-response' =>$g_recaptcha,
-            'referral_code' => ['sometimes', 'nullable', Rule::exists('referral_codes', 'referral_code')->where('status', 1)]
-        ],
-        [
-            'password.min' => 'The password field minimum 8 character.',
-            'g-recaptcha-response.required' => 'The google recaptcha field is required.',
-        ]);
+                'g-recaptcha-response' => $g_recaptcha,
+                'referral_code' => ['sometimes', 'nullable', Rule::exists('referral_codes', 'referral_code')->where('status', 1)]
+            ],
+            [
+                'password.min' => 'The password field minimum 8 character.',
+                'g-recaptcha-response.required' => 'The google recaptcha field is required.',
+            ]
+        );
     }
 
     protected function othersFieldValue($data)
@@ -97,58 +102,58 @@ class RegisterController extends Controller
     public function create($data)
     {
         // 📎 Handle GST / MSME document upload
-    // $documentPath = null;
+        // $documentPath = null;
 
-    // if ($data->hasFile('document')) {
-    //     $documentPath = $data->file('document')->store('user_documents', 'public');
-    // }
-    // 📎 Handle GST / MSME document upload
+        // if ($data->hasFile('document')) {
+        //     $documentPath = $data->file('document')->store('user_documents', 'public');
+        // }
+        // 📎 Handle GST / MSME document upload
 // 📎 Handle document upload (public/uploads)
-$documentPath = null;
+        $documentPath = null;
 
-if ($data->hasFile('document')) {
-    $file = $data->file('document');
+        if ($data->hasFile('document')) {
+            $file = $data->file('document');
 
-    $uploadPath = public_path('uploads/images/user_documents');
+            $uploadPath = public_path('uploads/images/user_documents');
 
-    if (!file_exists($uploadPath)) {
-        mkdir($uploadPath, 0755, true);
-    }
+            if (!file_exists($uploadPath)) {
+                mkdir($uploadPath, 0755, true);
+            }
 
-    $fileName = time().'_'.uniqid().'.'.$file->getClientOriginalExtension();
-    $file->move($uploadPath, $fileName);
+            $fileName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $file->move($uploadPath, $fileName);
 
-    $documentPath = 'uploads/images/user_documents/'.$fileName;
-}
+            $documentPath = 'uploads/images/user_documents/' . $fileName;
+        }
 
-// 🖼 Handle Store Image Upload
-$storeImagePath = null;
+        // 🖼 Handle Store Image Upload
+        $storeImagePath = null;
 
-if ($data->hasFile('store_image')) {
-    $file = $data->file('store_image');
+        if ($data->hasFile('store_image')) {
+            $file = $data->file('store_image');
 
-    $uploadPath = public_path('uploads/images/store_images');
+            $uploadPath = public_path('uploads/images/store_images');
 
-    if (!file_exists($uploadPath)) {
-        mkdir($uploadPath, 0755, true);
-    }
+            if (!file_exists($uploadPath)) {
+                mkdir($uploadPath, 0755, true);
+            }
 
-    $fileName = time().'_store_'.uniqid().'.'.$file->getClientOriginalExtension();
-    $file->move($uploadPath, $fileName);
+            $fileName = time() . '_store_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $file->move($uploadPath, $fileName);
 
-    
 
-    $storeImagePath = 'uploads/images/store_images/'.$fileName;
-}
+
+            $storeImagePath = 'uploads/images/store_images/' . $fileName;
+        }
 
 
         $c_data = [];
-        if($data->has('custom_field')){
-            foreach (json_decode($data['custom_field']) as  $key => $f){
-                if($data->hasFile($f)){
+        if ($data->has('custom_field')) {
+            foreach (json_decode($data['custom_field']) as $key => $f) {
+                if ($data->hasFile($f)) {
                     $file = ImageStore::saveImage($data[$f], 250, 250);
                     $c_data[$f] = $file;
-                }else{
+                } else {
                     $c_data[$f] = $data[$f];
                 }
             }
@@ -157,12 +162,12 @@ if ($data->hasFile('store_image')) {
         $field = $data['email'];
         $email = null;
         if (filter_var($field, FILTER_VALIDATE_EMAIL)) {
-            $email= $field;
-        }elseif (preg_match("/^\\+?\\d{1,4}?[-.\\s]?\\(?\\d{1,3}?\\)?[-.\\s]?\\d{1,4}[-.\\s]?\\d{1,4}[-.\\s]?\\d{1,9}$/", $field)) {
-            $phone= $field;
+            $email = $field;
+        } elseif (preg_match("/^\\+?\\d{1,4}?[-.\\s]?\\(?\\d{1,3}?\\)?[-.\\s]?\\d{1,4}[-.\\s]?\\d{1,4}[-.\\s]?\\d{1,9}$/", $field)) {
+            $phone = $field;
         }
 
-        $user =  User::create([
+        $user = User::create([
             'first_name' => $data['first_name'],
             'last_name' => $data['last_name'],
             'username' => isset($phone) ? $phone : NULL,
@@ -173,32 +178,33 @@ if ($data->hasFile('store_image')) {
             'phone' => isset($phone) ? $phone : NULL,
             'store_name' => $data['store_name'],
             'store_image' => $storeImagePath,
-// 'document_type' => $data['document_type'],
-'document' => $documentPath,
+            // 'document_type' => $data['document_type'],
+            'document' => $documentPath,
+            'warehouse_id' => $data['warehouse_id'],
 
             'others' => $this->othersFieldValue($c_data),
             'currency_id' => app('general_setting')->currency,
             'lang_code' => app('general_setting')->language_code,
             'currency_code' => app('general_setting')->currency_code,
-            "is_active" => manualActivation() == true ? 0:1
+            "is_active" => manualActivation() == true ? 0 : 1
         ]);
 
         //affiliate user
-        if(isModuleActive('Affiliate')){
+        if (isModuleActive('Affiliate')) {
             $affiliateRepo = new AffiliateRepository();
             $affiliateRepo->affiliateUser($user->id);
         }
         //User Notification Setting Create
         (new UserNotificationSetting)->createForRegisterUser($user->id);
-            $this->typeId = EmailTemplateType::where('type', 'register_email_template')->first()->id; //register email templete typeid
-            $this->adminNotificationUrl = '/customer/active-customer-list';
-            $this->routeCheck = 'cusotmer.list.get-data';
-            $notification = NotificationSetting::where('slug','register')->first();
-            if ($notification) {
-                $this->notificationSend($notification->id, $user->id);
-            }
+        $this->typeId = EmailTemplateType::where('type', 'register_email_template')->first()->id; //register email templete typeid
+        $this->adminNotificationUrl = '/customer/active-customer-list';
+        $this->routeCheck = 'cusotmer.list.get-data';
+        $notification = NotificationSetting::where('slug', 'register')->first();
+        if ($notification) {
+            $this->notificationSend($notification->id, $user->id);
+        }
         //for email verification
-        if(!isModuleActive('Otp') && !otp_configuration('otp_activation_for_customer') && $email != null){
+        if (!isModuleActive('Otp') && !otp_configuration('otp_activation_for_customer') && $email != null) {
             if (app('business_settings')->where('type', 'email_verification')->first()->status == 1) {
                 $code = '<a class="btn btn-success" href="' . url('/verify?code=') . $user['verify_code'] . '">Click Here To Verify Your Account</a>';
                 $this->sendVerificationMail($user, $code);
@@ -229,34 +235,35 @@ if ($data->hasFile('store_image')) {
     public function register(Request $request)
     {
         if (filter_var($request->email, FILTER_VALIDATE_EMAIL)) {
-          $email = ['required', 'string', 'max:255','email',new RealEmail(),'unique:users,email'];
-        }elseif (preg_match("/^\\+?\\d{1,4}?[-.\\s]?\\(?\\d{1,3}?\\)?[-.\\s]?\\d{1,4}[-.\\s]?\\d{1,4}[-.\\s]?\\d{1,9}$/", $request->email)) {
-            $email = ['required', 'string','min:7', 'max:16','unique:users,phone'];
-        }else {
-            $email = ['required', 'string', 'max:255','email'];
+            $email = ['required', 'string', 'max:255', 'email', new RealEmail(), 'unique:users,email'];
+        } elseif (preg_match("/^\\+?\\d{1,4}?[-.\\s]?\\(?\\d{1,3}?\\)?[-.\\s]?\\d{1,4}[-.\\s]?\\d{1,4}[-.\\s]?\\d{1,9}$/", $request->email)) {
+            $email = ['required', 'string', 'min:7', 'max:16', 'unique:users,phone'];
+        } else {
+            $email = ['required', 'string', 'max:255', 'email'];
         }
-        $request->validate( [
+        $request->validate([
             'first_name' => ['required', 'string', 'max:255'],
             'email' => $email,
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'store_name' => ['required', 'string', 'max:191'],
             'store_image' => ['required', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
             // 'document_type' => ['required', Rule::in(['GST','MSME'])],
-            'document' => ['required','file','mimes:jpg,jpeg,png,pdf','max:2048'],
+            'document' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
+            'warehouse_id' => ['required', 'exists:seller_return_addresses,user_id'],
 
             'referral_code' => ['sometimes', 'nullable', Rule::exists('referral_codes', 'referral_code')->where('status', 1)]
         ], [
             'password.min' => 'The password field minimum 8 character.',
         ]);
 
-        if(manualActivation()){
+        if (manualActivation()) {
             $this->validator($request->all())->validate();
             event(new Registered($user = $this->create($request)));
-            $this->newUserRegistradEmailSend('new_user_registration_template',$user);
-            if(!empty(app('general_setting')->registration_success_url)){
-                $url =app('general_setting')->registration_success_url;
-                return  redirect()->to($url);
-            }else{
+            $this->newUserRegistradEmailSend('new_user_registration_template', $user);
+            if (!empty(app('general_setting')->registration_success_url)) {
+                $url = app('general_setting')->registration_success_url;
+                return redirect()->to($url);
+            } else {
                 Toastr::success(__('auth.successfully_registered_activation'), __('common.success'));
                 return redirect()->to('/');
             }
@@ -279,7 +286,7 @@ if ($data->hasFile('store_image')) {
         $authRepos = new AuthRepository();
         $user_exist = $authRepos->getRegister($request->all());
 
-        if($user_exist){
+        if ($user_exist) {
             $prev_session_id = session()->getId();
             $buy_it_now = session()->get('buy_it_now');
             $this->guard()->login($user_exist);
@@ -304,32 +311,35 @@ if ($data->hasFile('store_image')) {
     {
         $row = '';
         $form_data = '';
-        if(Module::has('FormBuilder')){
-            if(Schema::hasTable('custom_forms')){
+        if (Module::has('FormBuilder')) {
+            if (Schema::hasTable('custom_forms')) {
                 $formBuilderRepo = new FormBuilderRepositories();
                 $row = $formBuilderRepo->find(2);
-                if($row->form_data){
+                if ($row->form_data) {
                     $form_data = json_decode($row->form_data);
                 }
             }
         }
 
-        if(url()->previous() == url('/checkout') || url()->previous() == url('/checkout?checkout_type=YnV5X2l0X25vdw==')){
-            session()->put('from_checkout',url()->previous());
+        if (url()->previous() == url('/checkout') || url()->previous() == url('/checkout?checkout_type=YnV5X2l0X25vdw==')) {
+            session()->put('from_checkout', url()->previous());
         }
 
+        $warehouses = SellerWarehouseAddress::select('id', 'user_id', 'warehouse_name', 'warehouse_address', 'warehouse_phone')->get();
+
         $loginPageInfo = LoginPage::findOrFail(2);
-        return view(theme('auth.register'),compact('row','form_data','loginPageInfo'));
+        return view(theme('auth.register'), compact('row', 'form_data', 'loginPageInfo', 'warehouses'));
     }
 
-    private function dataUpdateWhenLogin($prev_session_id, $buy_it_now){
-        if($buy_it_now == 'yes'){
+    private function dataUpdateWhenLogin($prev_session_id, $buy_it_now)
+    {
+        if ($buy_it_now == 'yes') {
             session()->put('but_it_now', 'yes');
         }
         $carts = Cart::where('session_id', $prev_session_id)->get();
         if ($carts->count()) {
             foreach ($carts as $key => $cartItem) {
-                $cartData = Cart::where('product_id', $cartItem->product_id)->where('user_id', auth()->id())->where('seller_id', $cartItem->seller_id)->where('shipping_method_id', $cartItem->shipping_method_id)->where('product_type',$cartItem->product_type)->first();
+                $cartData = Cart::where('product_id', $cartItem->product_id)->where('user_id', auth()->id())->where('seller_id', $cartItem->seller_id)->where('shipping_method_id', $cartItem->shipping_method_id)->where('product_type', $cartItem->product_type)->first();
                 if ($cartData) {
                     $cartData->update([
                         'qty' => $cartItem->qty,

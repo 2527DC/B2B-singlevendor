@@ -274,6 +274,9 @@ class User extends Authenticatable
     public function SellerWarehouseAddress(){
         return $this->hasOne(SellerWarehouseAddress::class, 'user_id', 'id');
     }
+    public function warehouse(){
+        return $this->belongsTo(\Modules\MultiVendor\Entities\SellerWarehouseAddress::class, 'warehouse_id', 'user_id')->withDefault();
+    }
     public function SellerReturnAddress(){
         return $this->hasOne(SellerReturnAddress::class, 'user_id', 'id');
     }

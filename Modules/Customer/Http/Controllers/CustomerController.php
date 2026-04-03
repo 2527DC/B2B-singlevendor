@@ -27,9 +27,9 @@ class CustomerController extends Controller
     use ImageStore;
     protected $customerService;
 
-    public function __construct(CustomerService  $customerService)
+    public function __construct(CustomerService $customerService)
     {
-        $this->middleware(['auth','maintenance_mode']);
+        $this->middleware(['auth', 'maintenance_mode']);
         $this->middleware(['prohibited_demo_mode'])->only('updatePassword');
         $this->customerService = $customerService;
     }
@@ -38,55 +38,61 @@ class CustomerController extends Controller
         $data['customers'] = $this->customerService->getAll();
         return view('customer::customers.index', $data);
     }
-    public function customer_index_get_data(){
-        if(isset($_GET['table'])){
+    public function customer_index_get_data()
+    {
+        if (isset($_GET['table'])) {
             $table = $_GET['table'];
-            if($table == 'active_customer'){
-                $customer = $this->customerService->getAll()->where('is_active',1);
-            }
-            elseif($table == 'inactive_customer'){
+            if ($table == 'active_customer') {
+                $customer = $this->customerService->getAll()->where('is_active', 1);
+            } elseif ($table == 'inactive_customer') {
                 $customer = $this->customerService->getAll()->where('is_active', 0);
-            }elseif($table == 'all_customer'){
+            } elseif ($table == 'all_customer') {
                 $customer = $this->customerService->getAll()->whereNotIn('is_active', ['2']);
             }
             return DataTables::of($customer)
-            ->addIndexColumn()
-            ->addColumn('avatar', function($customer){
-                return view('customer::customers.components._avatar_td',compact('customer'));
-            })
-            ->addColumn('name', function($customer){
-                return view('customer::customers.components._name_td',compact('customer'));
-            })
-            ->addColumn('phone', function($customer){
-                return getNumberTranslate($customer->username);
-            })
-            ->addColumn('status', function($customer){
-                return view('customer::customers.components._status_td',compact('customer'));
-            })
-            ->addColumn('wallet_balance', function($customer){
-                return single_price($customer->CustomerCurrentWalletAmounts);
-            })
-            ->addColumn('orders', function($customer){
-                return getNumberTranslate(count($customer->orders));
-            })
-            ->addColumn('action',function($customer){
-                return view('customer::customers.components._action_td',compact('customer'));
-            })
-            ->rawColumns(['avatar','status','action','name'])
-            ->make(true);
-        }else{
+                ->addIndexColumn()
+                ->addColumn('avatar', function ($customer) {
+                    return view('customer::customers.components._avatar_td', compact('customer'));
+                })
+                ->addColumn('name', function ($customer) {
+                    return view('customer::customers.components._name_td', compact('customer'));
+                })
+                ->addColumn('phone', function ($customer) {
+                    return getNumberTranslate($customer->username);
+                })
+                ->addColumn('status', function ($customer) {
+                    return view('customer::customers.components._status_td', compact('customer'));
+                })
+                ->addColumn('wallet_balance', function ($customer) {
+                    return single_price($customer->CustomerCurrentWalletAmounts);
+                })
+                ->addColumn('orders', function ($customer) {
+                    return getNumberTranslate(count($customer->orders));
+                })
+                ->addColumn('action', function ($customer) {
+                    return view('customer::customers.components._action_td', compact('customer'));
+                })
+                ->addColumn('warehouse_selected', function ($customer) {
+                    if ($customer->warehouse && $customer->warehouse->warehouse_name) {
+                        return $customer->warehouse->warehouse_name;
+                    }
+                    return '-';
+                })
+                ->rawColumns(['avatar', 'status', 'action', 'name'])
+                ->make(true);
+        } else {
             return [];
         }
     }
     public function profile(ProfileRequest $request)
     {
-         try {
-             $customer_id=auth()->user()->id;
-             $address_type=$request['address_type'];
-             $match_data=['customer_id'=> $customer_id,'address_type' => $address_type];
-             $form_data=[
+        try {
+            $customer_id = auth()->user()->id;
+            $address_type = $request['address_type'];
+            $match_data = ['customer_id' => $customer_id, 'address_type' => $address_type];
+            $form_data = [
                 'name' => $request['name'],
-                'address_one'=> $request['address_one'],
+                'address_one' => $request['address_one'],
                 'address_two' => $request['address_two'],
                 'email' => $request['email'],
                 'phone' => $request['phone'],
@@ -94,16 +100,16 @@ class CustomerController extends Controller
                 'state' => $request['state'],
                 'country' => $request['country'],
                 'postal_code' => $request['postal_code']
-             ];
-             $data=CustomerAddress::updateOrCreate($match_data,$form_data);
-             LogActivity::successLog('profile update');
-             return response()->json($data);
+            ];
+            $data = CustomerAddress::updateOrCreate($match_data, $form_data);
+            LogActivity::successLog('profile update');
+            return response()->json($data);
 
-         } catch (Exception $e) {
-             LogActivity::errorLog($e->getMessage());
-             Toastr::error(__('common.error_message'));
+        } catch (Exception $e) {
+            LogActivity::errorLog($e->getMessage());
+            Toastr::error(__('common.error_message'));
             return back();
-         }
+        }
     }
 
     public function updatePassword(Request $request)
@@ -114,7 +120,7 @@ class CustomerController extends Controller
             'new_password_confirmation' => 'same:new_password',
         ]);
         try {
-            User::find(auth()->user()->id)->update(['password'=> Hash::make($request->new_password)]);
+            User::find(auth()->user()->id)->update(['password' => Hash::make($request->new_password)]);
             LogActivity::successLog('customer password update');
             return response()->json(__('common.updated_successfully'));
         } catch (Exception $e) {
@@ -123,7 +129,8 @@ class CustomerController extends Controller
             return back();
         }
     }
-    public function create(){
+    public function create()
+    {
         return view('customer::customers.create');
     }
 
@@ -140,105 +147,108 @@ class CustomerController extends Controller
                 'unique:users,username',
                 'check_unique_phone'
             ],
-             'store_name' => 'required|string|max:255',
-              'store_image' => 'required|image|mimes:jpg,jpeg,png|max:2048',
-             'document' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'store_name' => 'required|string|max:255',
+            'store_image' => 'required|image|mimes:jpg,jpeg,png|max:2048',
+            'document' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
             'password' => 'required|confirmed|min:8',
             'referral_code' => ['sometimes', 'nullable', Rule::exists('referral_codes', 'referral_code')->where('status', 1)],
             'status' => 'required'
         ]);
-    
+
         try {
             // $this->customerService->store($request->except('_token'));
-              // ✅ ADD THIS PART HERE
-        $data = $request->except('_token');
+            // ✅ ADD THIS PART HERE
+            $data = $request->except('_token');
 
-        if ($request->hasFile('document')) {
-            $file = $request->file('document');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            $file->move(public_path('uploads/customer_documents'), $filename);
-            $data['document'] = 'uploads/customer_documents/' . $filename;
-        }
-        // 🖼 Store Image upload  ✅ ADD THIS
-if ($request->hasFile('store_image')) {
-    $file = $request->file('store_image');
-    $filename = time() . '_store_' . uniqid() . '.' . $file->getClientOriginalExtension();
-    $file->move(public_path('uploads/customer_store_images'), $filename);
-    $data['store_image'] = 'uploads/customer_store_images/' . $filename;
-}
+            if ($request->hasFile('document')) {
+                $file = $request->file('document');
+                $filename = time() . '_' . $file->getClientOriginalName();
+                $file->move(public_path('uploads/customer_documents'), $filename);
+                $data['document'] = 'uploads/customer_documents/' . $filename;
+            }
+            // 🖼 Store Image upload  ✅ ADD THIS
+            if ($request->hasFile('store_image')) {
+                $file = $request->file('store_image');
+                $filename = time() . '_store_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                $file->move(public_path('uploads/customer_store_images'), $filename);
+                $data['store_image'] = 'uploads/customer_store_images/' . $filename;
+            }
 
-        // ✅ PASS PROCESSED DATA TO SERVICE
-        $this->customerService->store($data);
-    
+            // ✅ PASS PROCESSED DATA TO SERVICE
+            $this->customerService->store($data);
+
             Toastr::success(__('Customer created successfully'), __('Success'));
             LogActivity::successLog('Customer Created Successfully.');
-    
+
             return redirect()->route('cusotmer.list_active');
-    
+
         } catch (QueryException $e) {
-    
+
             if ($e->errorInfo[1] == 1062) {
                 // Duplicate entry
                 Toastr::error('Phone number already exists.', 'Duplicate Entry');
             } else {
                 Toastr::error('Database error occurred.', 'Error');
             }
-    
+
             LogActivity::errorLog($e->getMessage());
             return back();
-    
+
         } catch (\Exception $e) {
-    
+
             Toastr::error('Something went wrong. Please try again.', 'Error');
             LogActivity::errorLog($e->getMessage());
             return back();
         }
     }
-    
-    public function edit($id){
+
+    public function edit($id)
+    {
         $customer = $this->customerService->find($id);
         return view('customer::customers.edit', compact('customer'));
     }
 
-    public function update(Request $request, $id){
+    public function update(Request $request, $id)
+    {
         $request->validate([
             'first_name' => 'required|max:255',
             'last_name' => 'nullable|max:255',
-            'email' => ['required', 'string', 'max:255', 'unique:users,email,'.$id],
+            'email' => ['required', 'string', 'max:255', 'unique:users,email,' . $id],
             'password' => 'sometimes|nullable|confirmed|min:8',
             'status' => 'required'
         ]);
-        try{
+        try {
             $this->customerService->update($request->except('_token'), $id);
             Toastr::success(__('common.updated_successfully'), __('common.success'));
             LogActivity::successLog('Customer Updated Successfully.');
             return redirect()->route('cusotmer.list_active');
-        }catch(Exception $e){
+        } catch (Exception $e) {
             LogActivity::errorLog($e->getMessage());
             Toastr::error(__('common.error_message'), __('common.error'));
             return back();
         }
     }
 
-    public function destroy(Request $request, $id){
+    public function destroy(Request $request, $id)
+    {
         $result = $this->customerService->destroy($id);
-            if($result === true){
-                Toastr::success(__('common.deleted_successfully'), __('common.success'));
-            }else{
-                Toastr::warning(__('hr.deleted_not_possible_for_this_customer'), __('common.warning'));
-            }
-            return redirect()->route('cusotmer.list_active');
-        try{
+        if ($result === true) {
+            Toastr::success(__('common.deleted_successfully'), __('common.success'));
+        } else {
+            Toastr::warning(__('hr.deleted_not_possible_for_this_customer'), __('common.warning'));
+        }
+        return redirect()->route('cusotmer.list_active');
+        try {
             $result = $this->customerService->destroy($id);
-            if($result === true){
+            if ($result === true) {
                 Toastr::success(__('common.deleted_successfully'), __('common.success'));
-            }else{
+            } else {
                 Toastr::warning(__('hr.deleted_not_possible_for_this_customer'), __('common.warning'));
             }
             return redirect()->route('cusotmer.list_active');
 
 
-        }catch(Exception $e){
+        } catch (Exception $e) {
             LogActivity::errorLog($e->getMessage());
             Toastr::error(__('common.error_message'), __('common.error'));
             return back();
@@ -248,63 +258,65 @@ if ($request->hasFile('store_image')) {
     {
 
         $data['customer'] = $this->customerService->find($id);
-        $logins = LogActivityModel::where('user_id',$id)->where('login',1)->orderBy('id','DESC')->limit(20)->get();
+        $logins = LogActivityModel::where('user_id', $id)->where('login', 1)->orderBy('id', 'DESC')->limit(20)->get();
         $data['logins'] = $logins;
         return view('customer::customers.show_details', $data);
     }
 
-    public function getOrders($id){
+    public function getOrders($id)
+    {
         $customer = $this->customerService->find($id);
         $order = $customer->orders;
         return DataTables::of($order)
             ->addIndexColumn()
-            ->addColumn('date', function($order){
+            ->addColumn('date', function ($order) {
                 return dateConvert($order->created_at);
             })
-            ->addColumn('order_number',function($order){
-                return  getNumberTranslate($order->order_number);
+            ->addColumn('order_number', function ($order) {
+                return getNumberTranslate($order->order_number);
             })
-            ->addColumn('number_of_product',function($order){
-                return  getNumberTranslate($order->packages->sum('number_of_product'));
+            ->addColumn('number_of_product', function ($order) {
+                return getNumberTranslate($order->packages->sum('number_of_product'));
             })
-            ->addColumn('total_amount',function($order){
-                return  single_price($order->grand_total);
+            ->addColumn('total_amount', function ($order) {
+                return single_price($order->grand_total);
             })
-            ->addColumn('order_status', function($order){
-                return view('customer::customers.components._show_order_status_td',compact('order'));
+            ->addColumn('order_status', function ($order) {
+                return view('customer::customers.components._show_order_status_td', compact('order'));
             })
-            ->addColumn('is_paid', function($order){
-                return view('customer::customers.components._show_order_is_paid_td',compact('order'));
+            ->addColumn('is_paid', function ($order) {
+                return view('customer::customers.components._show_order_is_paid_td', compact('order'));
             })
-            ->addColumn('action',function($order){
-                return view('customer::customers.components._show_order_action_td',compact('order'));
+            ->addColumn('action', function ($order) {
+                return view('customer::customers.components._show_order_action_td', compact('order'));
             })
-            ->rawColumns(['order_status','is_paid','action'])
+            ->rawColumns(['order_status', 'is_paid', 'action'])
             ->make(true);
     }
 
-    public function getWalletHistory($id){
+    public function getWalletHistory($id)
+    {
         $customer = $this->customerService->find($id);
         $transaction = $customer->wallet_balances;
         return DataTables::of($transaction)
             ->addIndexColumn()
-            ->addColumn('date', function($transaction){
+            ->addColumn('date', function ($transaction) {
                 return dateConvert($transaction->created_at);
             })
-            ->addColumn('user',function($transaction){
-                return  $transaction->user->first_name;
+            ->addColumn('user', function ($transaction) {
+                return $transaction->user->first_name;
 
             })
-            ->addColumn('amount',function($transaction){
-                return  single_price($transaction->amount);
+            ->addColumn('amount', function ($transaction) {
+                return single_price($transaction->amount);
 
             })
-            ->addColumn('payment_method', function($transaction){
+            ->addColumn('payment_method', function ($transaction) {
                 return $transaction->GatewayName;
 
             })
-            ->addColumn('approval', function($transaction){
-                return view('customer::customers.components._wallet_approval_td',compact('transaction'));
+            ->addColumn('approval', function ($transaction) {
+                return view('customer::customers.components._wallet_approval_td', compact('transaction'));
             })
             ->rawColumns(['approval'])
             ->make(true);
@@ -314,41 +326,41 @@ if ($request->hasFile('store_image')) {
     public function updateInfo(Request $request)
     {
         if (auth()->user()->email) {
-            $email = 'required|email|max:255|unique:users,email,'.auth()->user()->id;
-        }else{
-            $email = 'nullable|email|max:255|unique:users,email,'.auth()->user()->id;
+            $email = 'required|email|max:255|unique:users,email,' . auth()->user()->id;
+        } else {
+            $email = 'nullable|email|max:255|unique:users,email,' . auth()->user()->id;
         }
         if (auth()->user()->phone) {
-            $phone = 'required|min:'.app('general_setting')->min_digit.'|max:'.app('general_setting')->max_digit.'|unique:users,phone,'.auth()->user()->id;
-        }else{
-            $phone = 'nullable|min:'.app('general_setting')->min_digit.'|max:'.app('general_setting')->max_digit.'|unique:users,username,'.auth()->user()->id;
+            $phone = 'required|min:' . app('general_setting')->min_digit . '|max:' . app('general_setting')->max_digit . '|unique:users,phone,' . auth()->user()->id;
+        } else {
+            $phone = 'nullable|min:' . app('general_setting')->min_digit . '|max:' . app('general_setting')->max_digit . '|unique:users,username,' . auth()->user()->id;
         }
         $request->validate([
             'first_name' => 'required',
             'email' => $email,
             'avatar' => 'nullable|mimes:jpeg,jpg,png,bmp',
             'phone' => $phone
-        ],[
-            "phone.min" => "Minimum ".app('general_setting')->min_digit." digits required on phone number"
+        ], [
+            "phone.min" => "Minimum " . app('general_setting')->min_digit . " digits required on phone number"
         ]);
         try {
-            $user=User::findOrFail(auth()->user()->id);
-            $data=[
+            $user = User::findOrFail(auth()->user()->id);
+            $data = [
                 'first_name' => $request->first_name,
-                'last_name'  => $request->last_name,
-                'email'      => $request->email,
-                'phone'      => $request->phone,
-                'username'      => $request->phone,
-                'date_of_birth' => $request->date_of_birth?date('Y-m-d',strtotime($request->date_of_birth)):null,
-                'description'  => $request->description
-             ];
+                'last_name' => $request->last_name,
+                'email' => $request->email,
+                'phone' => $request->phone,
+                'username' => $request->phone,
+                'date_of_birth' => $request->date_of_birth ? date('Y-m-d', strtotime($request->date_of_birth)) : null,
+                'description' => $request->description
+            ];
 
-             $file = $request->file('avatar');
-             if ($request->hasFile('avatar')) {
-                 if ($user->avatar) {
-                     $this->deleteImage($user->avatar);
-                 }
-                 $data['avatar']=$this->saveImage($file,200,200);
+            $file = $request->file('avatar');
+            if ($request->hasFile('avatar')) {
+                if ($user->avatar) {
+                    $this->deleteImage($user->avatar);
+                }
+                $data['avatar'] = $this->saveImage($file, 200, 200);
             }
 
             $user->update($data);
@@ -364,35 +376,35 @@ if ($request->hasFile('store_image')) {
     public function storeAddress(CreateAddressRequest $request)
     {
         try {
-            $data=[
-                'customer_id'=>auth()->user()->id,
-                'name'=>$request->name,
-                'email'=>$request->email,
-                'address'=>$request->address,
-                'phone'=>$request->phone,
-                'city'=>$request->city,
-                'state'=>$request->state,
-                'country'=>$request->country,
-                'postal_code'=>$request->postal_code
+            $data = [
+                'customer_id' => auth()->user()->id,
+                'name' => $request->name,
+                'email' => $request->email,
+                'address' => $request->address,
+                'phone' => $request->phone,
+                'city' => $request->city,
+                'state' => $request->state,
+                'country' => $request->country,
+                'postal_code' => $request->postal_code
             ];
-            if(isset($request->shipping_address)){
-                CustomerAddress::where('is_shipping_default',1)->update(['is_shipping_default'=> 0]);
+            if (isset($request->shipping_address)) {
+                CustomerAddress::where('is_shipping_default', 1)->update(['is_shipping_default' => 0]);
                 $data['is_shipping_default'] = 1;
             }
-            if(isset($request->billing_address)){
-                CustomerAddress::where('is_billing_default',1)->update(['is_billing_default'=> 0]);
+            if (isset($request->billing_address)) {
+                CustomerAddress::where('is_billing_default', 1)->update(['is_billing_default' => 0]);
                 $data['is_billing_default'] = 1;
             }
-            $customer=CustomerAddress::create($data);
-            $list=CustomerAddress::where('customer_id',$customer->customer_id)->get();
-            if(count($list)<=1){
-                $setDefaltData=CustomerAddress::find($customer->id);
-                $setDefaltData->is_shipping_default=1;
-                $setDefaltData->is_billing_default=1;
+            $customer = CustomerAddress::create($data);
+            $list = CustomerAddress::where('customer_id', $customer->customer_id)->get();
+            if (count($list) <= 1) {
+                $setDefaltData = CustomerAddress::find($customer->id);
+                $setDefaltData->is_shipping_default = 1;
+                $setDefaltData->is_billing_default = 1;
                 $setDefaltData->save();
             }
             LogActivity::successLog('address added');
-            return  $this->loadTableData();
+            return $this->loadTableData();
         } catch (Exception $e) {
             LogActivity::errorLog($e->getMessage());
             Toastr::error(__('common.error_message'));
@@ -400,24 +412,25 @@ if ($request->hasFile('store_image')) {
         }
     }
 
-    public function updateAddress(CreateAddressRequest $request){
+    public function updateAddress(CreateAddressRequest $request)
+    {
         try {
             $data = [
-                'name'=>$request->name,
-                'email'=>$request->email,
-                'address'=>$request->address,
-                'phone'=>$request->phone,
-                'city'=>$request->city,
-                'state'=>$request->state,
-                'country'=>$request->country,
-                'postal_code'=>$request->postal_code,
+                'name' => $request->name,
+                'email' => $request->email,
+                'address' => $request->address,
+                'phone' => $request->phone,
+                'city' => $request->city,
+                'state' => $request->state,
+                'country' => $request->country,
+                'postal_code' => $request->postal_code,
             ];
-            if(isset($request->shipping_address)){
-                CustomerAddress::where('is_shipping_default',1)->first()->update(['is_shipping_default'=> 0]);
+            if (isset($request->shipping_address)) {
+                CustomerAddress::where('is_shipping_default', 1)->first()->update(['is_shipping_default' => 0]);
                 $data['is_shipping_default'] = 1;
             }
-            if(isset($request->billing_address)){
-                CustomerAddress::where('is_billing_default',1)->first()->update(['is_billing_default'=> 0]);
+            if (isset($request->billing_address)) {
+                CustomerAddress::where('is_billing_default', 1)->first()->update(['is_billing_default' => 0]);
                 $data['is_billing_default'] = 1;
             }
             $customer = CustomerAddress::findOrFail($request->address_id);
@@ -439,7 +452,7 @@ if ($request->hasFile('store_image')) {
             // ]);
 
             LogActivity::successLog('update address');
-            return  $this->loadTableData();
+            return $this->loadTableData();
         } catch (Exception $e) {
             LogActivity::errorLog($e->getMessage());
             Toastr::error(__('common.error_message'));
@@ -449,33 +462,33 @@ if ($request->hasFile('store_image')) {
 
     public function setDefaultShipping(Request $request)
     {
-       CustomerAddress::where('customer_id',$request->c_id)->update(['is_shipping_default'=> 0]);
-       $customer=CustomerAddress::find($request->c_list_id);
-       $customer->is_shipping_default=1;
-       $customer->save();
-       LogActivity::successLog('set default shipping.');
-       return  $this->loadTableData();
+        CustomerAddress::where('customer_id', $request->c_id)->update(['is_shipping_default' => 0]);
+        $customer = CustomerAddress::find($request->c_list_id);
+        $customer->is_shipping_default = 1;
+        $customer->save();
+        LogActivity::successLog('set default shipping.');
+        return $this->loadTableData();
     }
 
     public function setDefaultBilling(Request $request)
     {
-       CustomerAddress::where('customer_id',$request->c_id)->update(['is_billing_default'=> 0]);
-       $customer=CustomerAddress::find($request->c_list_id);
-       $customer->is_billing_default = 1 ;
-       $customer->save();
-       LogActivity::successLog('set default billing.');
-       return  $this->loadTableData();
+        CustomerAddress::where('customer_id', $request->c_id)->update(['is_billing_default' => 0]);
+        $customer = CustomerAddress::find($request->c_list_id);
+        $customer->is_billing_default = 1;
+        $customer->save();
+        LogActivity::successLog('set default billing.');
+        return $this->loadTableData();
     }
 
-    public function editAddress($c_id){
+    public function editAddress($c_id)
+    {
         try {
-            $address=CustomerAddress::findOrFail($c_id);
+            $address = CustomerAddress::findOrFail($c_id);
             $countries = Country::where('status', 1)->orderBy('name')->get();
             if (auth()->user()->role->type != 'customer') {
-                return view('backEnd.pages.customer_data._edit_address_form',compact('address', 'countries'));
-            }
-            else {
-                return view(theme('pages.profile.partials._edit_form'),compact('address', 'countries'));
+                return view('backEnd.pages.customer_data._edit_address_form', compact('address', 'countries'));
+            } else {
+                return view(theme('pages.profile.partials._edit_form'), compact('address', 'countries'));
             }
 
         } catch (Exception $e) {
@@ -486,33 +499,35 @@ if ($request->hasFile('store_image')) {
         }
     }
 
-    public function deleteAddress(Request $request){
-        try{
-            $addressExist = Order::where('customer_id',auth()->user()->id)->where('customer_shipping_address', $request->id)->orWhere('customer_billing_address', $request->id)->first();
+    public function deleteAddress(Request $request)
+    {
+        try {
+            $addressExist = Order::where('customer_id', auth()->user()->id)->where('customer_shipping_address', $request->id)->orWhere('customer_billing_address', $request->id)->first();
             if (!$addressExist) {
-                $customer_address = CustomerAddress::where('id',$request->id)->where('customer_id', auth()->user()->id)->first();
-                if($customer_address->is_shipping_default == 1 || $customer_address->is_billing_default == 1){
+                $customer_address = CustomerAddress::where('id', $request->id)->where('customer_id', auth()->user()->id)->first();
+                if ($customer_address->is_shipping_default == 1 || $customer_address->is_billing_default == 1) {
                     return 'is_default';
                 }
                 $customer_address->delete();
                 LogActivity::successLog('address deleted');
                 return $this->loadTableData();
-            }else{
+            } else {
                 return 'is_used';
             }
 
-        }catch (\Exception $e) {
+        } catch (\Exception $e) {
             LogActivity::errorLog($e->getMessage());
             return $e->getMessage();
         }
     }
 
-    public function imageDelete(Request $request){
-        try{
+    public function imageDelete(Request $request)
+    {
+        try {
             $this->customerService->imageDelete($request->except("_token"));
             LogActivity::successLog('address deleted');
             return true;
-        }catch (\Exception $e) {
+        } catch (\Exception $e) {
             LogActivity::errorLog($e->getMessage());
             return $e->getMessage();
         }
@@ -521,11 +536,11 @@ if ($request->hasFile('store_image')) {
     private function loadTableData()
     {
         try {
-            $addressList=CustomerAddress::where('customer_id',auth()->user()->id)->get();
+            $addressList = CustomerAddress::where('customer_id', auth()->user()->id)->get();
             return response()->json([
-                'addressList' =>  (auth()->user()->role->type != 'customer') ?(string)view('backEnd.pages.customer_data._table',compact('addressList')) : (string)view(theme('pages.profile.partials._table'),compact('addressList')),
-                'addressListForShipping' =>  (auth()->user()->role->type != 'customer') ?(string)view('backEnd.pages.customer_data._shipping_address',compact('addressList')) : (string)view(theme('pages.profile.partials._shipping'), compact('addressList')),
-                'addressListForBilling' =>  (auth()->user()->role->type != 'customer') ?(string)view('backEnd.pages.customer_data._billing_address',compact('addressList')) : (string)view(theme('pages.profile.partials._billing'), compact('addressList')),
+                'addressList' => (auth()->user()->role->type != 'customer') ? (string) view('backEnd.pages.customer_data._table', compact('addressList')) : (string) view(theme('pages.profile.partials._table'), compact('addressList')),
+                'addressListForShipping' => (auth()->user()->role->type != 'customer') ? (string) view('backEnd.pages.customer_data._shipping_address', compact('addressList')) : (string) view(theme('pages.profile.partials._shipping'), compact('addressList')),
+                'addressListForBilling' => (auth()->user()->role->type != 'customer') ? (string) view('backEnd.pages.customer_data._billing_address', compact('addressList')) : (string) view(theme('pages.profile.partials._billing'), compact('addressList')),
             ]);
 
         } catch (\Exception $e) {

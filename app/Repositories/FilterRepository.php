@@ -24,7 +24,7 @@ class FilterRepository
     public function getAllActiveProduct($sort_by, $paginate)
     {
         $products = SellerProduct::with('skus', 'product')->activeSeller()->select('seller_products.*')->join('products', function ($query) {
-            $query->on('products.id','=','seller_products.product_id')->where('products.status', 1);
+            $query->on('products.id', '=', 'seller_products.product_id')->where('products.status', 1);
         })->distinct('seller_products.id');
         return $this->sortAndPaginate($products, $sort_by, $paginate);
     }
@@ -41,51 +41,51 @@ class FilterRepository
         }
         $requestType = $data['requestItemType'];
         $requestItem = $data['requestItem'];
-        $slugs = explode(' ',$requestItem);
+        $slugs = explode(' ', $requestItem);
         $giftCards = collect();
-        if($data['requestItemType'] == "search"){
+        if ($data['requestItemType'] == "search") {
             $products = $this->search_query($data['requestItem']);
-            $giftCards = GiftCard::where('status', 1)->whereHas('tags', function($q) use($slugs){
-                return $q->where(function($q) use ($slugs){
-                    foreach($slugs as $slug){
+            $giftCards = GiftCard::where('status', 1)->whereHas('tags', function ($q) use ($slugs) {
+                return $q->where(function ($q) use ($slugs) {
+                    foreach ($slugs as $slug) {
                         $q = $q->orWhere('name', 'LIKE', "%{$slug}%");
                     }
                     return $q;
                 });
-            })->select(['*', 'name as product_name','sku as slug']);
-        }elseif($data['requestItemType'] == "tag"){
-            $tag = Tag::where('name',$requestItem)->first();
+            })->select(['*', 'name as product_name', 'sku as slug']);
+        } elseif ($data['requestItemType'] == "tag") {
+            $tag = Tag::where('name', $requestItem)->first();
             $mainProducts = ProductTag::where('tag_id', $tag->id)->pluck('product_id')->toArray();
-            $products = SellerProduct::with('product')->activeSeller()->select('seller_products.*')->join('products', function($query) use($mainProducts){
-                return $query->on('products.id','=','seller_products.product_id')->whereRaw("products.id in ('". implode("','",$mainProducts)."')");
+            $products = SellerProduct::with('product')->activeSeller()->select('seller_products.*')->join('products', function ($query) use ($mainProducts) {
+                return $query->on('products.id', '=', 'seller_products.product_id')->whereRaw("products.id in ('" . implode("','", $mainProducts) . "')");
             });
             $this->joins = ['products'];
-            $giftCards = GiftCard::where('status', 1)->whereHas('tags', function($q) use($tag){
+            $giftCards = GiftCard::where('status', 1)->whereHas('tags', function ($q) use ($tag) {
                 return $q->where('tag_id', $tag->id);
 
-            })->select(['*', 'name as product_name','sku as slug'])->where('status', 1);
-        }elseif($data['requestItemType'] == "product"){
+            })->select(['*', 'name as product_name', 'sku as slug'])->where('status', 1);
+        } elseif ($data['requestItemType'] == "product") {
             $result = $this->getSectionProducts($requestItem);
             $products = $result['products'];
             $this->joins = ['products'];
-        }elseif($data['requestItemType'] == "brand"){
+        } elseif ($data['requestItemType'] == "brand") {
             $products = SellerProduct::query()->with('product', 'reviews', 'skus')->activeSeller()->select('seller_products.*')->join('products', function ($query) {
-                $query->on('products.id','=','seller_products.product_id')->where('products.status', 1);
+                $query->on('products.id', '=', 'seller_products.product_id')->where('products.status', 1);
             });
             $this->joins = ['products'];
-        }else{
+        } else {
             $products = SellerProduct::query()->with('product', 'reviews', 'skus')->activeSeller()->select('seller_products.*')->join('products', function ($query) {
-                $query->on('products.id','=','seller_products.product_id')->where('products.status', 1)->join('category_product', function ($q) {
+                $query->on('products.id', '=', 'seller_products.product_id')->where('products.status', 1)->join('category_product', function ($q) {
                     $q->on('products.id', 'category_product.product_id')->join('categories', function ($q1) {
-                        $filter_type = gv(request()->filterType??[], 0);
-                        $with_parent_category = !gv($filter_type??[], 'filterTypeValue');
-                        $q1->on('category_product.category_id', 'categories.id')->when($with_parent_category, function ($q){
+                        $filter_type = gv(request()->filterType ?? [], 0);
+                        $with_parent_category = !gv($filter_type ?? [], 'filterTypeValue');
+                        $q1->on('category_product.category_id', 'categories.id')->when($with_parent_category, function ($q) {
                             $q->orOn('category_product.category_id', 'categories.parent_id');
                         });
                     });
                 });
             });
-            $this->joins = ['products','category_product','categories'];
+            $this->joins = ['products', 'category_product', 'categories'];
         }
         foreach ($data['filterType'] as $key => $filter) {
             if ($filter['filterTypeId'] == "cat" && !empty($filter['filterTypeValue'])) {
@@ -105,10 +105,10 @@ class FilterRepository
                 $giftCards = collect();
             }
             if ($filter['filterTypeId'] == "price_range") {
-                $min_price = round(end($filter['filterTypeValue'])[0])/$this->getConvertRate();
-                $max_price = round(end($filter['filterTypeValue'])[1])/$this->getConvertRate();
+                $min_price = round(end($filter['filterTypeValue'])[0]) / $this->getConvertRate();
+                $max_price = round(end($filter['filterTypeValue'])[1]) / $this->getConvertRate();
                 $products = $this->productThroughPriceRange($min_price, $max_price, $requestType, $requestItem, $products);
-                $giftCards = $giftCards->whereBetween('selling_price', [$min_price,$max_price]);
+                $giftCards = $giftCards->whereBetween('selling_price', [$min_price, $max_price]);
             }
             if ($filter['filterTypeId'] == "rating") {
                 $rating = $filter['filterTypeValue'][0];
@@ -120,7 +120,7 @@ class FilterRepository
                 $catRepo = new CategoryRepository(new Category());
                 $subCat = $catRepo->getAllSubSubCategoryID($cat);
                 $subCat[] = intval($cat);
-                $products = $products->where('category_product.category_id', $cat)->whereRaw("categories.id in ('". implode("','", $subCat)."')");
+                $products = $products->where('category_product.category_id', $cat)->whereRaw("categories.id in ('" . implode("','", $subCat) . "')");
                 $giftCards = collect();
             }
             if ($data['requestItemType'] == "brand" && empty($filter['filterTypeValue'])) {
@@ -132,17 +132,15 @@ class FilterRepository
             }
         }
         session()->put('filterDataFromCat', $data);
-        if($giftCards->count()){
+        if ($giftCards->count()) {
             $giftCards = $giftCards->get();
-        }else{
+        } else {
             $giftCards = [];
         }
-        if(isset($_GET['filter']) && isset($_GET['filter_value']))
-        {
-          if($_GET['filter'] == 'brand')
-          {
-          	  $products  = $products->where('brand_id',$_GET['filter_value']);
-          }
+        if (isset($_GET['filter']) && isset($_GET['filter_value'])) {
+            if ($_GET['filter'] == 'brand') {
+                $products = $products->where('brand_id', $_GET['filter_value']);
+            }
         }
 
         if (request()->has('seller_id')) {
@@ -154,21 +152,22 @@ class FilterRepository
 
         return $this->sortAndPaginate($products, $sort_by, $paginate_by);
     }
-    public function search_query($slug){
-        $slugs = explode(' ',$slug);
-            $mainProducts = Product::whereHas('tags', function($q) use($slugs){
-                return $q->where(function($q) use ($slugs){
-                    foreach($slugs as $slug){
-                        $q = $q->orWhere('name', 'LIKE', "%{$slug}%");
-                    }
-                    return $q;
-                });
-            })->pluck('id')->toArray();
-        $query = SellerProduct::with('product')->activeSeller()->select('seller_products.*')->join('products', function($qq){
-            $qq->on('products.id','=','seller_products.product_id')->where('products.status', 1);
-        })->where(function($q) use($mainProducts, $slug){
-            $q->whereHas('product', function($query) use($mainProducts,$slug){
-                return $query->whereIn('products.id',$mainProducts)->orWhere('products.product_name','LIKE', "%{$slug}%")->orWhere('products.description','LIKE',"%{$slug}%")->orWhere('products.specification','LIKE',"%{$slug}%");
+    public function search_query($slug)
+    {
+        $slugs = explode(' ', $slug);
+        $mainProducts = Product::whereHas('tags', function ($q) use ($slugs) {
+            return $q->where(function ($q) use ($slugs) {
+                foreach ($slugs as $slug) {
+                    $q = $q->orWhere('name', 'LIKE', "%{$slug}%");
+                }
+                return $q;
+            });
+        })->pluck('id')->toArray();
+        $query = SellerProduct::with('product')->activeSeller()->select('seller_products.*')->join('products', function ($qq) {
+            $qq->on('products.id', '=', 'seller_products.product_id')->where('products.status', 1);
+        })->where(function ($q) use ($mainProducts, $slug) {
+            $q->whereHas('product', function ($query) use ($mainProducts, $slug) {
+                return $query->whereIn('products.id', $mainProducts)->orWhere('products.product_name', 'LIKE', "%{$slug}%")->orWhere('products.description', 'LIKE', "%{$slug}%")->orWhere('products.specification', 'LIKE', "%{$slug}%");
             })->orWhere('seller_products.product_name', 'LIKE', "%{$slug}%");
         });
 
@@ -183,23 +182,22 @@ class FilterRepository
         $requestType = $data['requestItemType'];
         $requestItem = $data['requestItem'];
 
-        $products = SellerProduct::query()->activeSeller()->join('products','products.id', '=', 'seller_products.product_id')
-                                 ->join('category_product','category_product.product_id', '=', 'products.id')
-                                 ->join('categories','categories.id', '=', 'category_product.category_id')->where('products.status',1)->where('products.status',1)->select('seller_products.*')->with('product', 'reviews', 'skus');
+        $products = SellerProduct::query()->activeSeller()->join('products', 'products.id', '=', 'seller_products.product_id')
+            ->join('category_product', 'category_product.product_id', '=', 'products.id')
+            ->join('categories', 'categories.id', '=', 'category_product.category_id')->where('products.status', 1)->where('products.status', 1)->select('seller_products.*')->with('product', 'reviews', 'skus');
 
         foreach ($data['filterType'] as $key => $filter) {
             if (is_numeric($filter['filterTypeId']) && !empty($filter['filterTypeValue'])) {
-                $products = $products->join('product_variations','products.id', '=', 'product_variations.product_id');
+                $products = $products->join('product_variations', 'products.id', '=', 'product_variations.product_id');
             }
         }
-        $products = $products->where('products.status',1)->select('seller_products.*');
-        if($requestType == 'tag')
-        {
-            $products = $products->join('product_tag','product_tag.product_id','=','products.id')->join('tags','tags.id','=','product_tag.tag_id');
-            $products  = $products->where('tags.id',$requestItem);
-            $this->joins = ['products','category_product','categories','product_variations','tags'];
-        }else{
-            $this->joins = ['products','category_product','categories','product_variations'];
+        $products = $products->where('products.status', 1)->select('seller_products.*');
+        if ($requestType == 'tag') {
+            $products = $products->join('product_tag', 'product_tag.product_id', '=', 'products.id')->join('tags', 'tags.id', '=', 'product_tag.tag_id');
+            $products = $products->where('tags.id', $requestItem);
+            $this->joins = ['products', 'category_product', 'categories', 'product_variations', 'tags'];
+        } else {
+            $this->joins = ['products', 'category_product', 'categories', 'product_variations'];
         }
 
 
@@ -218,8 +216,8 @@ class FilterRepository
                 $products = $this->productThroughAttribute($typeId, $typeVal, $products, $requestType, $requestItem);
             }
             if ($filter['filterTypeId'] == "price_range") {
-                $min_price = round(end($filter['filterTypeValue'])[0])/$this->getConvertRate();
-                $max_price = round(end($filter['filterTypeValue'])[1])/$this->getConvertRate();
+                $min_price = round(end($filter['filterTypeValue'])[0]) / $this->getConvertRate();
+                $max_price = round(end($filter['filterTypeValue'])[1]) / $this->getConvertRate();
                 $products = $this->productThroughPriceRange($min_price, $max_price, $requestType, $requestItem, $products);
             }
             if ($filter['filterTypeId'] == "rating") {
@@ -231,8 +229,8 @@ class FilterRepository
                 $catRepo = new CategoryRepository(new Category());
                 $subCat = $catRepo->getAllSubSubCategoryID($cat);
                 $products = SellerProduct::with('skus', 'product')->where('status', 1)->whereHas('product', function ($query) use ($cat, $subCat) {
-                    $query->whereHas('categories', function($q) use($cat){
-                        $q->where('category_id',$cat)->orWhereHas('subCategories',function($q2) use($cat){
+                    $query->whereHas('categories', function ($q) use ($cat) {
+                        $q->where('category_id', $cat)->orWhereHas('subCategories', function ($q2) use ($cat) {
                             $q2->where('parent_id', $cat);
                         });
                     });
@@ -258,43 +256,43 @@ class FilterRepository
     {
         $requestType = $session_data['requestItemType'];
         $requestItem = $session_data['requestItem'];
-        $slugs = explode(' ',$requestItem);
+        $slugs = explode(' ', $requestItem);
         $giftCards = collect();
-        if($session_data['requestItemType'] == 'search'){
+        if ($session_data['requestItemType'] == 'search') {
             $products = $this->search_query($requestItem);
-            $giftCards = GiftCard::where('status', 1)->whereHas('tags', function($q) use($slugs){
-                return $q->where(function($q) use ($slugs){
-                    foreach($slugs as $slug){
+            $giftCards = GiftCard::where('status', 1)->whereHas('tags', function ($q) use ($slugs) {
+                return $q->where(function ($q) use ($slugs) {
+                    foreach ($slugs as $slug) {
                         $q = $q->orWhere('name', 'LIKE', "%{$slug}%");
                     }
                     return $q;
                 });
-            })->select(['*', 'name as product_name','sku as slug']);
-        }elseif($session_data['requestItemType'] == "tag"){
-            $tag = Tag::where('name',$requestItem)->first();
+            })->select(['*', 'name as product_name', 'sku as slug']);
+        } elseif ($session_data['requestItemType'] == "tag") {
+            $tag = Tag::where('name', $requestItem)->first();
             $mainProducts = ProductTag::where('tag_id', $tag->id)->pluck('product_id')->toArray();
-            $products = SellerProduct::with('product')->activeSeller()->select('seller_products.*')->join('products', function($query) use($mainProducts){
-                return $query->on('products.id','=','seller_products.product_id')->whereRaw("products.id in ('". implode("','",$mainProducts)."')");
+            $products = SellerProduct::with('product')->activeSeller()->select('seller_products.*')->join('products', function ($query) use ($mainProducts) {
+                return $query->on('products.id', '=', 'seller_products.product_id')->whereRaw("products.id in ('" . implode("','", $mainProducts) . "')");
             });
             $this->joins = ['products'];
-            $giftCards = GiftCard::where('status', 1)->whereHas('tags', function($q) use($tag){
+            $giftCards = GiftCard::where('status', 1)->whereHas('tags', function ($q) use ($tag) {
                 return $q->where('tag_id', $tag->id);
-            })->select(['*', 'name as product_name','sku as slug'])->where('status', 1);
-        }elseif($session_data['requestItemType'] == "product"){
+            })->select(['*', 'name as product_name', 'sku as slug'])->where('status', 1);
+        } elseif ($session_data['requestItemType'] == "product") {
             $result = $this->getSectionProducts($requestItem);
-            $products = $result['products']->join('product_variations', function($q3){
+            $products = $result['products']->join('product_variations', function ($q3) {
                 return $q3->on('products.id', '=', 'product_variations.product_id');
             });
             $this->joins = ['products'];
-        }else{
+        } else {
             $products = SellerProduct::query()->with('product', 'reviews', 'skus')->activeSeller()->select('seller_products.*')->join('products', function ($query) {
-                $query->on('products.id','=','seller_products.product_id')->where('products.status', 1)->join('category_product', function ($q) {
+                $query->on('products.id', '=', 'seller_products.product_id')->where('products.status', 1)->join('category_product', function ($q) {
                     $q->on('products.id', 'category_product.product_id')->join('categories', function ($q1) {
                         $q1->on('category_product.category_id', 'categories.id')->orOn('category_product.category_id', 'categories.parent_id');
                     });
                 });
             });
-            $this->joins = ['products','category_product','categories'];
+            $this->joins = ['products', 'category_product', 'categories'];
         }
         foreach ($session_data['filterType'] as $key => $filter) {
             if ($filter['filterTypeId'] == "cat" && !empty($filter['filterTypeValue'])) {
@@ -315,10 +313,10 @@ class FilterRepository
             }
 
             if ($filter['filterTypeId'] == "price_range") {
-                $min_price = round(end($filter['filterTypeValue'])[0])/$this->getConvertRate();
-                $max_price = round(end($filter['filterTypeValue'])[1])/$this->getConvertRate();
+                $min_price = round(end($filter['filterTypeValue'])[0]) / $this->getConvertRate();
+                $max_price = round(end($filter['filterTypeValue'])[1]) / $this->getConvertRate();
                 $products = $this->productThroughPriceRange($min_price, $max_price, $requestType, $requestItem, $products);
-                $giftCards = $giftCards->whereBetween('selling_price', [$min_price,$max_price]);
+                $giftCards = $giftCards->whereBetween('selling_price', [$min_price, $max_price]);
             }
             if ($filter['filterTypeId'] == "rating") {
                 $rating = $filter['filterTypeValue'][0];
@@ -330,8 +328,8 @@ class FilterRepository
                 $catRepo = new CategoryRepository(new Category());
                 $subCat = $catRepo->getAllSubSubCategoryID($cat);
                 $products = SellerProduct::with('skus', 'product')->where('status', 1)->whereHas('product', function ($query) use ($cat, $subCat) {
-                    $query->whereHas('categories', function($q) use($cat){
-                        $q->where('category_id',$cat)->orWhereHas('subCategories',function($q2) use($cat){
+                    $query->whereHas('categories', function ($q) use ($cat) {
+                        $q->where('category_id', $cat)->orWhereHas('subCategories', function ($q2) use ($cat) {
                             $q2->where('parent_id', $cat);
                         });
                     });
@@ -351,10 +349,10 @@ class FilterRepository
         } else {
             $paginate = 6;
         }
-        if($giftCards->count()){
+        if ($giftCards->count()) {
             $giftCards = $giftCards->get();
             $products = $products->get()->merge($giftCards);
-        }else{
+        } else {
             $giftCards = [];
         }
         if (request()->has('seller_id')) {
@@ -368,8 +366,8 @@ class FilterRepository
     public function filterProductCategoryWise($category_id, $category_ids, $sort_by, $paginate_by)
     {
         $query = SellerProduct::with('skus', 'product')->where('seller_products.status', 1)->activeSeller()->select("seller_products.*")->join('products', function ($query) use ($category_ids, $category_id) {
-            return $query->on('products.id', '=', 'seller_products.product_id')->where('products.status', 1)->join('category_product',function($q) use($category_id,$category_ids){
-                return $q->on('products.id','=', 'category_product.product_id')->where('category_product.category_id', $category_id)->join('categories', function($q2) use($category_id){
+            return $query->on('products.id', '=', 'seller_products.product_id')->where('products.status', 1)->join('category_product', function ($q) use ($category_id, $category_ids) {
+                return $q->on('products.id', '=', 'category_product.product_id')->where('category_product.category_id', $category_id)->join('categories', function ($q2) use ($category_id) {
                     return $q2->on('category_product.category_id', '=', 'categories.id')->orOn('category_product.category_id', '=', 'categories.parent_id');
                 });
             });
@@ -378,6 +376,10 @@ class FilterRepository
         if (request()->has('seller_id')) {
             $query->where('seller_products.user_id', request()->seller_id);
         }
+
+        // if (auth()->check() && auth()->user()->warehouse_id) {
+        //     $query->where('seller_products.user_id', auth()->user()->warehouse_id);
+        // }
 
         $products = $query->distinct('seller_products.id');
         return $this->sortAndPaginate($products, $sort_by, $paginate_by);
@@ -393,6 +395,10 @@ class FilterRepository
             $query->where('seller_products.user_id', request()->seller_id);
         }
 
+        // if (auth()->check() && auth()->user()->warehouse_id) {
+        //     $query->where('seller_products.user_id', auth()->user()->warehouse_id);
+        // }
+
         $products = $query;
         return $this->sortAndPaginate($products, $sort_by, $paginate_by);
     }
@@ -400,32 +406,32 @@ class FilterRepository
     public function filterCategoryBrandWise($brand_id)
     {
         $categoryList = Category::select('categories.*')->join('category_product', function ($q) use ($brand_id) {
-            $q->on('categories.id', '=', 'category_product.category_id')->join('products', function($q1) use($brand_id){
-                $q1->on('products.id', 'category_product.product_id')->where('products.brand_id',$brand_id);
+            $q->on('categories.id', '=', 'category_product.category_id')->join('products', function ($q1) use ($brand_id) {
+                $q1->on('products.id', 'category_product.product_id')->where('products.brand_id', $brand_id);
 
                 if (request()->has('seller_id')) {
-                    $q1->join('seller_products', function($q2) {
+                    $q1->join('seller_products', function ($q2) {
                         $q2->on('seller_products.product_id', 'products.id')
-                           ->where('seller_products.user_id', request()->seller_id);
+                            ->where('seller_products.user_id', request()->seller_id);
                     });
                 }
 
             })->where('products.status', 1);
-        })->where('categories.status', 1)->where('categories.parent_id','!=',0)->distinct('categories.id')->take(20)->get();
+        })->where('categories.status', 1)->where('categories.parent_id', '!=', 0)->distinct('categories.id')->take(20)->get();
         return $categoryList;
     }
 
     public function filterBrandCategoryWise($category_id, $category_ids)
     {
-        $brnadList = Brand::select('brands.*')->where('brands.status', 1)->join('products', function($q) use($category_ids, $category_id){
-            $q->on('products.brand_id', '=', 'brands.id')->join('category_product', function($q1) use($category_ids, $category_id){
-                $q1->on('category_product.product_id', '=', 'products.id')->whereRaw("category_product.category_id in('". implode("','",$category_ids). "')");
+        $brnadList = Brand::select('brands.*')->where('brands.status', 1)->join('products', function ($q) use ($category_ids, $category_id) {
+            $q->on('products.brand_id', '=', 'brands.id')->join('category_product', function ($q1) use ($category_ids, $category_id) {
+                $q1->on('category_product.product_id', '=', 'products.id')->whereRaw("category_product.category_id in('" . implode("','", $category_ids) . "')");
             });
 
             if (request()->has('seller_id')) {
-                $q->join('seller_products', function($q2) {
+                $q->join('seller_products', function ($q2) {
                     $q2->on('seller_products.product_id', 'products.id')
-                       ->where('seller_products.user_id', request()->seller_id);
+                        ->where('seller_products.user_id', request()->seller_id);
                 });
             }
 
@@ -438,7 +444,7 @@ class FilterRepository
         if (session()->has('filterDataFromCat')) {
             session()->forget('filterDataFromCat');
         }
-        $products = SellerProduct::query()->with('product', 'reviews')->activeSeller()->select('seller_products.*')->join('products', function($q){
+        $products = SellerProduct::query()->with('product', 'reviews')->activeSeller()->select('seller_products.*')->join('products', function ($q) {
             $q->on('seller_products.product_id', '=', 'products.id')->where('products.status', 1);
         });
         $this->joins = ['products'];
@@ -465,8 +471,8 @@ class FilterRepository
                 });
             }
             if ($filter['filterTypeId'] == "price_range") {
-                $min_price = round(end($filter['filterTypeValue'])[0])/$this->getConvertRate();
-                $max_price = round(end($filter['filterTypeValue'])[1])/$this->getConvertRate();
+                $min_price = round(end($filter['filterTypeValue'])[0]) / $this->getConvertRate();
+                $max_price = round(end($filter['filterTypeValue'])[1]) / $this->getConvertRate();
                 $products = $this->productThroughPriceRangeForAllListing($min_price, $max_price, $products);
             }
             if ($filter['filterTypeId'] == "rating") {
@@ -485,10 +491,10 @@ class FilterRepository
 
     public function filterProductMinPrice($product_ids = null)
     {
-        if($product_ids){
-            return SellerProductSKU::whereRaw("product_id in ('". implode("','", $product_ids) . "')")->min('selling_price');
-        }else{
-            return SellerProductSKU::whereHas('product' , function($q){
+        if ($product_ids) {
+            return SellerProductSKU::whereRaw("product_id in ('" . implode("','", $product_ids) . "')")->min('selling_price');
+        } else {
+            return SellerProductSKU::whereHas('product', function ($q) {
                 $q->where('status', 1)->whereHas('product', function ($query) {
                     $query->where('status', 1);
                 })->latest()->activeSeller();
@@ -498,10 +504,10 @@ class FilterRepository
 
     public function filterProductMaxPrice($product_ids = null)
     {
-        if($product_ids){
-            return SellerProductSKU::whereRaw("product_id in ('". implode("','",$product_ids)."')")->max('selling_price');
-        }else{
-            return SellerProductSKU::whereHas('product' , function($q){
+        if ($product_ids) {
+            return SellerProductSKU::whereRaw("product_id in ('" . implode("','", $product_ids) . "')")->max('selling_price');
+        } else {
+            return SellerProductSKU::whereHas('product', function ($q) {
                 $q->where('status', 1)->whereHas('product', function ($query) {
                     $query->where('status', 1);
                 })->latest()->activeSeller();
@@ -512,56 +518,55 @@ class FilterRepository
     public function productThroughCat($typeVal, $products)
     {
         $ids = [];
-        foreach($typeVal as $cat){
+        foreach ($typeVal as $cat) {
             $ids[] = $cat;
         }
-        if(!in_array('products',$this->joins)){
+        if (!in_array('products', $this->joins)) {
             $products = $products;
-            array_push($this->joins,'products');
+            array_push($this->joins, 'products');
         }
-        if(!in_array('category_product',$this->joins)){
-            $products = $products->join('category_product', function($q1) use ($ids){
-                $q1->on('category_product.product_id','=', 'products.id')->join('categories', function ($q2) use ($ids) {
-                    $q2->on('categories.id', '=','category_product.category_id')->whereRaw("categories.id in ('". implode("','", $ids)."')");
+        if (!in_array('category_product', $this->joins)) {
+            $products = $products->join('category_product', function ($q1) use ($ids) {
+                $q1->on('category_product.product_id', '=', 'products.id')->join('categories', function ($q2) use ($ids) {
+                    $q2->on('categories.id', '=', 'category_product.category_id')->whereRaw("categories.id in ('" . implode("','", $ids) . "')");
                 });
             });
             array_push($this->joins, 'category_product', 'categories');
-        }else{
-            $products = $products->whereRaw("categories.id in ('". implode("','", $ids)."')");
+        } else {
+            $products = $products->whereRaw("categories.id in ('" . implode("','", $ids) . "')");
         }
         return $products;
     }
 
     public function productThroughBrandForAllListing($typeVal, $products)
     {
-        return $products->whereRaw("products.brand_id in ('". implode("','", $typeVal). "')");
+        return $products->whereRaw("products.brand_id in ('" . implode("','", $typeVal) . "')");
     }
 
     public function productThroughParentCat($typeVal, $products)
     {
         $category_ids = Category::whereHas('parentCategory', function ($q) use ($typeVal) {
-            $q->whereRaw("id in ('".implode("','", $typeVal)."')");
+            $q->whereRaw("id in ('" . implode("','", $typeVal) . "')");
         })->pluck('id')->toArray();
 
         foreach ($typeVal as $key => $value) {
             array_push($category_ids, intval($value));
         }
-        if(!in_array('products',$this->joins)){
-            $products = $products->join('products', function($q){
-                $q->on('seller_products.product_id','=', 'products.id');
+        if (!in_array('products', $this->joins)) {
+            $products = $products->join('products', function ($q) {
+                $q->on('seller_products.product_id', '=', 'products.id');
             });
-            array_push($this->joins,'products');
+            array_push($this->joins, 'products');
         }
-        if(!in_array('category_product',$this->joins)){
-            $products = $products->join('category_product', function($q1) use ($category_ids){
-                $q1->on('category_product.product_id','=', 'products.id')->join('categories', function ($q2) use ($category_ids) {
-                    $q2->on('categories.id', '=','category_product.category_id')->whereRaw("categories.id in ('". implode("','", $category_ids)."')");
+        if (!in_array('category_product', $this->joins)) {
+            $products = $products->join('category_product', function ($q1) use ($category_ids) {
+                $q1->on('category_product.product_id', '=', 'products.id')->join('categories', function ($q2) use ($category_ids) {
+                    $q2->on('categories.id', '=', 'category_product.category_id')->whereRaw("categories.id in ('" . implode("','", $category_ids) . "')");
                 });
             });
             array_push($this->joins, 'category_product', 'categories');
-        }
-        else{
-            $products = $products->whereRaw("categories.id in ('". implode("','", $category_ids)."')");
+        } else {
+            $products = $products->whereRaw("categories.id in ('" . implode("','", $category_ids) . "')");
         }
         return $products;
     }
@@ -569,65 +574,63 @@ class FilterRepository
     public function productThroughBrand($typeVal, $products, $requestType, $requestItem)
     {
         if ($requestType == "category") {
-            $products = $products->whereRaw("products.brand_id in ('". implode("','", $typeVal). "')")->where('category_product.category_id', $requestItem);
+            $products = $products->whereRaw("products.brand_id in ('" . implode("','", $typeVal) . "')")->where('category_product.category_id', $requestItem);
             return $products;
         }
         if ($requestType == "search") {
-            $products = $products->whereHas('product', function($query) use($typeVal){
-                $query->whereRaw("brand_id in ('". implode("','",$typeVal)."')");
+            $products = $products->whereHas('product', function ($query) use ($typeVal) {
+                $query->whereRaw("brand_id in ('" . implode("','", $typeVal) . "')");
             });
             return $products;
-        }
-        else{
-            $products = $products->whereRaw("products.brand_id in ('". implode("','",$typeVal)."')");
+        } else {
+            $products = $products->whereRaw("products.brand_id in ('" . implode("','", $typeVal) . "')");
             return $products;
         }
     }
 
     public function productThroughAttribute($typeId, $typeVal, $products, $requestType, $requestItem)
     {
-        if ($requestType ==  "category") {
-            if(!in_array('product_variations',$this->joins)){
-                $products->join('product_variations', function($q3){
+        if ($requestType == "category") {
+            if (!in_array('product_variations', $this->joins)) {
+                $products->join('product_variations', function ($q3) {
                     return $q3->on('products.id', '=', 'product_variations.product_id');
                 });
-                array_push($this->joins,'product_variations');
+                array_push($this->joins, 'product_variations');
             }
-            $products = $products->where('products.status', 1)->where('category_product.category_id', $requestItem)->whereRaw("product_variations.attribute_id in ('". implode("','",[$typeId])."')")->whereRaw("product_variations.attribute_value_id in ('". implode("','",$typeVal)."')");
-        } elseif ($requestType ==  "brand") {
-            if(!in_array('product_variations',$this->joins)){
-                $products->join('product_variations', function($q3){
+            $products = $products->where('products.status', 1)->where('category_product.category_id', $requestItem)->whereRaw("product_variations.attribute_id in ('" . implode("','", [$typeId]) . "')")->whereRaw("product_variations.attribute_value_id in ('" . implode("','", $typeVal) . "')");
+        } elseif ($requestType == "brand") {
+            if (!in_array('product_variations', $this->joins)) {
+                $products->join('product_variations', function ($q3) {
                     return $q3->on('products.id', '=', 'product_variations.product_id');
                 });
-                array_push($this->joins,'product_variations');
+                array_push($this->joins, 'product_variations');
             }
-            $products = $products->where('products.status', 1)->whereRaw("products.brand_id in ('". implode("','",[$requestItem])."')")->whereRaw("product_variations.attribute_id in ('". implode("','",[$typeId])."')")->whereRaw("product_variations.attribute_value_id in ('". implode("','",$typeVal)."')");
+            $products = $products->where('products.status', 1)->whereRaw("products.brand_id in ('" . implode("','", [$requestItem]) . "')")->whereRaw("product_variations.attribute_id in ('" . implode("','", [$typeId]) . "')")->whereRaw("product_variations.attribute_value_id in ('" . implode("','", $typeVal) . "')");
         } else {
-            if(!in_array('product_variations',$this->joins)){
-                $products->join('product_variations', function($q3){
+            if (!in_array('product_variations', $this->joins)) {
+                $products->join('product_variations', function ($q3) {
                     return $q3->on('products.id', '=', 'product_variations.product_id');
                 });
-                array_push($this->joins,'product_variations');
+                array_push($this->joins, 'product_variations');
             }
-            $products = $products->where('products.status', 1)->whereRaw("product_variations.attribute_id in ('". implode("','",[$typeId])."')")->whereRaw("product_variations.attribute_value_id in ('". implode("','",$typeVal)."')");
+            $products = $products->where('products.status', 1)->whereRaw("product_variations.attribute_id in ('" . implode("','", [$typeId]) . "')")->whereRaw("product_variations.attribute_value_id in ('" . implode("','", $typeVal) . "')");
         }
         return $products;
     }
 
     public function productThroughPriceRange($min_price, $max_price, $requestType, $requestItem, $products)
     {
-        if ($requestType ==  "category") {
+        if ($requestType == "category") {
             $products = $products->where('products.status', 1)->where('category_product.category_id', $requestItem);
+        } elseif ($requestType == "brand") {
+            $products = $products->where('products.status', 1)->whereRaw("products.brand_id in ('" . implode("','", [$requestItem]) . "')");
         }
-        elseif ($requestType ==  "brand") {
-            $products = $products->where('products.status', 1)->whereRaw("products.brand_id in ('". implode("','",[$requestItem])."')");
-        }
-        if(!in_array('seller_product_s_k_us',$this->joins)){
+        if (!in_array('seller_product_s_k_us', $this->joins)) {
             $products = $products->join('seller_product_s_k_us', function ($q) use ($min_price, $max_price) {
                 $q->on('seller_products.id', '=', 'seller_product_s_k_us.product_id')->whereBetween('seller_product_s_k_us.selling_price', array($min_price, $max_price));
             });
-            array_push($this->joins,'seller_product_s_k_us');
-        }else{
+            array_push($this->joins, 'seller_product_s_k_us');
+        } else {
             $products = $products->whereBetween('seller_product_s_k_us.selling_price', array($min_price, $max_price));
         }
         return $products;
@@ -635,11 +638,11 @@ class FilterRepository
 
     private function productThroughRating($rating, $requestType, $requestItem, $products)
     {
-        if ($requestType ==  "category") {
+        if ($requestType == "category") {
             $products = $products->where('products.status', 1)->where('category_product.category_id', $requestItem);
         }
-        if ($requestType ==  "brand") {
-            $products = $products->where('products.status', 1)->whereRaw("products.brand_id in ('". implode("','",[$requestItem])."')");
+        if ($requestType == "brand") {
+            $products = $products->where('products.status', 1)->whereRaw("products.brand_id in ('" . implode("','", [$requestItem]) . "')");
         }
         $products = $products->where('seller_products.avg_rating', '>=', $rating);
         return $products;
@@ -662,25 +665,23 @@ class FilterRepository
     public function sortAndPaginate($products, $sort_by, $paginate_by)
     {
         $sort = 'desc';
-            $column = 'created_at';
-            if(in_array($sort_by,['old','alpha_asc','low_to_high'])){
-                $sort = 'ASC';
-            }
-            if(in_array($sort_by,['alpha_asc','alpha_desc'])){
-                $column = 'product_name';
-            }
-            elseif ($sort_by == "low_to_high") {
-                $column = 'min_sell_price';
-            }
-            elseif ($sort_by == "high_to_low") {
-                $column = 'max_sell_price';
-            }
-        if(get_class($products) == \Illuminate\Database\Eloquent\Builder::class){
+        $column = 'created_at';
+        if (in_array($sort_by, ['old', 'alpha_asc', 'low_to_high'])) {
+            $sort = 'ASC';
+        }
+        if (in_array($sort_by, ['alpha_asc', 'alpha_desc'])) {
+            $column = 'product_name';
+        } elseif ($sort_by == "low_to_high") {
+            $column = 'min_sell_price';
+        } elseif ($sort_by == "high_to_low") {
+            $column = 'max_sell_price';
+        }
+        if (get_class($products) == \Illuminate\Database\Eloquent\Builder::class) {
             $products = $products->orderBy($column, $sort);
-        }else{
-            if($sort == 'ASC'){
+        } else {
+            if ($sort == 'ASC') {
                 $products = $products->sortBy($column);
-            }else{
+            } else {
                 $products = $products->sortByDesc($column);
             }
         }
@@ -717,10 +718,10 @@ class FilterRepository
             $data['color'] = $attributeRepo->getColorAttributeForSpecificBrand($brand_id);
         }
         if ($item == 'tag') {
-            $tag = Tag::where('name',$id)->first();
+            $tag = Tag::where('name', $id)->first();
             $mainProducts = ProductTag::where('tag_id', $tag->id)->pluck('product_id')->toArray();
-            $query = SellerProduct::with('product')->where('status', 1)->whereHas('product', function($query) use($mainProducts){
-                return $query->whereIn('product_id',$mainProducts);
+            $query = SellerProduct::with('product')->where('status', 1)->whereHas('product', function ($query) use ($mainProducts) {
+                return $query->whereIn('product_id', $mainProducts);
             })->activeSeller();
 
             if (request()->has('seller_id')) {
@@ -728,32 +729,32 @@ class FilterRepository
             }
 
             $products = $query;
-            $giftCards = GiftCard::where('status', 1)->whereHas('tags', function($q) use($tag){
+            $giftCards = GiftCard::where('status', 1)->whereHas('tags', function ($q) use ($tag) {
                 return $q->where('tag_id', $tag->id);
-            })->select(['*', 'name as product_name','sku as slug'])->where('status', 1);
-            if($giftCards->count()){
+            })->select(['*', 'name as product_name', 'sku as slug'])->where('status', 1);
+            if ($giftCards->count()) {
                 $giftCards = $giftCards->get();
-            }else{
+            } else {
                 $giftCards = [];
             }
             $products = $products->get()->merge($giftCards);
             $data['products'] = $this->sortAndPaginate($products, $sort_by, $paginate_by);
         }
-        if($item == 'search'){
-            $slugs = explode(' ',$id);
+        if ($item == 'search') {
+            $slugs = explode(' ', $id);
             $giftCards = collect();
-            $giftCards = GiftCard::where('status', 1)->whereHas('tags', function($q) use($slugs){
-                return $q->where(function($q) use ($slugs){
-                    foreach($slugs as $slug){
+            $giftCards = GiftCard::where('status', 1)->whereHas('tags', function ($q) use ($slugs) {
+                return $q->where(function ($q) use ($slugs) {
+                    foreach ($slugs as $slug) {
                         $q = $q->orWhere('name', 'LIKE', "%{$slug}%");
                     }
                     return $q;
                 });
-            })->select(['*', 'name as product_name','sku as slug']);
+            })->select(['*', 'name as product_name', 'sku as slug']);
             $products = $this->search_query($id);
-            if($giftCards->count()){
+            if ($giftCards->count()) {
                 $giftCards = $giftCards->get();
-            }else{
+            } else {
                 $giftCards = [];
             }
             $products = $products->get()->merge($giftCards);
@@ -767,9 +768,10 @@ class FilterRepository
         return $data['products'];
     }
 
-    public function getSectionProducts($section_name){
-        $section = HomePageSection::where('section_name',$section_name)->first();
-        $query = SellerProduct::with('seller','reviews')->activeSeller()->select('seller_products.*')->join('products', function($q){
+    public function getSectionProducts($section_name)
+    {
+        $section = HomePageSection::where('section_name', $section_name)->first();
+        $query = SellerProduct::with('seller', 'reviews')->activeSeller()->select('seller_products.*')->join('products', function ($q) {
             return $q->on('seller_products.product_id', '=', 'products.id');
         });
 
@@ -777,45 +779,50 @@ class FilterRepository
             $query->where('seller_products.user_id', request()->seller_id);
         }
 
+        if (auth()->check() && auth()->user()->warehouse_id && in_array($section_name, ['top_rating', 'people_choices', 'top_picks', 'more_products'])) {
+            $query->where('seller_products.user_id', auth()->user()->warehouse_id);
+        }
+
         $products = $query;
         $data['products'] = $products;
         $data['section'] = $section;
-        if(request()->sort_by){
+        if (request()->sort_by) {
             return $data;
         }
-        if($section->type == 1){
-            $products = $products->join('category_product', function($q1){
-                $q1->on('products.id','=', 'category_product.product_id')->orderBy('category_product.category_id');
+        if ($section->type == 1) {
+            $products = $products->join('category_product', function ($q1) {
+                $q1->on('products.id', '=', 'category_product.product_id')->orderBy('category_product.category_id');
             })->where('products.status', 1);
-        }else{
+        } else {
             $products = $products->where('products.status', 1);
         }
-        if($section->type == 2){
+        if ($section->type == 2) {
             $products = $products->latest();
         }
-        if($section->type == 3){
+        if ($section->type == 3) {
             $products->orderByDesc('recent_view');
         }
-        if($section->type == 4){
+        if ($section->type == 4) {
             $products->orderByDesc('total_sale');
         }
-        if($section->type == 5){
+        if ($section->type == 5) {
             $products = $products->withCount('reviews')->orderByDesc('reviews_count');
         }
-        if($section->type == 6){
-            $product_ids = HomepageCustomProduct::where('section_id',$section->id)->pluck('seller_product_id')->toArray();
-            $products =  $products->whereRaw("seller_products.id in ('". implode("','",$product_ids). "')");
+        if ($section->type == 6) {
+            $product_ids = HomepageCustomProduct::where('section_id', $section->id)->pluck('seller_product_id')->toArray();
+            $products = $products->whereRaw("seller_products.id in ('" . implode("','", $product_ids) . "')");
         }
         $data['products'] = $products->distinct('seller_products.id');
         return $data;
     }
 
-    public function getConvertedMin($value){
-        if(auth()->check() && auth()->user()->currency->code != app('general_setting')->currency_code){
+    public function getConvertedMin($value)
+    {
+        if (auth()->check() && auth()->user()->currency->code != app('general_setting')->currency_code) {
             $rate = auth()->user()->currency->convert_rate;
             $value = $value * $rate;
-        }else{
-            if(Session::has('currency')){
+        } else {
+            if (Session::has('currency')) {
                 $currency = DB::table('currencies')->where('id', Session::get('currency'))->first();
                 $rate = $currency->convert_rate;
                 $value = $value * $rate;
@@ -824,12 +831,13 @@ class FilterRepository
         return $value;
     }
 
-    public function getConvertedMax($value){
-        if(auth()->check() && auth()->user()->currency->code != app('general_setting')->currency_code){
+    public function getConvertedMax($value)
+    {
+        if (auth()->check() && auth()->user()->currency->code != app('general_setting')->currency_code) {
             $rate = auth()->user()->currency->convert_rate;
             $value = $value * $rate;
-        }else{
-            if(Session::has('currency')){
+        } else {
+            if (Session::has('currency')) {
                 $currency = DB::table('currencies')->where('id', Session::get('currency'))->first();
                 $rate = $currency->convert_rate;
                 $value = $value * $rate;
@@ -838,12 +846,13 @@ class FilterRepository
         return $value;
     }
 
-    public function getConvertRate(){
+    public function getConvertRate()
+    {
         $rate = 1;
-        if(auth()->check() && auth()->user()->currency->code != app('general_setting')->currency_code){
+        if (auth()->check() && auth()->user()->currency->code != app('general_setting')->currency_code) {
             $rate = auth()->user()->currency->convert_rate;
-        }else{
-            if(Session::has('currency')){
+        } else {
+            if (Session::has('currency')) {
                 $currency = DB::table('currencies')->where('id', Session::get('currency'))->first();
                 $rate = $currency->convert_rate;
             }
