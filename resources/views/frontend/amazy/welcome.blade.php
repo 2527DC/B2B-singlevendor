@@ -169,7 +169,8 @@
                                             $sellerUrl = $product->seller->slug ? route('frontend.seller', $product->seller->slug) : route('frontend.seller', base64_encode($product->seller->id));
                                             $sellerName = $product->seller->role->type == 'seller' ? (@$product->seller->SellerAccount->seller_shop_display_name ?: ($product->seller->first_name . ' ' . $product->seller->last_name)) : app('general_setting')->company_name;
                                         @endphp
-                                        <p class="stock_text mb-1"><small>Warehouse: <a href="{{ $sellerUrl }}" style="font-weight:600;">{{ $sellerName }}</a></small></p>
+                                        <p class="stock_text mb-1"><small>Warehouse: <a href="{{ $sellerUrl }}"
+                                                    style="font-weight:600;">{{ $sellerName }}</a></small></p>
                                     @endif
 
                                     @if(isGuestAddtoCart() == true)
@@ -438,7 +439,8 @@
                                                                 $sellerUrl = $product->seller->slug ? route('frontend.seller', $product->seller->slug) : route('frontend.seller', base64_encode($product->seller->id));
                                                                 $sellerName = $product->seller->role->type == 'seller' ? (@$product->seller->SellerAccount->seller_shop_display_name ?: ($product->seller->first_name . ' ' . $product->seller->last_name)) : app('general_setting')->company_name;
                                                             @endphp
-                                                            <p class="stock_text mb-1"><small>Warehouse: <a href="{{ $sellerUrl }}" style="font-weight:600;">{{ $sellerName }}</a></small></p>
+                                                            <p class="stock_text mb-1"><small>Warehouse: <a href="{{ $sellerUrl }}"
+                                                                        style="font-weight:600;">{{ $sellerName }}</a></small></p>
                                                         @endif
                                                         @if(isGuestAddtoCart())
                                                             <div
@@ -611,7 +613,8 @@
                                                             $sellerUrl = $product->seller->slug ? route('frontend.seller', $product->seller->slug) : route('frontend.seller', base64_encode($product->seller->id));
                                                             $sellerName = $product->seller->role->type == 'seller' ? (@$product->seller->SellerAccount->seller_shop_display_name ?: ($product->seller->first_name . ' ' . $product->seller->last_name)) : app('general_setting')->company_name;
                                                         @endphp
-                                                        <p class="stock_text mb-1"><small>Warehouse: <a href="{{ $sellerUrl }}" style="font-weight:600;">{{ $sellerName }}</a></small></p>
+                                                        <p class="stock_text mb-1"><small>Warehouse: <a href="{{ $sellerUrl }}"
+                                                                    style="font-weight:600;">{{ $sellerName }}</a></small></p>
                                                     @endif
                                                     @if(isGuestAddtoCart())
                                                         <div
@@ -833,7 +836,8 @@
                                                                 $sellerUrl = $product->seller->slug ? route('frontend.seller', $product->seller->slug) : route('frontend.seller', base64_encode($product->seller->id));
                                                                 $sellerName = $product->seller->role->type == 'seller' ? (@$product->seller->SellerAccount->seller_shop_display_name ?: ($product->seller->first_name . ' ' . $product->seller->last_name)) : app('general_setting')->company_name;
                                                             @endphp
-                                                            <p class="stock_text mb-1"><small>Warehouse: <a href="{{ $sellerUrl }}" style="font-weight:600;">{{ $sellerName }}</a></small></p>
+                                                            <p class="stock_text mb-1"><small>Warehouse: <a href="{{ $sellerUrl }}"
+                                                                        style="font-weight:600;">{{ $sellerName }}</a></small></p>
                                                         @endif
                                                         @if(isGuestAddtoCart())
                                                             <div
@@ -1006,7 +1010,8 @@
                                                             $sellerUrl = $product->seller->slug ? route('frontend.seller', $product->seller->slug) : route('frontend.seller', base64_encode($product->seller->id));
                                                             $sellerName = $product->seller->role->type == 'seller' ? (@$product->seller->SellerAccount->seller_shop_display_name ?: ($product->seller->first_name . ' ' . $product->seller->last_name)) : app('general_setting')->company_name;
                                                         @endphp
-                                                        <p class="stock_text mb-1"><small>Warehouse: <a href="{{ $sellerUrl }}" style="font-weight:600;">{{ $sellerName }}</a></small></p>
+                                                        <p class="stock_text mb-1"><small>Warehouse: <a href="{{ $sellerUrl }}"
+                                                                    style="font-weight:600;">{{ $sellerName }}</a></small></p>
                                                     @endif
                                                     @if(isGuestAddtoCart())
                                                         <div
@@ -1225,7 +1230,8 @@
                                                                 $sellerUrl = $product->seller->slug ? route('frontend.seller', $product->seller->slug) : route('frontend.seller', base64_encode($product->seller->id));
                                                                 $sellerName = $product->seller->role->type == 'seller' ? (@$product->seller->SellerAccount->seller_shop_display_name ?: ($product->seller->first_name . ' ' . $product->seller->last_name)) : app('general_setting')->company_name;
                                                             @endphp
-                                                            <p class="stock_text mb-1"><small>Warehouse: <a href="{{ $sellerUrl }}" style="font-weight:600;">{{ $sellerName }}</a></small></p>
+                                                            <p class="stock_text mb-1"><small>Warehouse: <a href="{{ $sellerUrl }}"
+                                                                        style="font-weight:600;">{{ $sellerName }}</a></small></p>
                                                         @endif
 
                                                         @if(isGuestAddtoCart())
@@ -1400,7 +1406,8 @@
                                                             $sellerUrl = $product->seller->slug ? route('frontend.seller', $product->seller->slug) : route('frontend.seller', base64_encode($product->seller->id));
                                                             $sellerName = $product->seller->role->type == 'seller' ? (@$product->seller->SellerAccount->seller_shop_display_name ?: ($product->seller->first_name . ' ' . $product->seller->last_name)) : app('general_setting')->company_name;
                                                         @endphp
-                                                        <p class="stock_text mb-1"><small>Warehouse: <a href="{{ $sellerUrl }}" style="font-weight:600;">{{ $sellerName }}</a></small></p>
+                                                        <p class="stock_text mb-1"><small>Warehouse: <a href="{{ $sellerUrl }}"
+                                                                    style="font-weight:600;">{{ $sellerName }}</a></small></p>
                                                     @endif
 
                                                     @if(isGuestAddtoCart())
@@ -1842,15 +1849,15 @@
                                                         {{__('defaultTheme.add_to_cart')}}
                                                     </a>
                                                     <!-- <p>
-                                                                    @if (getProductwitoutDiscountPrice(@$product) != single_price(0))
-                                                                        <del>
-                                                                            {{getProductwitoutDiscountPrice(@$product)}}
-                                                                        </del>
-                                                                        @endif
-                                                                    <strong>
-                                                                        {{getProductDiscountedPrice(@$product)}}
-                                                                    </strong>
-                                                                </p> -->
+                                                                                @if (getProductwitoutDiscountPrice(@$product) != single_price(0))
+                                                                                    <del>
+                                                                                        {{getProductwitoutDiscountPrice(@$product)}}
+                                                                                    </del>
+                                                                                    @endif
+                                                                                <strong>
+                                                                                    {{getProductDiscountedPrice(@$product)}}
+                                                                                </strong>
+                                                                            </p> -->
 
                                                     <p class="d-flex flex-column text-end m-0">
 
@@ -1883,19 +1890,19 @@
 
                                         <!-- <p class="d-flex flex-column text-end m-0">
 
-                                                    {{-- Selling / Discounted Price --}}
-                                                    <strong class="text-dark">
-                                                        {{ getProductDiscountedPrice(@$product) }}
-                                                    </strong>
+                                                            {{-- Selling / Discounted Price --}}
+                                                            <strong class="text-dark">
+                                                                {{ getProductDiscountedPrice(@$product) }}
+                                                            </strong>
 
-                                                    {{-- MRP (Striked) --}}
-                                                    @if(isset($product->product->mrp) || isset($product->mrp))
-                                                        <del class="text-muted">
-                                                            {{ single_price($product->product->mrp ?? $product->mrp) }}
-                                                        </del>
-                                                    @endif
+                                                            {{-- MRP (Striked) --}}
+                                                            @if(isset($product->product->mrp) || isset($product->mrp))
+                                                                <del class="text-muted">
+                                                                    {{ single_price($product->product->mrp ?? $product->mrp) }}
+                                                                </del>
+                                                            @endif
 
-                                                </p> -->
+                                                        </p> -->
 
                                     </div>
 
@@ -2263,7 +2270,8 @@
                                                 $sellerUrl = $product->seller->slug ? route('frontend.seller', $product->seller->slug) : route('frontend.seller', base64_encode($product->seller->id));
                                                 $sellerName = $product->seller->role->type == 'seller' ? (@$product->seller->SellerAccount->seller_shop_display_name ?: ($product->seller->first_name . ' ' . $product->seller->last_name)) : app('general_setting')->company_name;
                                             @endphp
-                                            <p class="stock_text mb-1"><small>Warehouse: <a href="{{ $sellerUrl }}" style="font-weight:600;">{{ $sellerName }}</a></small></p>
+                                            <p class="stock_text mb-1"><small>Warehouse: <a href="{{ $sellerUrl }}"
+                                                        style="font-weight:600;">{{ $sellerName }}</a></small></p>
                                         @endif
                                         @if(isGuestAddtoCart())
                                             <div class="product_price d-flex align-items-center justify-content-between flex-wrap">

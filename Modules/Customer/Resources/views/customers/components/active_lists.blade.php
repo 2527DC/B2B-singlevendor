@@ -10,8 +10,9 @@
             <th>{{ __('common.wallet_balance') }}</th>
             <th>{{ __('common.total_orders') }}</th>
             <th>Warehouse Selected</th>
+            <th>Store Name</th>
             <th>{{ __('common.action') }}</th>
         </tr>
     </thead>
-    
+
 </table>

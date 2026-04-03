@@ -342,10 +342,10 @@
                                                     <a href="{{ route('affiliate.my_affiliate.index') }}"><i class="ti-dashboard"></i>{{ __('common.dashboard') }}</a>
 
                                                 @else
-                                                    @if (auth()->user()->role->type == 'customer' && isModuleActive('MultiVendor'))
+{{ @if (auth()->user()->role->type == 'customer' && isModuleActive('MultiVendor'))
                                                         <a href="{{route('frontend.merchant-register-step-first')}}" target="_blank"><i
                                                                 class="far fa-user"></i>{{ __('common.convert_as_seller') }}</a>
-                                                    @endif
+                                                    @endif }}
 
                                                     @foreach($element->childs as $key => $element)
                                                         @if($element->type == 'page' && $element->page->slug == 'profile/dashboard')

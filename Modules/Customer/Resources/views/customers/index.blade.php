@@ -179,6 +179,7 @@
                             { data: 'wallet_balance', name: 'wallet_balance' },
                             { data: 'orders', name: 'orders' },
                             { data: 'warehouse_selected', name: 'warehouse_selected', orderable: false, searchable: true },
+                            { data: 'store_name', name: 'store_name' },
                             { data: 'action', name: 'action' }
                         ],
 
@@ -286,6 +287,7 @@
                             { data: 'wallet_balance', name: 'wallet_balance' },
                             { data: 'orders', name: 'orders' },
                             { data: 'warehouse_selected', name: 'warehouse_selected', orderable: false, searchable: true },
+                            { data: 'store_name', name: 'store_name' },
                             { data: 'action', name: 'action' }
 
                         ],
@@ -394,6 +396,7 @@
                             { data: 'wallet_balance', name: 'wallet_balance' },
                             { data: 'orders', name: 'orders' },
                             { data: 'warehouse_selected', name: 'warehouse_selected', orderable: false, searchable: true },
+                            { data: 'store_name', name: 'store_name' },
                             { data: 'action', name: 'action' }
 
                         ],

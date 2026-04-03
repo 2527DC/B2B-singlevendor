@@ -22,6 +22,7 @@ use Modules\UserActivityLog\Traits\LogActivity;
 use Yajra\DataTables\Facades\DataTables;
 use Modules\UserActivityLog\Entities\LogActivity as LogActivityModel;
 use Illuminate\Database\QueryException;
+use Modules\MultiVendor\Entities\SellerWarehouseAddress;
 class CustomerController extends Controller
 {
     use ImageStore;
@@ -78,6 +79,9 @@ class CustomerController extends Controller
                     }
                     return '-';
                 })
+                ->addColumn('store_name', function ($customer) {
+                    return $customer->store_name ? $customer->store_name : '-';
+                })
                 ->rawColumns(['avatar', 'status', 'action', 'name'])
                 ->make(true);
         } else {
@@ -131,7 +135,8 @@ class CustomerController extends Controller
     }
     public function create()
     {
-        return view('customer::customers.create');
+        $warehouses = SellerWarehouseAddress::select('id', 'user_id', 'warehouse_name', 'warehouse_address', 'warehouse_phone')->get();
+        return view('customer::customers.create', compact('warehouses'));
     }
 
 
@@ -152,7 +157,8 @@ class CustomerController extends Controller
             'document' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
             'password' => 'required|confirmed|min:8',
             'referral_code' => ['sometimes', 'nullable', Rule::exists('referral_codes', 'referral_code')->where('status', 1)],
-            'status' => 'required'
+            'status' => 'required',
+            'warehouse_id' => 'required'
         ]);
 
         try {
@@ -205,7 +211,8 @@ class CustomerController extends Controller
     public function edit($id)
     {
         $customer = $this->customerService->find($id);
-        return view('customer::customers.edit', compact('customer'));
+        $warehouses = SellerWarehouseAddress::select('id', 'user_id', 'warehouse_name', 'warehouse_address', 'warehouse_phone')->get();
+        return view('customer::customers.edit', compact('customer', 'warehouses'));
     }
 
     public function update(Request $request, $id)
@@ -214,11 +221,31 @@ class CustomerController extends Controller
             'first_name' => 'required|max:255',
             'last_name' => 'nullable|max:255',
             'email' => ['required', 'string', 'max:255', 'unique:users,email,' . $id],
+            'store_name' => 'required|string|max:255',
+            'store_image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'document' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
             'password' => 'sometimes|nullable|confirmed|min:8',
-            'status' => 'required'
+            'status' => 'required',
+            'warehouse_id' => 'required'
         ]);
         try {
-            $this->customerService->update($request->except('_token'), $id);
+            $data = $request->except('_token');
+
+            if ($request->hasFile('document')) {
+                $file = $request->file('document');
+                $filename = time() . '_' . $file->getClientOriginalName();
+                $file->move(public_path('uploads/customer_documents'), $filename);
+                $data['document'] = 'uploads/customer_documents/' . $filename;
+            }
+
+            if ($request->hasFile('store_image')) {
+                $file = $request->file('store_image');
+                $filename = time() . '_store_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                $file->move(public_path('uploads/customer_store_images'), $filename);
+                $data['store_image'] = 'uploads/customer_store_images/' . $filename;
+            }
+
+            $this->customerService->update($data, $id);
             Toastr::success(__('common.updated_successfully'), __('common.success'));
             LogActivity::successLog('Customer Updated Successfully.');
             return redirect()->route('cusotmer.list_active');
