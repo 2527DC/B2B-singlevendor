@@ -342,10 +342,10 @@
                                     <tbody>
                                         @foreach($top_sale_products as $key => $top_ten_product)
                                         <tr>
-                                            <td><a href="{{singleProductURL($top_ten_product->seller->slug, $top_ten_product->slug)}}"
-                                                    target="_blank">{{$top_ten_product->product->product_name}}</a></td>
+                                            <td><a href="{{ $top_ten_product->seller ? singleProductURL($top_ten_product->seller->slug, $top_ten_product->slug) : '#' }}"
+                                                    target="_blank">{{ optional($top_ten_product->product)->product_name }}</a></td>
 
-                                            <td>{{$top_ten_product->product->brand->name}}</td>
+                                            <td>{{ optional(optional($top_ten_product->product)->brand)->name }}</td>
                                             <td>{{ getNumberTranslate($top_ten_product->total_sale)}}</td>
                                         </tr>
                                         @endforeach
@@ -381,10 +381,10 @@
                                     <tbody>
                                         @foreach($latest_uploaded_products as $key => $product)
                                         <tr>
-                                            <td><a href="{{singleProductURL($product->seller->slug, $product->slug)}}"
-                                                    target="_blank">{{$product->product->product_name}}</a>
+                                            <td><a href="{{ $product->seller ? singleProductURL($product->seller->slug, $product->slug) : '#' }}"
+                                                    target="_blank">{{ optional($product->product)->product_name }}</a>
                                             </td>
-                                            <td>{{$product->product->brand->name}}</td>
+                                            <td>{{ optional(optional($product->product)->brand)->name }}</td>
                                             <td>{{ getNumberTranslate($product->total_sale)}}</td>
                                         </tr>
                                         @endforeach
@@ -427,13 +427,13 @@
                                         @foreach ($latest_orders as $key => $latest_order)
                                         <tr>
                                             <td class="nowrap">
-                                                {{ dateConvert($latest_order->order->created_at) }}
+                                                {{ $latest_order->order ? dateConvert($latest_order->order->created_at) : '' }}
                                             </td>
-                                            <td>{{ getNumberTranslate(@$latest_order->order->order_number) }}</td>
+                                            <td>{{ getNumberTranslate($latest_order->order ? $latest_order->order->order_number : '') }}</td>
                                             <td>
-                                                @if ($latest_order->order->is_confirmed == 1)
+                                                @if (optional($latest_order->order)->is_confirmed == 1)
                                                 <h6><span class="badge_1">{{__('common.confirmed')}}</span></h6>
-                                                @elseif ($latest_order->order->is_confirmed == 2)
+                                                @elseif (optional($latest_order->order)->is_confirmed == 2)
                                                 <h6><span class="badge_4">{{__('common.declined')}}</span></h6>
                                                 @else
                                                 <h6><span class="badge_4">{{__('common.pending')}}</span></h6>
@@ -492,7 +492,7 @@
                                             <td class="nowrap">
                                                 {{ dateConvert($latest_refund->created_at) }}
                                             </td>
-                                            <td>{{ getNumberTranslate(@$latest_refund->order->order_number) }}</td>
+                                            <td>{{ getNumberTranslate(optional($latest_refund->order)->order_number) }}</td>
                                             <td>
                                                 {{ single_price($latest_refund->total_return_amount) }}
                                             </td>
@@ -558,12 +558,12 @@
                                             <td class="nowrap">
                                                 {{ dateConvert($payment->created_at) }}
                                             </td>
-                                            <td>{{ @$payment->subscription_payment->commission_type }}</td>
+                                            <td>{{ optional($payment->subscription_payment)->commission_type }}</td>
                                             <td>
                                                 {{ single_price($payment->amount) }}
                                             </td>
                                             <td>
-                                                {{ @$payment->subscription_payment->subscription_type }}
+                                                {{ optional($payment->subscription_payment)->subscription_type }}
                                             </td>
                                         </tr>
                                         @endforeach
