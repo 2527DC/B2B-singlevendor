@@ -14,12 +14,12 @@
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('customer')->group(function() {
-    Route::get('/active-customer-list', 'CustomerController@customer_index')->name('cusotmer.list_active')->middleware(['auth','admin','permission']);
-    Route::get('/customer-list/get-data', 'CustomerController@customer_index_get_data')->name('cusotmer.list.get-data')->middleware(['auth','admin']);
-    Route::post('/is-active/update','CustomerController@update_active_status')->name('customer.update_active_status')->middleware(['auth','admin','permission','prohibited_demo_mode']);
+    Route::get('/active-customer-list', 'CustomerController@customer_index')->name('cusotmer.list_active')->middleware(['auth','seller','permission']);
+    Route::get('/customer-list/get-data', 'CustomerController@customer_index_get_data')->name('cusotmer.list.get-data')->middleware(['auth','seller']);
+    Route::post('/is-active/update','CustomerController@update_active_status')->name('customer.update_active_status')->middleware(['auth','seller','permission','prohibited_demo_mode']);
 
-    Route::get('/profile/details/{id}/get-orders','CustomerController@getOrders')->name('customer.show_details.get-orders')->middleware(['auth','admin']);
-    Route::get('/profile/details/{id}/get-wallet-history','CustomerController@getWalletHistory')->name('customer.show_details.get-wallet-history')->middleware(['auth','admin']);
+    Route::get('/profile/details/{id}/get-orders','CustomerController@getOrders')->name('customer.show_details.get-orders')->middleware(['auth','seller']);
+    Route::get('/profile/details/{id}/get-wallet-history','CustomerController@getWalletHistory')->name('customer.show_details.get-wallet-history')->middleware(['auth','seller']);
     Route::post('/password/update','CustomerController@updatePassword')->name('cusotmer.update.password')->middleware(['auth','prohibited_demo_mode']);
     Route::post('/info/update','CustomerController@updateInfo')->name('customer.update.info')->middleware(['auth','prohibited_demo_mode']);
     Route::post('/address/store','CustomerController@storeAddress')->name('customer.address.store')->middleware(['auth','prohibited_demo_mode']);
@@ -27,12 +27,12 @@ Route::prefix('customer')->group(function() {
     Route::post('/address/default/shipping','CustomerController@setDefaultShipping')->name('customer.address.default.shipping')->middleware(['auth','prohibited_demo_mode']);
     Route::post('/address/default/billing','CustomerController@setDefaultBilling')->name('customer.address.default.billing')->middleware(['auth','prohibited_demo_mode']);
     Route::post('/address/delete','CustomerController@deleteAddress')->name('customer.address.delete')->middleware(['auth','prohibited_demo_mode']);
-    Route::get('/profile/details/{id}','CustomerController@show')->name('customer.show_details')->middleware(['auth','admin','permission']);
+    Route::get('/profile/details/{id}','CustomerController@show')->name('customer.show_details')->middleware(['auth','seller','permission']);
     Route::post('/profile/image/delete','CustomerController@imageDelete')->name('customer.profile.image.delete')->middleware(['auth','prohibited_demo_mode']);
 });
 Route::get('/customer/address/edit/{c_id}','CustomerController@editAddress')->middleware('auth');
 
-Route::prefix('admin')->middleware(['auth','admin'])->as('admin.')->group(function () {
+Route::prefix('admin')->middleware(['auth','seller'])->as('admin.')->group(function () {
     
    Route::get('/customer/create', 'CustomerController@create')->name('customer.create')->middleware('permission'); 
    Route::post('/customer/store', 'CustomerController@store')->name('customer.store')->middleware('prohibited_demo_mode'); 
