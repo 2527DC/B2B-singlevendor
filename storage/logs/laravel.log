@@ -154,3 +154,10 @@
 #59 /var/www/html/Production_dev/index.php(51): Illuminate\\Foundation\\Http\\Kernel->handle()
 #60 {main}
 "} 
+[2026-04-03 09:20:45] development.INFO: Product details view loaded. MRP check: {"product_id":28,"slug":"selelr-1-existing-product-3","mrp_on_seller_product":"null","mrp_on_main_product":2080.0} 
+[2026-04-03 10:38:51] development.INFO: Product details view loaded. MRP check: {"product_id":28,"slug":"selelr-1-existing-product-3","mrp_on_seller_product":"null","mrp_on_main_product":2080.0} 
+[2026-04-03 11:46:14] development.INFO: Product details view loaded. MRP check: {"product_id":14,"slug":"baby-brand-steam-broken-rice-26kg","mrp_on_seller_product":"null","mrp_on_main_product":999.0} 
+[2026-04-03 16:02:26] development.INFO: Product details view loaded. MRP check: {"product_id":25,"slug":"seller-1-new-product-2","mrp_on_seller_product":"null","mrp_on_main_product":1500.0} 
+[2026-04-03 16:02:41] development.INFO: Method checkout index called {"ip":"49.206.17.133","method":"GET","ua":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/146.0.0.0","referer":"https://dev.dhatri.store/product/seller-1-shop/seller-1-new-product-2","params":{"checkout_type":"YnV5X2l0X25vdw==","owner":"eyJpdiI6Ik00R091ZkE2MHo0Um5mM3dIUUFDVUE9PSIsInZhbHVlIjoiN3FEYm1yNW0vbnRWS1BDNk1Hb0JXZz09IiwibWFjIjoiOWE3NmJhYWU3ODE5NGZkMTY2YzhkZTNiNGM2MjAyN2Y3MmU0MjMyNTA1NmIzN2ZhODNiZjc4MjNkYmNmZTA2NSIsInRhZyI6IiJ9","auction_type":"null","auction_price":"1000"}} 
+[2026-04-03 16:02:41] development.INFO: Method checkout inside if of checkout_type  called  
+[2026-04-03 16:03:03] development.INFO: Product details view loaded. MRP check: {"product_id":11,"slug":"pavan-bullet-rnr-kolam-steam-rice-26kg","mrp_on_seller_product":"null","mrp_on_main_product":2080.0} 

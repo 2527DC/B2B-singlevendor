@@ -60,6 +60,7 @@ class CustomerRepository
             'currency_id' => app('general_setting')->currency,
             'lang_code' => app('general_setting')->language_code,
             'currency_code' => app('general_setting')->currency_code,
+            'warehouse_id' => $data['warehouse_id'],
         ]);
 
         // User Notification Setting Create
@@ -98,8 +99,12 @@ class CustomerRepository
             'last_name' => $data['last_name'],
             'username' => isset($phone) ? $phone : NULL,
             'email' => isset($email) ? $email : NULL,
+            'store_name' => $data['store_name'],
+            'store_image' => $data['store_image'] ?? $user->store_image,
+            'document'   => $data['document'] ?? $user->document,
             'password' => ($data['password'] != null)?Hash::make($data['password']):$user->password,
-            'is_active' => $data['status']
+            'is_active' => $data['status'],
+            'warehouse_id' => $data['warehouse_id']
         ]);
         return $user;
 

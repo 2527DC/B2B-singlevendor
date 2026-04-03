@@ -377,9 +377,9 @@ class FilterRepository
             $query->where('seller_products.user_id', request()->seller_id);
         }
 
-        // if (auth()->check() && auth()->user()->warehouse_id) {
-        //     $query->where('seller_products.user_id', auth()->user()->warehouse_id);
-        // }
+        if (auth()->check() && auth()->user()->warehouse_id) {
+            $query->where('seller_products.user_id', auth()->user()->warehouse_id);
+        }
 
         $products = $query->distinct('seller_products.id');
         return $this->sortAndPaginate($products, $sort_by, $paginate_by);
@@ -395,9 +395,9 @@ class FilterRepository
             $query->where('seller_products.user_id', request()->seller_id);
         }
 
-        // if (auth()->check() && auth()->user()->warehouse_id) {
-        //     $query->where('seller_products.user_id', auth()->user()->warehouse_id);
-        // }
+        if (auth()->check() && auth()->user()->warehouse_id) {
+            $query->where('seller_products.user_id', auth()->user()->warehouse_id);
+        }
 
         $products = $query;
         return $this->sortAndPaginate($products, $sort_by, $paginate_by);
