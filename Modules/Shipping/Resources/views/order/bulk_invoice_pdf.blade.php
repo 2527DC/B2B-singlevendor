@@ -1,530 +1,423 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bulk Invoices</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <title>Bulk Invoice</title>
     <style>
-        /* Reuse styles from invoice_pdf for consistent look */
-        body{ font-family: 'Poppins', sans-serif; font-size: 14px; margin: 0; padding: 0; }
-        table { border-collapse: collapse; width:100%; }
-        .invoice_wrapper{ max-width: 1200px; margin: auto; background: #fff; padding: 20px; }
-        .border_bottom{ border-bottom: 1px solid #000; }
-        .line_grid{ display:grid; grid-template-columns: 110px auto; grid-gap:10px; }
-        .line_grid_2{ display:block; }
-        .page-break{ page-break-after: always; }
-        .logo_img { max-width: 120px; }
-        .table_border thead{ background-color: #F6F8FA; }
-        .table_border td, .table_border th { padding: 5px; border: 1px solid #101010 !important; }
-        .line_grid span{ display:flex; justify-content:space-between; }
-        .text_right{ text-align: right; }
-        .text_left{ text-align: left!important; }
-        .virtical_middle{ vertical-align: middle !important; }
-        .font_18 { font-size: 18px; }
-        .mb-0{ margin-bottom: 0; }
-        .mb_30{ margin-bottom: 30px !important; }
-        .border_table thead tr th { padding: 5px; }
-        .border_table tbody tr td { border: 1px solid #101010 !important; text-align: center; padding: 5px; }
-        .small{ font-size: 12px; }
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            color: #000;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .page-break {
+            page-break-after: always;
+        }
+
+        .header-left {
+            width: 50%;
+            vertical-align: top;
+        }
+
+        .header-right {
+            width: 50%;
+            vertical-align: top;
+            text-align: right;
+        }
+
+        h1 {
+            margin: 0 0 5px 0;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .seller-name {
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .divider {
+            border-top: 2px solid #000;
+            margin: 10px 0;
+        }
+
+        .thin-divider {
+            border-top: 1px solid #000;
+            margin: 10px 0;
+        }
+
+        .address-box {
+            vertical-align: top;
+            width: 50%;
+        }
+
+        .address-title {
+            font-weight: bold;
+            font-size: 10px;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .items-table {
+            margin-top: 10px;
+        }
+
+        .items-table th {
+            border-top: 2px solid #000;
+            border-bottom: 2px solid #000;
+            padding: 5px 2px;
+            text-align: right;
+            font-size: 10px;
+        }
+
+        .items-table th:nth-child(1),
+        .items-table th:nth-child(2) {
+            text-align: left;
+        }
+
+        .items-table td {
+            padding: 5px 2px;
+            vertical-align: top;
+            text-align: right;
+        }
+
+        .items-table td:nth-child(1),
+        .items-table td:nth-child(2) {
+            text-align: left;
+        }
+
+        .total-row td {
+            border-top: 1px solid #000;
+            border-bottom: 2px solid #000;
+            font-weight: bold;
+            padding: 5px 2px;
+        }
+
+        .net-payable {
+            text-align: right;
+            padding: 10px 0;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .amount-words {
+            text-align: right;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .footer {
+            margin-top: 40px;
+        }
+
+        .footer td {
+            vertical-align: top;
+        }
+
+        .signature {
+            text-align: right;
+        }
+
+        .signatory-title {
+            font-weight: bold;
+        }
+
+        .declaration {
+            font-size: 9px;
+            text-align: justify;
+            margin-top: 20px;
+        }
+
+        .barcode {
+            text-align: right;
+            margin-top: 10px;
+        }
+
+        .metadata {
+            font-size: 10px;
+        }
+
+        .metadata td {
+            padding: 1px 0;
+        }
     </style>
 </head>
+
 <body>
-@foreach($orders as $order)
-    @php
-        // keep $order as provided by controller (same structure as invoice_pdf expects)
-    @endphp
-    <div class="invoice_wrapper">
-        <!-- copy of invoice_pdf inner content starts -->
-        <div class="invoice_print mb_30">
-            <div class="container">
-                <div class="invoice_part_iner">
-                    <table class="table border_bottom mb_30">
-                        <thead>
-                        <tr>
-                            <td>
-                                <div class="logo_div">
-                                    <img src="{{showImage(app('general_setting')->logo)}}" alt="">
-                                </div>
-                            </td>
-                            <td class="virtical_middle text_right invoice_info">
-                                <h4 class="text_uppercase">{{app('general_setting')->company_name}}</h4>
-                                <h4>{{app('general_setting')->phone}}</h4>
-                                <h4>{{app('general_setting')->email}}</h4>
-                                <h4>{{ $order->order->order_number ?? '' }}</h4>
-                            </td>
-                        </tr>
-                        </thead>
-                    </table>
-                    <!-- middle content  -->
-                    <table class="table">
-                        <tbody>
-                        <tr>
-                            <td style="width: 50%">
-                                <!-- single table  -->
-                                <table class="mb_30">
-                                    <tbody>
-                                    <tr>
-                                        <td>
-                                            <h5 class="font_18 mb-0" >{{ __('shipping.billing_info') }}</h5>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <p class="line_grid_2" >
-                                                            <span>
-                                                                <span>{{ __('common.name') }}</span>
-                                                                <span>:</span>
-                                                            </span>
-                                                {{($order->order->customer_id) ? $order->order->shipping_address->name : $order->order->guest_info->billing_name}}
-                                            </p>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <p class="line_grid_2" >
-                                                            <span>
-                                                                <span>{{ __('common.email') }}</span>
-                                                                <span>:</span>
-                                                            </span>
-                                                {{($order->order->customer_id) ? $order->order->customer_email : $order->order->guest_info->billing_email}}
-                                            </p>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <p class="line_grid_2" >
-                                                            <span>
-                                                                <span>{{ __('common.phone') }}</span>
-                                                                <span>:</span>
-                                                            </span>
-                                                {{getNumberTranslate(($order->order->customer_id) ? $order->order->customer_phone : $order->order->guest_info->billing_phone)}}
-                                            </p>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <p class="line_grid_2" >
-                                                            <span>
-                                                                <span>{{ __('common.address') }}</span>
-                                                                <span>:</span>
-                                                            </span>
-                                                {{($order->order->customer_id) ? $order->order->billing_address->address : $order->order->guest_info->billing_address}}
-                                            </p>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <p class="line_grid_2" >
-                                                            <span>
-                                                                <span>{{ __('common.city') }}</span>
-                                                                <span>:</span>
-                                                            </span>
-                                                {{($order->order->customer_id) ? @$order->order->billing_address->getCity->name : @$order->order->guest_info->getBillingCity->name}}
-                                            </p>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <p class="line_grid_2" >
-                                                            <span>
-                                                                <span>{{ __('common.state') }}</span>
-                                                                <span>:</span>
-                                                            </span>
-                                                {{($order->order->customer_id) ? @$order->order->billing_address->getState->name : @$order->order->guest_info->getBillingState->name}}
-                                            </p>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <p class="line_grid_2" >
-                                                            <span>
-                                                                <span>{{ __('common.country') }}</span>
-                                                                <span>:</span>
-                                                            </span>
-                                                {{($order->order->customer_id) ? @$order->order->billing_address->getCountry->name : @$order->order->guest_info->getBillingCountry->name}}
-                                            </p>
-                                        </td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                                <!--/ single table  -->
-                            </td>
-                            <td style="width: 50%">
-                                <!-- single table  -->
-                                <table class="mb_30">
-                                    <tbody>
-                                    <tr>
-                                        <td>
-                                            <h5 class="font_18 mb-0" >{{ __('shipping.company_info') }}</h5>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <p class="line_grid" >
-                                                             <span>
-                                                                 <span>{{ __('common.name') }}</span>
-                                                                 <span>:</span>
-                                                             </span>
-                                                {{app('general_setting')->company_name}}
-                                            </p>
-                                        </td>
-                                    </tr>
-                                    
-                                    <tr>
-                                        <td>
-                                            <p class="line_grid" >
-                                                             <span>
-                                                                 <span>{{ __('common.email') }}</span>
-                                                                 <span>:</span>
-                                                             </span>
-                                                {{app('general_setting')->email}}
-                                            </p>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <p class="line_grid" >
-                                                             <span>
-                                                                 <span>{{ __('common.phone') }}</span>
-                                                                 <span>:</span>
-                                                             </span>
-                                                {{getNumberTranslate(app('general_setting')->phone)}}
-                                            </p>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <p class="line_grid" >
-                                                             <span>
-                                                                 <span>{{ __('common.website') }}</span>
-                                                                 <span>:</span>
-                                                             </span>
-                                                {{ app('general_setting')->website_url }}
-                                            </p>
-                                        </td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                                <!--/ single table  -->
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="width: 50%">
-                                <!-- single table  -->
-                                <table>
-                                    <tbody>
-                                    <tr>
-                                        <td>
-                                            <h5 class="font_18 mb-0" >{{ __('shipping.shipping_info') }}</h5>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <p class="line_grid_2" >
-                                                            <span>
-                                                                <span>{{ __('common.name') }}</span>
-                                                                <span>:</span>
-                                                            </span>
-                                                {{($order->order->customer_id) ? $order->order->shipping_address->name : $order->order->guest_info->shipping_name}}
-                                            </p>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <p class="line_grid_2" >
-                                                            <span>
-                                                                <span>{{ __('common.email') }}</span>
-                                                                <span>:</span>
-                                                            </span>
-                                                {{($order->order->customer_id) ? $order->order->shipping_address->email : $order->order->guest_info->shipping_email}}
-                                            </p>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <p class="line_grid_2" >
-                                                            <span>
-                                                                <span>{{ __('common.phone') }}</span>
-                                                                <span>:</span>
-                                                            </span>
-                                                {{getNumberTranslate(($order->order->customer_id) ? $order->order->shipping_address->phone : $order->order->guest_info->shipping_phone)}}
-                                            </p>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <p class="line_grid_2" >
-                                                            <span>
-                                                                <span>{{ __('common.address') }}</span>
-                                                                <span>:</span>
-                                                            </span>
-                                                {{($order->order->customer_id) ? $order->order->shipping_address->address : $order->order->guest_info->shipping_address}}
-                                            </p>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <p class="line_grid_2" >
-                                                            <span>
-                                                                <span>{{ __('common.city') }}</span>
-                                                                <span>:</span>
-                                                            </span>
-                                                {{($order->order->customer_id) ? @$order->order->shipping_address->getCity->name : $order->order->guest_info->getShippingCity->name}}
-                                            </p>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <p class="line_grid_2" >
-                                                            <span>
-                                                                <span>{{ __('common.state') }}</span>
-                                                                <span>:</span>
-                                                            </span>
-                                                {{($order->order->customer_id) ? @$order->order->shipping_address->getState->name : $order->order->guest_info->getShippingState->name}}
-                                            </p>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <p class="line_grid_2" >
-                                                            <span>
-                                                                <span>{{ __('common.country') }}</span>
-                                                                <span>:</span>
-                                                            </span>
-                                                {{($order->order->customer_id) ? $order->order->shipping_address->getCountry->name : $order->order->guest_info->getShippingCountry->name}}
-                                            </p>
-                                        </td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                                <!--/ single table  -->
-                            </td>
-                            <td style="width: 50%">
-                                <table>
-                                    <tbody>
-                                    <tr>
-                                        <td>
-                                            <!-- single table  -->
-                                            <table class="mb_30">
-                                                <tbody>
-                                                <tr>
-                                                    <td>
-                                                        <h5 class="font_18 mb-0" >{{ __('shipping.order_info') }}</h5>
-                                                    </td>
-                                                </tr>
-                                                @if($order->order->customer_id == null)
-                                                    <tr>
-                                                        <td>
-                                                            <p class="line_grid" >
-                                                                            <span>
-                                                                                <span>{{ __('common.secret_id') }}</span>
-                                                                                <span>:</span>
-                                                                            </span>
-                                                                {{$order->order->guest_info->guest_id}}
-                                                            </p>
-                                                        </td>
-                                                    </tr>
-                                                @endif
-                                                <tr>
-                                                    <td>
-                                                        <p class="line_grid" >
-                                                                            <span>
-                                                                                <span>{{ __('order.is_paid') }}</span>
-                                                                                <span>:</span>
-                                                                            </span>
-                                                                {{$order->order->is_paid == 1 ? 'Yes' : 'No'}}
-                                                        </p>
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>
-                                                        <p class="line_grid" >
-                                                                            <span>
-                                                                                <span>{{ __('common.subtotal') }}</span>
-                                                                                <span>:</span>
-                                                                            </span>
-                                                                {{single_price($order->subTotal())}}
-                                                        </p>
-                                                    </td>
-                                                </tr>
+    @foreach($orders as $index => $order)
+        @php
+            $seller = @$order->seller;
+            $seller_name = @$seller->role->type == 'seller' ? (@$seller->SellerAccount->seller_shop_display_name ?: $seller->first_name) : app('general_setting')->company_name;
+            $customer = $order->order->customer_id ? $order->order : $order->order->guest_info;
+            $shipping_addr = $order->order->customer_id ? $order->order->shipping_address : $order->order->guest_info;
+            $billing_addr = $order->order->customer_id ? $order->order->billing_address : $order->order->guest_info;
+        @endphp
 
-                                                <tr>
-                                                    <td>
-                                                        <p class="line_grid" >
-                                                                            <span>
-                                                                                <span>{{ __('common.shipping_charge') }}</span>
-                                                                                <span>:</span>
-                                                                            </span>
-                                                                {{single_price($order->shipping_cost)}}
-                                                        </p>
-                                                    </td>
-                                                </tr>
-                                                @if(@$order->order->coupon)
-                                                <tr>
-                                                    <td>
-                                                        <p class="line_grid" >
-                                                            <span>
-                                                                <span>{{__('common.coupon')}} {{__('common.discount')}}</span>
-                                                                <span>:</span>
-                                                            </span>
-                                                            - {{single_price(@$order->order->coupon->discount_amount)}}
-                                                        </p>
-                                                    </td>
-                                                </tr>
-                                                @endif
-                                                <tr>
-                                                    <td>
-                                                        <p class="line_grid" >
-                                                                            <span>
-                                                                                <span>{{ __('common.tax') }}</span>
-                                                                                <span>:</span>
-                                                                            </span>
-                                                                {{single_price($order->tax_amount)}}
-                                                        </p>
-                                                    </td>
-                                                </tr>
-
-                                                <tr>
-                                                    <td>
-                                                        <p class="line_grid" >
-                                                                            <span>
-                                                                                <span>{{ __('common.grand_total') }}</span>
-                                                                                <span>:</span>
-                                                                            </span>
-                                                                {{single_price($order->subTotal() + $order->tax_amount + $order->shipping_cost - @$order->order->coupon->discount_amount)}}
-                                                        </p>
-                                                    </td>
-                                                </tr>
-                                                </tbody>
-                                            </table>
-                                            <!--/ single table  -->
-                                        </td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                            </td>
+        <table>
+            <tr>
+                <td class="header-left">
+                    <h1>Tax Invoice</h1>
+                    <div class="seller-name">{{ $seller_name }} @if(@$seller->SellerBusinessInformation->business_tax_id)
+                    GSTIN:{{$seller->SellerBusinessInformation->business_tax_id}} @endif</div>
+                    <div>{{ @$seller->SellerBusinessInformation->business_address1 ?: app('general_setting')->address }}
+                    </div>
+                    <div>{{ @$seller->SellerBusinessInformation->business_city }}
+                        {{ @$seller->SellerBusinessInformation->business_state }}
+                        {{ @$seller->SellerBusinessInformation->business_postcode }}</div>
+                </td>
+                <td class="header-right">
+                    <table class="metadata" style="width:100%; text-align:right;">
+                        <tr>
+                            <td width="60%">Inv. No.</td>
+                            <td width="40%">{{ $order->package_code }}</td>
                         </tr>
-                        </tbody>
+                        <tr>
+                            <td>Order #</td>
+                            <td>{{ $order->order->order_number }}</td>
+                        </tr>
+                        <tr>
+                            <td>Inv. Date</td>
+                            <td>{{ $order->created_at->format('M d, Y') }}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="font-weight:bold;">ORIGINAL FOR RECIPIENT</td>
+                        </tr>
                     </table>
-                </div>
-            </div>
-        </div>
-        <table class="table">
-            <tbody>
-            <tr>
-                <td style="width: 50%">
-                    <p class="line_grid_2">
-                                    <span>
-                                        <span>{{ __('common.package') }}</span>
-                                        <span>:</span>
-                                    </span>
-                        {{ getNumberTranslate($order->package_code) }}
-                    </p>
-                </td>
-                @if(isModuleActive('MultiVendor'))
-                    <td style="width: 50%">
-                        <p class="line_grid_auto grid_end">
-                                    <span>
-                                        <span>{{ __('shipping.shop_name') }}</span>
-                                        <span>:</span>
-                                    </span>
-                            @if(@$order->seller->role->type == 'seller')
-                                {{ (@$order->seller->SellerAccount->seller_shop_display_name) ? @$order->seller->SellerAccount->seller_shop_display_name : @$order->seller->first_name }}
-                            @else
-                                {{ app('general_setting')->company_name }}
-                            @endif
-                        </p>
-                    </td>
-                @endif
-            </tr>
-            <tr>
-                <td style="width: 50%">
-                    @if (file_exists(base_path().'/Modules/GST/') && (app('gst_config')['enable_gst'] == "gst" || app('gst_config')['enable_gst'] == "flat_tax"))
-                        @foreach ($order->gst_taxes as $key => $gst_tax)
-                            <p class="line_grid_2 ">
-                                            <span>
-                                                <span>{{ $gst_tax->gst->name }}</span>
-                                                <span>:</span>
-                                            </span>
-                                {{ single_price($gst_tax->amount) }}
-                            </p>
-                        @endforeach
-                    @endif
-                </td>
-                <td style="width: 50%">
-                    <p class="line_grid_auto grid_end">
-                                    <span>
-                                        <span>{{ __('shipping.shipping_method') }}</span>
-                                        <span>:</span>
-                                    </span>
-                        {{ $order->shipping->method_name }}
-                    </p>
+                    <div class="barcode">
+                        <div style="margin-top:10px;">{{ $order->package_code }}</div>
+                    </div>
                 </td>
             </tr>
-            </tbody>
         </table>
-        <h3 class="center title_text">{{ __('order.ordered_products')}}</h3>
-        <table class="table border_table mb_30">
+
+        <div class="divider"></div>
+
+        <table>
+            <tr>
+                <td class="address-box">
+                    <div class="address-title">SHIP TO</div>
+                    <div style="font-weight:bold;">{{ $shipping_addr->shipping_name ?? $shipping_addr->name }}</div>
+                    <div>{{ $shipping_addr->shipping_address ?? $shipping_addr->address }}</div>
+                    <div>{{ @$shipping_addr->getShippingCity->name ?? @$shipping_addr->getCity->name }},
+                        {{ @$shipping_addr->getShippingState->name ?? @$shipping_addr->getState->name }}
+                        {{ $shipping_addr->shipping_postcode ?? $shipping_addr->postal_code }}</div>
+                    <div>Phone: {{ $shipping_addr->shipping_phone ?? $shipping_addr->phone }}</div>
+                </td>
+                <td class="address-box">
+                    <div class="address-title">BILL TO</div>
+                    <div style="font-weight:bold;">{{ $billing_addr->billing_name ?? $billing_addr->name }}</div>
+                    <div>{{ $billing_addr->billing_address ?? $billing_addr->address }}</div>
+                    <div>{{ @$billing_addr->getBillingCity->name ?? @$billing_addr->getCity->name }},
+                        {{ @$billing_addr->getBillingState->name ?? @$billing_addr->getState->name }}
+                        {{ $billing_addr->billing_postcode ?? $billing_addr->postal_code }}</div>
+                </td>
+            </tr>
+        </table>
+
+        <table class="items-table">
             <thead>
                 <tr>
-                    <th>{{ __('common.name') }}</th>
-                    <th>{{ __('common.details') }}</th>
-                    <th>{{ __('common.price') }}</th>
-                    <th>{{ __('common.total') }}</th>
+                    <th style="width: 5%;">SNo.</th>
+                    <th style="width: 35%;">Item(s)</th>
+                    <th style="width: 10%;">Quantity</th>
+                    <th style="width: 10%;">Rate</th>
+                    <th style="width: 15%;">Taxable Value</th>
+                    <th style="width: 10%;">Tax</th>
+                    <th style="width: 15%;">TOTAL</th>
                 </tr>
             </thead>
             <tbody>
-            @foreach ($order->products as $key => $package_product)
-                        <tr>
-                            <td class="text_left">
-                                @if ($package_product->type == "gift_card")
-                                    {{ @$package_product->giftCard->name }}
-                                @else
-                                    {{ @$package_product->seller_product_sku->sku->product->product_name }}
-                                @endif
-                            </td>
-                            @if ($package_product->type == "gift_card")
-                                <td>{{__('common.qty')}} : {{ $package_product->qty }}</td>
-                            @else
-                                @if (@$package_product->seller_product_sku->sku->product->product_type == 2)
-                                    <td>
-                                        {{__('common.qty')}} : {{ $package_product->qty }}
-                                        <br>
-                                        @php
-                                            $countCombinatiion = count(@$package_product->seller_product_sku->product_variations);
-                                        @endphp
-                                        @foreach (@$package_product->seller_product_sku->product_variations as $key => $combination)
-                                            @if ($combination->attribute->id == 1)
-                                                <div class="box_grid ">
-                                                    <span>{{ $combination->attribute->name }}:</span><span class='box' style="background-color:{{ $combination->attribute_value->value }}"></span>
-                                                </div>
-                                            @else
-                                                {{ $combination->attribute->name }}:
-                                                {{ $combination->attribute_value->value }}
-                                            @endif
-                                            @if ($countCombinatiion > $key + 1)
-                                                <br>
-                                            @endif
-                                        @endforeach
-                                    </td>
-                                @else
-                                    <td>{{__('common.qty')}} : {{ $package_product->qty }}</td>
-                                @endif
-                            @endif
+                @php 
+                                                $total_qty = 0;
+                    $total_taxable = 0;
+                    $total_tax = $order->tax_amount;
+                    $total_amount = 0;
+                @endphp
+        @foreach ($order->products as $key => $package_product)
+            @php
+                $is_gift = $package_product->type == "gift_card";
+                $name = $is_gift ? @$package_product->giftCard->name : @$package_product->seller_product_sku->sku->product->product_name;
+                $qty = $package_product->qty;
+                $rate = $package_product->price;
+                $total = $rate * $qty;
+                $total_qty += $qty;
+                $total_taxable += $total;
+                $total_amount += $total;
+            @endphp
+            <tr>
+                    <td>{{ $key + 1 }}</td>
+                <td>
+                        {{ $name }}
+                    @if(!$is_gift && @$package_product->seller_product_sku->sku->product->product_type == 2)
+                        <br><span style="font-size:9px;">
+                        @foreach (@$package_product->seller_product_sku->product_variations as $combination)
+                            {{ $combination->attribute->name }}: {{ $combination->attribute_value->value }}
+                        @endforeach
+                        </span>
+                    @endif
+                    </td>
+                    <td>{{ $qty }}</td>
+                        <td>{{ single_price($rate) }}</td>
+                        <td>{{ single_price($total) }}</td>
+                        <td>-</td>
+                        <td>{{ single_price($total) }}</td>
+                    </tr>
+        @endforeach
+                <!-- Additional rows for tax, shipping, discounts -->
+                @if($order->tax_amount > 0)
+                    <tr>
+                        <td></td>
+                        <td>Tax</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>{{ single_price($order->tax_amount) }}</td>
+                        <td>{{ single_price($order->tax_amount) }}</td>
+                    </tr>
+                @endif
+                @if($order->shipping_cost > 0)
+                    <tr>
+                        <td></td>
+                        <td>Shipping Charge</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>{{ single_price($order->shipping_cost) }}</td>
+                    </tr>
+                @endif
+                @if(@$order->order->coupon->discount_amount > 0)
+                            <tr>
+                                <td></td>
+                                <td>Coupon Discount</td>
+                                <td></td>
+                                <td></td>
+                    <td></td>
+                                <td></td>
+                                <td>-{{ single_price($order->order->coupon->discount_amount) }}</td>
+                            </tr>
+                @endif
 
-                            <td>{{ single_price($package_product->price) }}</td>
-                            <td>{{ single_price($package_product->price * $package_product->qty) }}</td>
-                        </tr>
-                    @endforeach
+                <tr class="total-row">
+                    <td colspan="2">INVOICE TOTAL</td>
+                <td>{{ $total_qty }}</td>
+
+                                   <td></td>
+                    <td>{{ single_price($total_taxable) }}</td>
+                    <td>{{ single_price($order->tax_amount) }}</td>
+                    @php
+                        $grand_total = $order->subTotal() + $order->tax_amount + $order->shipping_cost - @$order->order->coupon->discount_amount;
+                    @endphp
+                    <td>{{ single_price($grand_total) }}</td>
+                </tr>
             </tbody>
-
-
-
         </table>
-        <!-- copy of invoice_pdf inner content ends -->
-    </div>
-    <div class="page-break"></div>
-@endforeach
+
+
+                           <table style="width: 100%; margin-top: 20px;">
+            <tr>
+                <td style="width: 50%; vertical-align: top;">
+                <table style="border: 1px solid #000; border-radius: 5px; width: 220px; border-col
+                               lapse: separate; padding: 5px;">
+                        <tr>
+                            <td style="vertical-align: middle; width: 60px;">
+
+                                                               @php
+                                                                $upi_id = "50200093720385@hdfc0005661.ifsc.npci";
+                                                                $upi_link = "upi://pay?pa=" . $upi_id . "&pn=" . urlencode("Shree Dhatri Enterprises") . "&am=" . $grand_total . "&cu=INR";
+                                                            @endphp
+                                <img src="data:image/png;base64,{{ (new \Milon\Barcode\DNS2D)->getBarcodePNG($upi_link, 'QRCODE') }}" alt="QR Code" style="width: 60px; height: 60px;">
+                            </td>
+                            <td style="vertical-align: middle; padding-left: 8px;">
+                                <div style="font-size: 14px; font-weight: bold; margin-bottom: 2px;">{{ single_price($grand_total) }}</div>
+                                <div style="font-size: 9px; line-height: 1.2;">to be collected at time of delivery</div>
+                                <div style="font-weight: bold; font-size: 11px; margin-top: 3px;">SCAN QR TO PAY</div>
+                            </td>
+                        </tr>
+
+
+
+                                            </table>
+
+
+
+                                                <div style="
+                                margin-top: 15px; font-size: 10px; line
+                                -height: 1.4;">
+
+                                                <strong 
+                                style="font-size: 11px;">Bank Details
+                                :</strong>
+
+                                                <table style="font-size: 10px; margin-top: 2px; width: 100%;">
+                            <tr><td style="padding: 1px 0; width: 60px;">A/c Name</td><td style="padding: 1px 0;">: Shree Dhatri Enterprises</td></tr>
+                            <tr><td style="padding: 1px 0;">Bank</td><td style="padding: 1px 0;">: HDFC Bank</td></tr>
+                            <tr><td style="padding: 1px 0;">A/C No</td><td style="padding: 1px 0;">: 50200093720385</td></tr>
+                            <tr><td style="padding: 1px 0;">IFSC</td><td style="padding: 1px 0;">: HDFC0005661</td></tr>
+                        </table>
+                    </div>
+                </td>
+                <td style="width: 50%; vertical-align: top; text-align: right;">
+
+                                                   <table style="width: 100%; border-collapse: collapse;">
+                        <tr>
+                            <td style="padding: 5px; text-align: left;">
+                                <span style="font-size: 11px; font-weight: bold;">Net Payable Amount</span><br>
+                                <span style="font-size: 9px; font-weight: normal;">( Rounded off to nearest<br>integer value )</span>
+                            </td>
+                            <td style="padding: 5px; text-align: right; font-weight: bold; font-size: 14px;">
+                                {{ single_price($grand_total) }}
+                            </
+                       td>
+
+                                           </tr>
+                    </table>
+                    @if(class_exists('NumberFormatter'))
+                        <div style="margin-top: 5px; font-size: 9px; text-align: right;">
+                            Rupees {{ ucwords((new \NumberFormatter("en_IN", \NumberFormatter::SPELLOUT))->format($grand_total)) }} Only
+                        </div>
+                    @endif
+                </td>
+            </tr>
+        </table>
+        <div style="margin-top:15px; font-size: 9px;">
+            <strong>NOTE</strong> - Rate mentioned above is inclusive of taxes.
+        </div>
+
+        <div class="thin-divider"></div>
+
+        <table class="footer">
+            <tr>
+                <td style="width: 50%;">
+                    <div style="font-weight:bold;">GENERATED ON {{ app('general_setting')->company_name }}</div>
+                    <div class="declaration">
+                        For help write to us on {{ app('general_setting')->email }}.<br>
+                        Or call us on {{ app('general_setting')->phone }}
+                    </div>
+                </td>
+                <td style="width: 50%;" class="signature">
+
+
+                                       <div style="margin-top: 40px; margin-bottom: 20px;">
+                        <span style="font-weight:bold; font-size:12px;">Authorised Signatory</span>
+                    </div>
+                    <div class="declaration">
+                        Declaration : We declare that the invoice shows the actual price of the goods described and the particulars are true and correct. The correctness of HSN code and GST rate on the goods is responsibility of the seller. This is a computer-generated invoice.
+                    </div>
+            </td>
+            </tr>
+            </table>
+
+
+        @if($index < count($orders) - 1)
+            <div class="page-break"></div>
+        @endif
+    @endforeach
 </body>
 </html>

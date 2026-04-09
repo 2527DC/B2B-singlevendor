@@ -13,13 +13,13 @@ class BrandRepository
 {
     public function getAll()
     {
-        return Brand::latest()->get();
+        return Brand::orderBy('created_at','asc')->get();
     }
     public function getAllCount(){
         return Brand::query()->count();
     }
     public function getActiveAll(){
-        return Brand::where('status', 1)->latest()->take(100)->get();
+        return Brand::where('status', 1)->orderBy('created_at','asc')->take(100)->get();
     }
     public function getBySearch($data)
     {
@@ -32,11 +32,11 @@ class BrandRepository
     }
     public function getByPaginate($count)
     {
-        return Brand::latest()->paginate($count);
+        return Brand::orderBy('created_at','asc')->paginate($count);
     }
     public function getBySkipTake($skip, $take)
     {
-        return Brand::skip($skip)->take($take)->latest()->get();
+        return Brand::orderBy('created_at','asc')->skip($skip)->take($take)->get();
     }
     public function getbrandbySort()
     {
@@ -117,10 +117,11 @@ class BrandRepository
     }
     public function getBrandsByAjax($search){
         if($search == ''){
-            $brands = Brand::select('id','name')->where('status',1)->paginate(10);
+            $brands = Brand::select('id','name')->where('status',1)->orderBy('created_at','asc')->paginate(10);
         }else{
             $brands = Brand::select('id','name')->where('status',1)
                 ->where('name->'.app()->getLocale(), 'LIKE', "%{$search}%")
+                ->orderBy('created_at','asc')
                 ->paginate(10);
         }
         $response = [];

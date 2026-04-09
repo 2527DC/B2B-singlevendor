@@ -148,6 +148,11 @@
                                     <div class="mr-2">
                                         <button type="button" class="btn btn-primary" id="apply_bulk_confirm_pending" disabled>{{__('common.confirm') ?? 'Confirm Selected'}}</button>
                                     </div>
+                                    @if (permissionCheck('shipping.invoice_generate'))
+                                        <div class="mr-2">
+                                            <button type="button" class="btn btn-info bulk_download_invoices_btn" data-table-type="pending" title="Download Selected Invoices" disabled><i class="fa fa-download"></i></button>
+                                        </div>
+                                    @endif
                                 </div>
 
                                 <div class="QA_section QA_section_heading_custom check_box_table">
@@ -198,6 +203,11 @@
                                     <div class="mr-2">
                                         <button type="button" class="btn btn-success" id="apply_bulk_driver_confirmed">Assign Driver</button>
                                     </div>
+                                    @if (permissionCheck('shipping.invoice_generate'))
+                                        <div class="mr-2">
+                                            <button type="button" class="btn btn-info bulk_download_invoices_btn" data-table-type="confirmed" title="Download Selected Invoices" disabled><i class="fa fa-download"></i></button>
+                                        </div>
+                                    @endif
                                 </div>
 
                                 <div class="QA_section QA_section_heading_custom check_box_table">
@@ -572,7 +582,7 @@
                                 return '';
                             }, className: 'checkbox-column-all'},
                         { data: null, orderable: false, searchable: false, render: function(data,type,row){
-                                return '<input type="checkbox" class="bulk-select-pending" data-order-id="'+row.order_id+'" />';
+                                return '<input type="checkbox" class="bulk-select-pending" data-package-id="'+row.id+'" data-order-id="'+row.order_id+'" />';
                             }, className: 'checkbox-column-item'},
                         { data: 'DT_RowIndex', name: 'id',render:function(data){
                             return numbertrans(data)
@@ -977,5 +987,50 @@
                 }
             });
         });
+
+        // Toggle bulk download invoice buttons
+        $(document).on('change', '.bulk-select-pending, #select_all_pending', function() {
+            let checkedCount = $('.bulk-select-pending:checked').length;
+            $('.bulk_download_invoices_btn[data-table-type="pending"]').prop('disabled', checkedCount === 0);
+        });
+
+        $(document).on('change', '.bulk-select-confirmed, #select_all_confirmed', function() {
+            let checkedCount = $('.bulk-select-confirmed:checked').length;
+            $('.bulk_download_invoices_btn[data-table-type="confirmed"]').prop('disabled', checkedCount === 0);
+        });
+
+        // Handle bulk invoice download click
+        $(document).on('click', '.bulk_download_invoices_btn', function(e) {
+            e.preventDefault();
+            let type = $(this).data('table-type');
+            let selector = type === 'pending' ? '.bulk-select-pending:checked' : '.bulk-select-confirmed:checked';
+            
+            let invoiceIds = [];
+            $(selector).each(function() {
+                if($(this).data('package-id')) {
+                    invoiceIds.push($(this).data('package-id'));
+                }
+            });
+
+            if (invoiceIds.length === 0) {
+                if (typeof toastr !== 'undefined') {
+                    toastr.warning('Please select at least one order to download the invoice');
+                } else {
+                    alert('Please select at least one order to download the invoice');
+                }
+                return false;
+            }
+
+            $('#bulk_invoice_inputs').empty();
+            invoiceIds.forEach(function(id) {
+                $('#bulk_invoice_inputs').append('<input type="hidden" name="invoice_ids[]" value="'+id+'">');
+            });
+
+            $('#bulk_invoice_download_form').submit();
+        });
     </script>
+    <form id="bulk_invoice_download_form" method="POST" action="{{ route('shipping.bulk_invoice_download') }}" target="_blank" style="display:none;">
+        @csrf
+        <div id="bulk_invoice_inputs"></div>
+    </form>
 @endpush

@@ -2,3 +2,4 @@ cache
 session* 
 logs/*
 views/*
+temp/*

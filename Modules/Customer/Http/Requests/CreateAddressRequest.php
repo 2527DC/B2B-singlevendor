@@ -16,7 +16,7 @@ class CreateAddressRequest extends FormRequest
     {
         return [
         	'name' => 'required',
-        	'email'=> 'required|email',
+        	'email'=> 'nullable|email',
             'address' => 'required',
             'phone' => 'required|min:'.app('general_setting')->min_digit.'|max:'.app('general_setting')->max_digit,
             'city' => 'required',
