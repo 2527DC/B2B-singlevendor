@@ -75,6 +75,7 @@ class HomePageSection extends Model
             $category_ids = HomepageCustomCategory::where('section_id', $this->id)->pluck('category_id')->toArray();
             $categories = $categories->whereRaw("id in ('" . implode("','", $category_ids) . "')");
         }
+    
         $paginate = 12;
         if (app('theme')->folder_path == 'amazy') {
             $paginate = 8;
@@ -115,6 +116,10 @@ class HomePageSection extends Model
         $paginate = 12;
         if (app('theme')->folder_path == 'amazy') {
             $paginate = 10;
+        }
+        // If this is the top brands section, force oldest-first ordering
+        if ($this->section_name == 'top_brands') {
+            return $brands->distinct('brands.id')->orderBy('brands.created_at', 'asc')->take($paginate)->get();
         }
         return $brands->distinct('brands.id')->take($paginate)->get();
     }

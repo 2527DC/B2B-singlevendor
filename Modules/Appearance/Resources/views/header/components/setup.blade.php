@@ -529,8 +529,9 @@ $LanguageList = getLanguageList();
                         return false;
                     }
                 }
+                let form = $(this);
                 formData.append('_token', "{{ csrf_token() }}");
-                editresetValidationErrors();
+                editresetValidationErrors(form);
                 $.ajax({
                     url: "{{ route('appearance.slider.setup.update-element') }}",
                     type: "POST",
@@ -542,7 +543,7 @@ $LanguageList = getLanguageList();
                         toastr.success("{{__('common.updated_successfully')}}")
                         $('#pre-loader').addClass('d-none');
                         reloadWithData(response);
-                        editresetValidationErrors();
+                        editresetValidationErrors(form);
                         slider_form_reset();
                         Amaz.uploader.previewGenerate();
                     },
@@ -552,7 +553,7 @@ $LanguageList = getLanguageList();
                             $('#pre-loader').addClass('d-none');
                             return false;
                         }else{
-                            editshowValidationErrors(response.responseJSON.errors);
+                            editshowValidationErrors(response.responseJSON.errors, form);
                             $('#pre-loader').addClass('d-none');
                             toastr.error('{{ __("common.error_message") }}');
                         }
@@ -668,14 +669,17 @@ $LanguageList = getLanguageList();
             @endif
                 $('#error_image').text(errors.slider_image_media);
             }
-            function editshowValidationErrors(errors) {
-                let id = $('.element_id').val();
+            function editshowValidationErrors(errors, form) {
+                let id = form.find('.element_id').val();
+                if(id == undefined){
+                   id = "";
+                }
             @if(isModuleActive('FrontendMultiLang'))
-                $('#edit_error_name_{{auth()->user()->lang_code}}'+id).text(errors['name.{{auth()->user()->lang_code}}']);
+                form.find('#edit_error_name_{{auth()->user()->lang_code}}'+id).text(errors['name.{{auth()->user()->lang_code}}']);
             @else
-                $('#edit_error_name'+id).text(errors.name);
+                form.find('#edit_error_name'+id).text(errors.name);
             @endif
-                $('#edit_error_image'+id).text(errors.slider_image_media);
+                form.find('#edit_error_image'+id).text(errors.slider_image_media);
             }
             function resetValidationErrors(){
                 @if(isModuleActive('FrontendMultiLang'))
@@ -685,14 +689,17 @@ $LanguageList = getLanguageList();
                 @endif
                 $('#error_image').text('');
             }
-            function editresetValidationErrors(){
-                let id = $('.element_id').val();
+            function editresetValidationErrors(form){
+                let id = form.find('.element_id').val();
+                if(id == undefined){
+                   id = "";
+                }
                 @if(isModuleActive('FrontendMultiLang'))
-                $('#edit_error_name_{{auth()->user()->lang_code}}'+id).text('');
+                form.find('#edit_error_name_{{auth()->user()->lang_code}}'+id).text('');
                 @else
-                $('#edit_error_name'+id).text('');
+                form.find('#edit_error_name'+id).text('');
                 @endif
-                $('#edit_error_image'+id).text('');
+                form.find('#edit_error_image'+id).text('');
             }
             $(document).on('change', '#slider_for', function(event){
                 let data_type = $('#slider_for').val();

@@ -49,7 +49,7 @@
             </div>
             <div class="row">
                 <div class="col-12">
-                    <input type="hidden" class="productQtyCount" value="{{$best_deal->getProductByQuery()->count()}}">
+                    <input type="hidden" class="productQtyCount" value="{{$best_deal?->getProductByQuery()?->count()}}">
                     <div class="trending_product_active owl-carousel">
                         @foreach($best_deal->getProductByQuery() as $key => $product)
                             <div class="product_widget5 mb_30 style5">
@@ -163,7 +163,7 @@
                                         <h4>@if ($product->product_name) {{ textLimit(@$product->product_name, 50) }} @else
                                         {{ textLimit(@$product->product->product_name, 50) }} @endif
                                         </h4>
-                                    </a>
+                                         </a>
                                     @if(isModuleActive('MultiVendor'))
                                         @php
                                             $sellerUrl = $product->seller->slug ? route('frontend.seller', $product->seller->slug) : route('frontend.seller', base64_encode($product->seller->id));
@@ -253,7 +253,7 @@
                                 <h4>
                                     <a>{{textLimit($category->name, 25)}}</a>
                                 </h4>
-                                <p class="lh-1">{{getNumberTranslate($category->sellerProducts->count())}}
+                                <p class="lh-1">{{getNumberTranslate($category?->sellerProducts?->count())}}
                                     {{__('common.products')}}
                                 </p>
                                 <a class="shop_now_text"
@@ -313,7 +313,7 @@
 
                     <div class="col-xl-7 p-0 col-lg-12">
                         <div class="tab-content" id="myTabContent10">
-                            @if($category->subCategories->count())
+                            @if($category?->subCategories?->count())
                                 @foreach($category->subCategories as $key => $subcat)
                                     <div class="tab-pane fade {{$key == 0 ? 'show active' : ''}}"
                                         id="house_appliance_tab_pane_subcat_{{$subcat->id}}" role="tabpanel"
@@ -404,7 +404,7 @@
                                                                     {{getNumberTranslate(@$product->product->club_point)}}
                                                                 </span>
                                                             @endif
-                                                            @if(isModuleActive('WholeSale') && @$product->skus->first()->wholeSalePrices->count())
+                                                            @if(isModuleActive('WholeSale') && @$product->skus->first()?->wholeSalePrices?->count())
                                                                 <span class="d-flex align-items-center sale">{{__('common.wholesale')}}</span>
                                                             @endif
                                                         </div>
@@ -578,7 +578,7 @@
                                                                 {{getNumberTranslate(@$product->product->club_point)}}
                                                             </span>
                                                         @endif
-                                                        @if(isModuleActive('WholeSale') && @$product->skus->first()->wholeSalePrices->count())
+                                                        @if(isModuleActive('WholeSale') && @$product->skus->first()?->wholeSalePrices?->count())
                                                             <span class="d-flex align-items-center sale">{{__('common.wholesale')}}</span>
                                                         @endif
                                                     </div>
@@ -710,7 +710,7 @@
                     </div>
                     <div class="col-xl-7 p-0 col-lg-12">
                         <div class="tab-content" id="myTabContent10">
-                            @if($category->subCategories->count())
+                            @if($category?->subCategories?->count())
                                 @foreach($category->subCategories as $key => $subcat)
                                     <div class="tab-pane fade {{$key == 0 ? 'show active' : ''}}"
                                         id="fashion_tab_pane_subcat_{{$subcat->id}}" role="tabpanel" aria-labelledby="Dining-tab">
@@ -801,7 +801,7 @@
                                                                     {{getNumberTranslate(@$product->product->club_point)}}
                                                                 </span>
                                                             @endif
-                                                            @if(isModuleActive('WholeSale') && @$product->skus->first()->wholeSalePrices->count())
+                                                            @if(isModuleActive('WholeSale') && @$product->skus->first()?->wholeSalePrices?->count())
                                                                 <span class="d-flex align-items-center sale">{{__('common.wholesale')}}</span>
                                                             @endif
                                                         </div>
@@ -975,7 +975,7 @@
                                                                 {{getNumberTranslate(@$product->product->club_point)}}
                                                             </span>
                                                         @endif
-                                                        @if(isModuleActive('WholeSale') && @$product->skus->first()->wholeSalePrices->count())
+                                                        @if(isModuleActive('WholeSale') && @$product->skus->first()?->wholeSalePrices?->count())
                                                             <span class="d-flex align-items-center sale">{{__('common.wholesale')}}</span>
                                                         @endif
                                                     </div>
@@ -1105,7 +1105,7 @@
                     </div>
                     <div class="col-xl-7 p-0 col-lg-12">
                         <div class="tab-content" id="myTabContent10">
-                            @if($category->subCategories->count())
+                            @if($category?->subCategories?->count())
                                 @foreach($category->subCategories as $key => $subcat)
                                     <div class="tab-pane fade {{$key == 0 ? 'show active' : ''}}"
                                         id="electronics_tab_pane_subcat_{{$subcat->id}}" role="tabpanel" aria-labelledby="Dining-tab">
@@ -1195,7 +1195,7 @@
                                                                     {{getNumberTranslate(@$product->product->club_point)}}
                                                                 </span>
                                                             @endif
-                                                            @if(isModuleActive('WholeSale') && @$product->skus->first()->wholeSalePrices->count())
+                                                            @if(isModuleActive('WholeSale') && @$product->skus->first()?->wholeSalePrices?->count())
                                                                 <span class="d-flex align-items-center sale">{{__('common.wholesale')}}</span>
                                                             @endif
                                                         </div>
@@ -1371,7 +1371,7 @@
                                                                 {{getNumberTranslate(@$product->product->club_point)}}
                                                             </span>
                                                         @endif
-                                                        @if(isModuleActive('WholeSale') && @$product->skus->first()->wholeSalePrices->count())
+                                                        @if(isModuleActive('WholeSale') && @$product->skus->first()?->wholeSalePrices?->count())
                                                             <span class="d-flex align-items-center sale">{{__('common.wholesale')}}</span>
                                                         @endif
                                                     </div>
@@ -1595,7 +1595,7 @@
                                                         {{getNumberTranslate(@$product->product->club_point)}}
                                                     </span>
                                                 @endif
-                                                @if(isModuleActive('WholeSale') && @$product->skus->first()->wholeSalePrices->count())
+                                                @if(isModuleActive('WholeSale') && @$product->skus->first()?->wholeSalePrices?->count())
                                                     <span class="d-flex align-items-center sale">{{__('common.wholesale')}}</span>
                                                 @endif
                                             </div>

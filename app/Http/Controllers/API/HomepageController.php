@@ -1,4 +1,4 @@
-<?php
+curl -s 'https://dev.dhatri.store/' | sed -n '1,2000p' | grep -n 'top_brands' -n -A5curl -s 'https://dev.dhatri.store/' | sed -n '1,2000p' | grep -n 'top_brands' -n -A5<?php
 
 namespace App\Http\Controllers\API;
 
@@ -62,7 +62,7 @@ class HomepageController extends Controller
             $categories = $categories->take($paginate)->get();
         }
         $top_categories = TopCategoryResource::collection($categories);
-        $brands = Brand::where('status', 1)->where('featured', 1)->latest()->take(20)->get();
+        $brands = Brand::where('status', 1)->where('featured', 1)->orderBy('created_at','asc')->take(20)->get();
         $featured_brands = FeaturedBrandResource::collection($brands);
         $sliders = HeaderSliderPanel::where('status', 1)->where('data_type', '!=', 'url')->orderBy('position')->get();
         $sliders = SliderResource::collection($sliders);
@@ -146,7 +146,7 @@ class HomepageController extends Controller
 
     public function getFeaturedBrandData()
     {
-        $brands = Brand::where('status', 1)->where('featured', 1)->latest()->take(20)->get();
+        $brands = Brand::where('status', 1)->where('featured', 1)->orderBy('created_at','asc')->take(20)->get();
         $featured_brands = FeaturedBrandResource::collection($brands);
         if (count($featured_brands) > 0) {
             return response()->json([

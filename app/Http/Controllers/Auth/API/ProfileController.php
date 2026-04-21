@@ -168,7 +168,7 @@ class ProfileController extends Controller
         $data=[
             'customer_id'=>$request->user()->id,
             'name'=>$request->name,
-            'email'=>$request->email,
+            'email'=>$request->email ?? 'dummy@example.com',
             'address'=>$request->address,
             'phone'=>$request->phone,
             'city'=>$request->city,
@@ -203,7 +203,7 @@ class ProfileController extends Controller
     public function addreddUpdate(CreateAddressRequest $request, $id){
         $data=[
             'name'=>$request->name,
-            'email'=>$request->email,
+            'email'=>$request->email ?? 'dummy@example.com',
             'address'=>$request->address,
             'phone'=>$request->phone,
             'city'=>$request->city,
