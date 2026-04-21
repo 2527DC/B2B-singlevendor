@@ -74,7 +74,7 @@ class OrderManageRepository
 
     public function totalSalesList()
     {
-        return Order::with('packages', 'customer')->latest();
+        return Order::with('packages.gst_taxes', 'customer')->latest();
     }
 
     public function findOrderByID($id)

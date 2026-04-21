@@ -155,6 +155,33 @@ class OrderManageController extends Controller
                     return getNumberTranslate($count);
 
                 })
+                ->addColumn('mrp_price', function ($order) {
+                    return single_price($order->grand_total);
+                })
+                ->addColumn('taxable_value', function ($order) {
+                    $gst = 0;
+                    foreach ($order->packages as $package) {
+                        if ($package->gst_taxes) {
+                            $gst += $package->gst_taxes->sum('amount');
+                        }
+                    }
+                    if ($gst == 0) {
+                        $gst = $order->tax_amount ?? 0;
+                    }
+                    return single_price($order->grand_total - $gst);
+                })
+                ->addColumn('gst_amount', function ($order) {
+                    $gst = 0;
+                    foreach ($order->packages as $package) {
+                        if ($package->gst_taxes) {
+                            $gst += $package->gst_taxes->sum('amount');
+                        }
+                    }
+                    if ($gst == 0) {
+                        $gst = $order->tax_amount ?? 0;
+                    }
+                    return single_price($gst);
+                })
                 ->addColumn('total_amount', function ($order) {
                     return single_price($order->grand_total);
                 })
@@ -167,7 +194,7 @@ class OrderManageController extends Controller
                 ->addColumn('action', function ($order) use($table) {
                     return view('ordermanage::order_manage.components._action_td', compact('order', 'table'));
                 })
-                ->rawColumns(['order_confirm','order_status', 'is_paid', 'action'])
+                ->rawColumns(['order_confirm','order_status', 'is_paid', 'action', 'mrp_price', 'taxable_value', 'gst_amount', 'total_amount'])
                 ->make(true);
         } else {
             return [];

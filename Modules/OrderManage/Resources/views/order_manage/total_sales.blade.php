@@ -143,6 +143,9 @@
                                                             <th>{{__('phone')}}</th>
                                                             <th>{{__('common.email')}}</th>
                                                             <th>{{__('order.total_product_qty')}}</th>
+                                                            <th>{{__('common.mrp')}}</th>
+                                                            <th>{{__('common.taxable_value')}}</th>
+                                                            <th>{{__('common.gst')}}</th>
                                                             <th>{{__('common.total_amount')}}</th>
                                                             <th>{{__('order.order_status')}}</th>
                                                             <th>{{__('order.is_paid')}}</th>
@@ -204,6 +207,9 @@
                                                             <th>{{__('phone')}}</th>
                                                             <th>{{__('common.email')}}</th>
                                                             <th>{{__('order.total_product_qty')}}</th>
+                                                            <th>{{__('common.mrp')}}</th>
+                                                            <th>{{__('common.taxable_value')}}</th>
+                                                            <th>{{__('common.gst')}}</th>
                                                             <th>{{__('common.total_amount')}}</th>
                                                             <th>{{__('order.order_status')}}</th>
                                                             <th>{{__('order.is_paid')}}</th>
@@ -240,6 +246,9 @@
                                                             <th>{{__('phone')}}</th>
                                                             <th>{{__('common.email')}}</th>
                                                             <th>{{__('order.total_product_qty')}}</th>
+                                                            <th>{{__('common.mrp')}}</th>
+                                                            <th>{{__('common.taxable_value')}}</th>
+                                                            <th>{{__('common.gst')}}</th>
                                                             <th>{{__('common.total_amount')}}</th>
                                                             <th>{{__('order.order_status')}}</th>
                                                             <th>{{__('order.is_paid')}}</th>
@@ -277,6 +286,9 @@
                                                             <th>{{__('phone')}}</th>
                                                             <th>{{__('common.email')}}</th>
                                                             <th>{{__('order.total_product_qty')}}</th>
+                                                            <th>{{__('common.mrp')}}</th>
+                                                            <th>{{__('common.taxable_value')}}</th>
+                                                            <th>{{__('common.gst')}}</th>
                                                             <th>{{__('common.total_amount')}}</th>
                                                             <th>{{__('order.order_status')}}</th>
                                                             <th>{{__('order.is_paid')}}</th>
@@ -313,6 +325,9 @@
                                                             <th>{{__('phone')}}</th>
                                                             <th>{{__('common.email')}}</th>
                                                             <th>{{__('order.total_product_qty')}}</th>
+                                                            <th>{{__('common.mrp')}}</th>
+                                                            <th>{{__('common.taxable_value')}}</th>
+                                                            <th>{{__('common.gst')}}</th>
                                                             <th>{{__('common.total_amount')}}</th>
                                                             <th>{{__('order.order_status')}}</th>
                                                             <th>{{__('order.is_paid')}}</th>
@@ -349,6 +364,9 @@
                                                             <th>{{__('phone')}}</th>
                                                             <th>{{__('common.email')}}</th>
                                                             <th>{{__('order.total_product_qty')}}</th>
+                                                            <th>{{__('common.mrp')}}</th>
+                                                            <th>{{__('common.taxable_value')}}</th>
+                                                            <th>{{__('common.gst')}}</th>
                                                             <th>{{__('common.total_amount')}}</th>
                                                             <th>{{__('order.order_status')}}</th>
                                                             <th>{{__('order.is_paid')}}</th>
@@ -418,6 +436,9 @@
                         { data: 'customer_phone', name: 'customer_phone' },
                         { data: 'email', name: 'customer.email' },
                         { data: 'total_qty', name: 'total_qty' },
+                        { data: 'mrp_price', name: 'mrp_price' },
+                        { data: 'taxable_value', name: 'taxable_value' },
+                        { data: 'gst_amount', name: 'gst_amount' },
                         { data: 'total_amount', name: 'grand_total' },
                         { data: 'order_status', name: 'order_status' },
                         { data: 'is_paid', name: 'is_paid' },
@@ -525,6 +546,9 @@
                         { data: 'customer_phone', name: 'customer_phone' },
                         { data: 'email', name: 'customer.email' },
                         { data: 'total_qty', name: 'total_qty' },
+                        { data: 'mrp_price', name: 'mrp_price' },
+                        { data: 'taxable_value', name: 'taxable_value' },
+                        { data: 'gst_amount', name: 'gst_amount' },
                         { data: 'total_amount', name: 'grand_total' },
                         { data: 'order_status', name: 'order_status' },
                         { data: 'is_paid', name: 'is_paid' },
@@ -652,6 +676,9 @@
                         { data: 'customer_phone', name: 'customer_phone' },
                         { data: 'email', name: 'customer.email' },
                         { data: 'total_qty', name: 'total_qty' },
+                        { data: 'mrp_price', name: 'mrp_price' },
+                        { data: 'taxable_value', name: 'taxable_value' },
+                        { data: 'gst_amount', name: 'gst_amount' },
                         { data: 'total_amount', name: 'grand_total' },
                         { data: 'order_status', name: 'order_status' },
                         { data: 'is_paid', name: 'is_paid' },
@@ -686,6 +713,9 @@
                         { data: 'customer_phone', name: 'customer_phone' },
                         { data: 'email', name: 'customer.email' },
                         { data: 'total_qty', name: 'total_qty' },
+                        { data: 'mrp_price', name: 'mrp_price' },
+                        { data: 'taxable_value', name: 'taxable_value' },
+                        { data: 'gst_amount', name: 'gst_amount' },
                         { data: 'total_amount', name: 'grand_total' },
                         { data: 'order_status', name: 'order_status' },
                         { data: 'is_paid', name: 'is_paid' },
@@ -793,6 +823,9 @@
                         { data: 'customer_phone', name: 'customer_phone' },
                         { data: 'email', name: 'customer.email' },
                         { data: 'total_qty', name: 'total_qty' },
+                        { data: 'mrp_price', name: 'mrp_price' },
+                        { data: 'taxable_value', name: 'taxable_value' },
+                        { data: 'gst_amount', name: 'gst_amount' },
                         { data: 'total_amount', name: 'grand_total' },
                         { data: 'order_status', name: 'order_status' },
                         { data: 'is_paid', name: 'is_paid' },
@@ -900,6 +933,9 @@
                         { data: 'customer_phone', name: 'customer_phone' },
                         { data: 'email', name: 'customer.email' },
                         { data: 'total_qty', name: 'total_qty' },
+                        { data: 'mrp_price', name: 'mrp_price' },
+                        { data: 'taxable_value', name: 'taxable_value' },
+                        { data: 'gst_amount', name: 'gst_amount' },
                         { data: 'total_amount', name: 'grand_total' },
                         { data: 'order_status', name: 'order_status' },
                         { data: 'is_paid', name: 'is_paid' },

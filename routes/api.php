@@ -17,6 +17,7 @@ use App\Http\Controllers\API\PaymentMethodController;
 use App\Http\Controllers\API\SupportTicketController;
 use App\Http\Controllers\API\PushNotificationController;
 use Modules\Product\Http\Controllers\API\CategoryController;
+use Illuminate\Support\Facades\Log;
 
 /*
 |--------------------------------------------------------------------------
@@ -30,7 +31,37 @@ use Modules\Product\Http\Controllers\API\CategoryController;
 */
 
 
-use Illuminate\Support\Facades\Log;
+Route::post('/whatsapp/password', function (\Illuminate\Http\Request $request) {
+    $pin = $request->input('pin');
+    
+    $success = ($pin === '0000');
+    $responseBody = [
+        'success' => $success,
+        'message' => $success ? 'Success' : 'Failure'
+    ];
+
+    // Log the request and response
+    Log::info('WhatsApp PIN Validation', [
+        'request_body' => $request->all(),
+        'response_body' => $responseBody,
+        'ip' => $request->ip(),
+    ]);
+
+    return response()->json($responseBody);
+});
+
+Route::get('/message', function () {
+    $status = [
+        'status' => 'online',
+        'message' => 'The endpoint is working correctly!',
+        'timestamp' => now()->toDateTimeString(),
+    ];
+
+    // Optional: Log the health check
+    Log::info('Health check accessed at /message');
+
+    return response()->json($status);
+});
 
 Route::any('/ss', function (Illuminate\Http\Request $request) {
     
@@ -68,6 +99,7 @@ Route::any('/ss', function (Illuminate\Http\Request $request) {
     return response('OK', 200)
         ->header('Content-Type', 'text/plain');
 });
+
 
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/customer-login', [AuthController::class, 'customerLogin']);
