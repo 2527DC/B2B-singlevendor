@@ -1,4 +1,4 @@
-curl -s 'https://dev.dhatri.store/' | sed -n '1,2000p' | grep -n 'top_brands' -n -A5curl -s 'https://dev.dhatri.store/' | sed -n '1,2000p' | grep -n 'top_brands' -n -A5<?php
+<?php
 
 namespace App\Http\Controllers\API;
 

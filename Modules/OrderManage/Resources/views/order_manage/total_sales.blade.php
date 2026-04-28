@@ -139,7 +139,7 @@
                                                             <th>{{__('common.sl')}}</th>
                                                             <th width="10%">{{__('common.date')}}</th>
                                                             <th>{{__('common.order_id')}}</th>
-                                                            <th>{{__('name')}}</th>
+                                                            <th>{{__('common.shop_name')}}</th>
                                                             <th>{{__('phone')}}</th>
                                                             <th>{{__('common.email')}}</th>
                                                             <th>{{__('order.total_product_qty')}}</th>
@@ -203,7 +203,7 @@
                                                             <th>{{__('common.sl')}}</th>
                                                             <th width="10%">{{__('common.date')}}</th>
                                                             <th>{{__('common.order_id')}}</th>
-                                                            <th>{{__('name')}}</th>
+                                                            <th>{{__('common.shop_name')}}</th>
                                                             <th>{{__('phone')}}</th>
                                                             <th>{{__('common.email')}}</th>
                                                             <th>{{__('order.total_product_qty')}}</th>
@@ -242,7 +242,7 @@
                                                             <th>{{__('common.sl')}}</th>
                                                             <th width="10%">{{__('common.date')}}</th>
                                                             <th>{{__('common.order_id')}}</th>
-                                                            <th>{{__('name')}}</th>
+                                                            <th>{{__('common.shop_name')}}</th>
                                                             <th>{{__('phone')}}</th>
                                                             <th>{{__('common.email')}}</th>
                                                             <th>{{__('order.total_product_qty')}}</th>
@@ -282,7 +282,7 @@
                                                             <th>{{__('common.sl')}}</th>
                                                             <th width="10%">{{__('common.date')}}</th>
                                                             <th>{{__('common.order_id')}}</th>
-                                                            <th>{{__('name')}}</th>
+                                                            <th>{{__('common.shop_name')}}</th>
                                                             <th>{{__('phone')}}</th>
                                                             <th>{{__('common.email')}}</th>
                                                             <th>{{__('order.total_product_qty')}}</th>
@@ -321,7 +321,7 @@
                                                             <th>{{__('common.sl')}}</th>
                                                             <th width="10%">{{__('common.date')}}</th>
                                                             <th>{{__('common.order_id')}}</th>
-                                                            <th>{{__('name')}}</th>
+                                                            <th>{{__('common.shop_name')}}</th>
                                                             <th>{{__('phone')}}</th>
                                                             <th>{{__('common.email')}}</th>
                                                             <th>{{__('order.total_product_qty')}}</th>
@@ -360,7 +360,7 @@
                                                             <th>{{__('common.sl')}}</th>
                                                             <th width="10%">{{__('common.date')}}</th>
                                                             <th>{{__('common.order_id')}}</th>
-                                                            <th>{{__('name')}}</th>
+                                                            <th>{{__('common.shop_name')}}</th>
                                                             <th>{{__('phone')}}</th>
                                                             <th>{{__('common.email')}}</th>
                                                             <th>{{__('order.total_product_qty')}}</th>

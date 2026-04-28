@@ -36,19 +36,29 @@ class CustomerController extends Controller
     }
     public function customer_index()
     {
-        $data['customers'] = $this->customerService->getAll();
+        $query = $this->customerService->getAll();
+        if (auth()->check() && auth()->user()->role->type == 'seller') {
+            $query->where('warehouse_id', auth()->id());
+        }
+        $data['customers'] = $query;
         return view('customer::customers.index', $data);
     }
     public function customer_index_get_data()
     {
         if (isset($_GET['table'])) {
             $table = $_GET['table'];
+            
+            $query = $this->customerService->getAll();
+            if (auth()->check() && auth()->user()->role->type == 'seller') {
+                $query->where('warehouse_id', auth()->id());
+            }
+
             if ($table == 'active_customer') {
-                $customer = $this->customerService->getAll()->where('is_active', 1);
+                $customer = $query->where('is_active', 1);
             } elseif ($table == 'inactive_customer') {
-                $customer = $this->customerService->getAll()->where('is_active', 0);
+                $customer = $query->where('is_active', 0);
             } elseif ($table == 'all_customer') {
-                $customer = $this->customerService->getAll()->whereNotIn('is_active', ['2']);
+                $customer = $query->whereNotIn('is_active', ['2']);
             }
             return DataTables::of($customer)
                 ->addIndexColumn()
@@ -220,7 +230,7 @@ class CustomerController extends Controller
         $request->validate([
             'first_name' => 'required|max:255',
             'last_name' => 'nullable|max:255',
-            'email' => ['required', 'string', 'max:255', 'unique:users,email,' . $id],
+            'email' => filter_var($request->email, FILTER_VALIDATE_EMAIL) ? ['required', 'string', 'max:255', 'unique:users,email,' . $id] : ['required', 'string', 'max:255', 'unique:users,username,' . $id, 'unique:users,phone,' . $id],
             'store_name' => 'required|string|max:255',
             'store_image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'document' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',

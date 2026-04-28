@@ -190,8 +190,12 @@ class LoginController extends Controller
         $login = request()->input('login');
         if (filter_var($login, FILTER_VALIDATE_EMAIL)) {
             $fieldType = 'email';
-        } elseif (!filter_var($login, FILTER_VALIDATE_EMAIL)) {
-            $fieldType = 'username';
+        } else {
+            if (\App\Models\User::where('phone', $login)->exists()) {
+                $fieldType = 'phone';
+            } else {
+                $fieldType = 'username';
+            }
         }
 
         request()->merge([$fieldType  =>  $login]);
@@ -208,6 +212,11 @@ class LoginController extends Controller
         })->first();
         if(!$check_user){
             $check_user = User::where('username', $request->login)->where('is_active', 1)->whereHas('role', function($q){
+                return $q->where('type', 'customer');
+            })->first();
+        }
+        if(!$check_user){
+            $check_user = User::where('phone', $request->login)->where('is_active', 1)->whereHas('role', function($q){
                 return $q->where('type', 'customer');
             })->first();
         }
@@ -254,6 +263,9 @@ class LoginController extends Controller
             $userData = User::where('email', $request->login)->where('is_active', 1)->first();
             if(!$userData){
                 $userData = User::where('username', $request->login)->where('is_active', 1)->first();
+            }
+            if(!$userData){
+                $userData = User::where('phone', $request->login)->where('is_active', 1)->first();
             }
             if(!$userData || !Hash::check($request->password,$userData->password)){
                 throw ValidationException::withMessages([

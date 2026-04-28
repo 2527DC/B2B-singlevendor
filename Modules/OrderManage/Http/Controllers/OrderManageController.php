@@ -134,13 +134,13 @@ class OrderManageController extends Controller
                     return getNumberTranslate($order->order_number);
                 })
                 ->addColumn('customer_name', function ($order) {
-                return ($order->customer_id) ? @$order->customer->first_name . ' ' . @$order->customer->last_name : @$order->guest_info->shipping_name;
-            })
-            ->addColumn('email', function ($order) {
-                    return ($order->customer_id) ? @$order->customer->email : @$order->guest_info->shipping_email;;
+                    if ($order->customer_id) {
+                        return @$order->customer->store_name ? @$order->customer->store_name : @$order->customer->first_name . ' ' . @$order->customer->last_name;
+                    }
+                    return @$order->guest_info->shipping_name;
                 })
-                ->addColumn('customer_name', function ($order) {
-                    return ($order->customer_id) ? @trim(@$order->customer->name) : @trim(@$order->guest_info->shipping_name);
+                ->addColumn('email', function ($order) {
+                    return ($order->customer_id) ? @$order->customer->email : @$order->guest_info->shipping_email;
                 })
                 ->addColumn('customer_phone', function ($order) {
                     return ($order->customer_id) ? @trim(@$order->customer->phone) : @trim(@$order->guest_info->shipping_phone);

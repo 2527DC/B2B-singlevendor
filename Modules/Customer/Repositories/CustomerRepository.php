@@ -97,8 +97,8 @@ class CustomerRepository
         $user->update([
             'first_name' => $data['first_name'],
             'last_name' => $data['last_name'],
-            'username' => isset($phone) ? $phone : NULL,
             'email' => isset($email) ? $email : NULL,
+            'phone' => isset($phone) ? $phone : NULL,
             'store_name' => $data['store_name'],
             'store_image' => $data['store_image'] ?? $user->store_image,
             'document'   => $data['document'] ?? $user->document,

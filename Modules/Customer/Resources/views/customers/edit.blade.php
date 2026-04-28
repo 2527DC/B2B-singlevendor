@@ -55,7 +55,7 @@
                                                 class="text-danger">*</span></label>
                                         <input name="email" class="primary_input_field user_id name"
                                             placeholder="{{ __('common.email_or_phone') }}" type="text"
-                                            value="@if(old('email')) {{old('email')}} @else{{$customer->email ? $customer->email : $customer->username}}@endif">
+                                            value="@if(old('email')) {{old('email')}} @else{{$customer->email ? $customer->email : ($customer->phone ? $customer->phone : $customer->username)}}@endif" autocomplete="off">
                                         <span class="text-danger">{{$errors->first('email')}}</span>
                                     </div>
                                     <p class="text-danger user_id_row d-none">{{__('common.your_user_id_is')}} : <span
