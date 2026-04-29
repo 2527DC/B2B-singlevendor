@@ -644,26 +644,42 @@ class ProductController extends Controller
      */
 
 
-public function show($id)
+public function show(Request $request, $id)
 {
-    Log::info('ToppicksController@show invoked', [
+    Log::info('API Product Details Request', [
+        'url' => $request->fullUrl(),
+        'method' => $request->method(),
+        'ip' => $request->ip(),
         'product_id' => $id,
-        'user_id' => auth()->id(),
+        'request_data' => $request->all(),
         'timestamp' => now()->toDateTimeString(),
     ]);
 
     $product = $this->productService->getSellerProductById($id);
 
     if ($product) {
-        return new ToppicksResource($product);
-    } else {
-        Log::warning('Product not found in ToppicksController@show', [
-            'product_id' => $id
+        $resource = new ToppicksResource($product);
+        $response = $resource->response();
+
+        Log::info('API Product Details Response', [
+            'product_id' => $id,
+            'status' => 200,
+            'response_data' => json_decode($response->getContent(), true)
         ]);
 
-        return response([
+        return $resource;
+    } else {
+        $response = response([
             'message' => trans('app.Not found')
         ], 404);
+
+        Log::warning('API Product Details Response - Not Found', [
+            'product_id' => $id,
+            'status' => 404,
+            'response_data' => json_decode($response->getContent(), true)
+        ]);
+
+        return $response;
     }
 }
 

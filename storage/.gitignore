@@ -3,3 +3,4 @@ session*
 logs/*
 views/*
 temp/*
+storage/logs/*.log

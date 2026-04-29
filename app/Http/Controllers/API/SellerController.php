@@ -10,6 +10,7 @@ use Modules\Seller\Services\ProductService;
 use Modules\Seller\Transformers\ProductResource;
 use App\Http\Resources\Api\v1\Brand\BrandResource;
 use Modules\Product\Transformers\CategoryResource;
+use Illuminate\Support\Facades\Log;
 
 /**
  * @group Seller Profile
@@ -603,15 +604,42 @@ class SellerController extends Controller
         ], 200);
     }
 
-    public function productById($id)
+    public function productById(Request $request, $id)
     {
+        Log::info('API Product Details Request', [
+            'url' => $request->fullUrl(),
+            'method' => $request->method(),
+            'ip' => $request->ip(),
+            'product_id' => $id,
+            'request_data' => $request->all(),
+            'timestamp' => now()->toDateTimeString(),
+        ]);
+
         $product = $this->productService->getSellerProductById($id);
+        
         if ($product) {
-            return new ProductResource($product);
+            $resource = new ProductResource($product);
+            $response = $resource->response();
+            
+            Log::info('API Product Details Response', [
+                'product_id' => $id,
+                'status' => 200,
+                'response_data' => json_decode($response->getContent(), true)
+            ]);
+
+            return $resource;
         } else {
-            return response([
+            $response = response([
                 'message' => trans('app.Not found')
             ], 404);
+
+            Log::warning('API Product Details Response - Not Found', [
+                'product_id' => $id,
+                'status' => 404,
+                'response_data' => json_decode($response->getContent(), true)
+            ]);
+
+            return $response;
         }
     }
 }
