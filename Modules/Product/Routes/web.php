@@ -54,7 +54,7 @@ Route::prefix('products')->as('product.')->group(function() {
     Route::get('/crosssale-products-pagination', 'ProductController@crosssale_product');
     //Category
     Route::middleware(['auth','admin'])->group(function() {
-        Route::resource('category', 'CategoryController')->except('destroy,update')->middleware(['permission']);
+        Route::resource('category', 'CategoryController')->except(['destroy', 'update'])->middleware(['permission']);
         Route::get('bulk-category-upload', 'CategoryController@bulk_category_upload_page')->name('bulk_category_upload_page')->middleware(['permission']);
         Route::get('download-category-list-csv', 'CategoryController@csv_category_download')->name('csv_category_download')->middleware(['permission']);
         Route::post('bulk-category-upload-store', 'CategoryController@bulk_category_store')->name('bulk_category_store')->middleware(['permission','prohibited_demo_mode']);

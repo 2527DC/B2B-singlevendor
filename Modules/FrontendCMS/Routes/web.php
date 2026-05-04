@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['admin','auth'])->prefix('frontendcms')->as('frontendcms.')->group(function() {
     Route::get('/', 'FrontendCMSController@index');
     //feature
-    Route::resource('features', 'FeatureController');
+    Route::resource('features', 'FeatureController')->except('store', 'edit', 'update');
     Route::post('/features/store','FeatureController@store')->name('features.store')->middleware('prohibited_demo_mode');
     Route::get('/features/edit/{id}','FeatureController@edit')->name('features.edit');
     Route::post('/features/update/','FeatureController@update')->name('features.update')->middleware('prohibited_demo_mode');
@@ -57,7 +57,7 @@ Route::middleware(['admin','auth'])->prefix('frontendcms')->as('frontendcms.')->
     Route::post('/faq/update','FaqController@update')->name('faq.update')->middleware('prohibited_demo_mode');
     Route::post('/faq/delete','FaqController@destroy')->name('faq.delete')->middleware('prohibited_demo_mode');
     //dynamic page creator
-    Route::resource('/dynamic-page', 'DynamicPageController')->except(['destroy','update']);
+    Route::resource('/dynamic-page', 'DynamicPageController')->except(['destroy','update', 'store']);
     Route::patch('/dynamic-page/{id}','DynamicPageController@update')->name('dynamic-page.update')->middleware('prohibited_demo_mode');
     Route::post('/dynamic-page/store','DynamicPageController@store')->name('dynamic-page.store')->middleware('prohibited_demo_mode');
     Route::post('/dynamic-page/delete','DynamicPageController@destroy')->name('dynamic-page.delete')->middleware('prohibited_demo_mode');
@@ -78,7 +78,7 @@ Route::middleware(['admin','auth'])->prefix('frontendcms')->as('frontendcms.')->
 });
 Route::middleware(['admin','auth'])->prefix('admin')->as('admin.')->group(function(){
     //pricing
-    Route::resource('/pricing', 'PricingController')->except('destroy, update');
+    Route::resource('/pricing', 'PricingController')->except(['destroy', 'update']);
     Route::post('/pricing/delete','PricingController@destroy')->name('pricing.delete')->middleware('prohibited_demo_mode');
     Route::post('/pricing/update','PricingController@update')->name('pricing.update')->middleware('prohibited_demo_mode');
     Route::post('/pricing/status-update','PricingController@status')->name('pricing.status')->middleware('prohibited_demo_mode');

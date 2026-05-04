@@ -87,7 +87,7 @@
                                                             @endif
 
                                                             @if(permissionCheck('staffs.destroy'))
-                                                            <a data-value="{{route('staffs.destroy', $staff->user->id)}}" class="dropdown-item delete_staff">{{__('common.delete')}}</a>
+                                                            <a data-value="{{route('staffs.destroy_get', $staff->user->id)}}" class="dropdown-item delete_staff">{{__('common.delete')}}</a>
                                                             @endif
                                                         </div>
                                                     </div>

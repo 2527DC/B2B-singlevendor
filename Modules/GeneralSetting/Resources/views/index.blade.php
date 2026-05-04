@@ -7,6 +7,11 @@
 
     <section class="admin-visitor-area up_st_admin_visitor">
         <div class="container-fluid p-0">
+            @if(isset($_GET['debug']))
+                <div class="alert alert-info">
+                    MultiVendor Active: {{ isModuleActive('MultiVendor') ? 'YES' : 'NO' }}
+                </div>
+            @endif
             <div class="white_box_30px mb_30">
                 <div class="row justify-content-center">
                         <div class="col-lg-12">

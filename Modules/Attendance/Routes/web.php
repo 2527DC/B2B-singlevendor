@@ -15,8 +15,8 @@
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('attendance')->middleware(['auth','admin'])->group(function () {
-    Route::get('/', 'AttendanceController@index')->name('attendances.index');
-    Route::post('/store', 'AttendanceController@store')->name('attendances.store')->middleware(['prohibited_demo_mode']);
+    Route::get('/', 'AttendanceController@index')->name('attendances.index_old');
+    Route::post('/store', 'AttendanceController@store')->name('attendances.store_old')->middleware(['prohibited_demo_mode']);
     Route::prefix('attendance')->group(function () {
         Route::get('/', 'AttendanceController@index');
     });

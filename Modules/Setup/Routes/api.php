@@ -25,6 +25,6 @@ Route::prefix('location')->group(function () {
 });
 
 Route::middleware('auth:sanctum')->prefix('setup')->group(function () {
-    Route::get('/algolia-search-config','API\SetupController@algoliaSearchConfig')->name('setup.algolia.search.config');
-    Route::post('/update-algolia-search-config', 'API\SetupController@updateAlgoliaSearchConfig')->name('setup.update.algolia.search.config');
+    Route::get('/algolia-search-config','API\SetupController@algoliaSearchConfig')->name('api.setup.algolia.search.config');
+    Route::post('/update-algolia-search-config', 'API\SetupController@updateAlgoliaSearchConfig')->name('api.setup.update.algolia.search.config');
 });

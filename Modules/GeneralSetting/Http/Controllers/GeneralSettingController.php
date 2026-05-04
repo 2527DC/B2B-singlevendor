@@ -35,6 +35,13 @@ class GeneralSettingController extends Controller
 
     public function index()
     {
+        \Log::info('Debug MultiVendor', [
+            'isModuleActive' => isModuleActive('MultiVendor'),
+            'isEnabledFromFacade' => \Nwidart\Modules\Facades\Module::find('MultiVendor')->isEnabled(),
+            'purchase_code' => optional(app('ModuleList')->where('name', 'MultiVendor')->first())->purchase_code,
+            'file_exists_relative' => file_exists('Modules/MultiVendor/Providers/MultiVendorServiceProvider.php'),
+            'file_exists_absolute' => file_exists(base_path('Modules/MultiVendor/Providers/MultiVendorServiceProvider.php'))
+        ]);
         $data['others_activations'] = $this->generalSettingService->getVerificationNotification();
         $data['vendor_configurations'] = $this->generalSettingService->getVendorConfigurationAll();
         $data['sms_gateways'] = $this->generalSettingService->getSmsGateways();
@@ -101,8 +108,10 @@ class GeneralSettingController extends Controller
 
     public function update(Request $request)
     {
+        \Log::info('GeneralSettingController@update called', $request->all());
 
         if ($request->has('status')) {
+            \Log::info('Validation block entered');
             $request->validate([
                 "site_title" => "required|string|max:30",
                 "file_supported" => "nullable|string",
@@ -141,9 +150,11 @@ class GeneralSettingController extends Controller
             ]);
         }
         if($request->has('vendor_type')){
+           \Log::info('vendor_type found in request: ' . $request->vendor_type);
            $module =  \Nwidart\Modules\Facades\Module::find("MultiVendor");
            $hasModule = DB::table('infix_module_managers')->where('name','MultiVendor')->first();
            if(!empty($hasModule) && empty($hasModule->purchase_code)){
+                \Log::info('Updating purchase_code for MultiVendor');
                 DB::table('infix_module_managers')->where('name','MultiVendor')->update([
                     'purchase_code' => time(),
                     "activated_date" => date("Y-m-d"),
@@ -151,9 +162,10 @@ class GeneralSettingController extends Controller
            }
 
            if($request->vendor_type == 1){
-
+             \Log::info('Enabling MultiVendor module');
              $module->enable();
            }else{
+             \Log::info('Disabling MultiVendor module');
              $module->disable();
            }
         }

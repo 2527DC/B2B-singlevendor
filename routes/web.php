@@ -87,7 +87,7 @@ Route::post('/cart/update',[CartController::class,'update'])->name('frontend.car
 Route::post('/cart/delete-all',[CartController::class,'destroyAll'])->name('frontend.cart.delete-all');
 Route::post('/cart/delete',[CartController::class,'destroy'])->name('frontend.cart.delete');
 Route::post('/cart/update-qty',[CartController::class,'updateQty'])->name('frontend.cart.update-qty');
-Route::post('/cart/update-sidebar-qty',[CartController::class,'sidebarUpdateQty'])->name('frontend.cart.update-qty');
+Route::post('/cart/update-sidebar-qty',[CartController::class,'sidebarUpdateQty'])->name('frontend.cart.update-sidebar-qty');
 Route::post('/cart/select-all',[CartController::class,'selectAll'])->name('frontend.cart.select-all');
 Route::post('/cart/select-all-seller',[CartController::class,'selectAllSeller'])->name('frontend.cart.select-all-seller');
 Route::post('/cart/select-item',[CartController::class,'selectItem'])->name('frontend.cart.select-item');
@@ -227,7 +227,7 @@ Route::get('frontend/close-promotion',[WelcomeController::class,'closePromotion'
         Route::resource('staffs', '\App\Http\Controllers\StaffController');
         Route::post('/staff-status-update',[StaffController::class,'status_update'])->name('staffs.update_active_status')->middleware('prohibited_demo_mode');
         Route::get('/staff/view/{id}', [StaffController::class,'show'])->name('staffs.view');
-        Route::get('/staff/destroy/{id}',[StaffController::class,'destroy'])->name('staffs.destroy')->middleware('prohibited_demo_mode');
+        Route::get('/staff/destroy/{id}',[StaffController::class,'destroy'])->name('staffs.destroy_get')->middleware('prohibited_demo_mode');
      });
     Route::post('/staff-document/store', [StaffController::class,'document_store'])->name('staff_document.store')->middleware('prohibited_demo_mode');
     Route::get('/staff-document/destroy/{id}', [StaffController::class,'document_destroy'])->name('staff_document.destroy')->middleware('prohibited_demo_mode');

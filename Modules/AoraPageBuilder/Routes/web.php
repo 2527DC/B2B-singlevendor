@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 // });4
 
 Route::prefix('page-builder/')->middleware(['auth','admin'])->as('page_builder.')->group(function () {
-    Route::resource('pages', 'PageBuilderController')->except(['destroy','create']);
+    Route::resource('pages', 'PageBuilderController')->except(['destroy','create', 'update']);
     Route::post('update','PageBuilderController@update')->name('pages.update');
     Route::post('page/delete', 'PageBuilderController@destroy')->name('pages.destroy')->middleware('prohibited_demo_mode');
     Route::post('page/status', 'PageBuilderController@status')->name('pages.status')->middleware('prohibited_demo_mode');

@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth','admin'])->prefix('appearance')->as('appearance.')->group(function() {
     //themes
-    Route::resource('/themes', 'ThemeController')->except('destroy','update','edit')->middleware('permission');
+    Route::resource('/themes', 'ThemeController')->except('destroy','update','edit', 'store')->middleware('permission');
     Route::post('/themes/store','ThemeController@store')->name('themes.store')->middleware(['permission','prohibited_demo_mode']);
     Route::post('/themes/active','ThemeController@active')->name('themes.active')->middleware(['permission','prohibited_demo_mode']);
     Route::post('/themes/detele','ThemeController@destroy')->name('themes.delete')->middleware('prohibited_demo_mode');

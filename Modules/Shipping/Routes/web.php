@@ -67,7 +67,7 @@ Route::middleware(['auth','seller'])->prefix('shipping')->as('shipping.')->group
     Route::get('set/pickup_location/{id}', 'PickupLocationController@setPickupLocation')->name('pickup_locations.set')->middleware(['permission','prohibited_demo_mode']);
 
     //carriers
-    Route::resource('carriers', 'CarrierController');
+    Route::resource('carriers', 'CarrierController')->except('destroy');
     Route::post('carrier/delete', 'CarrierController@destroy')->name('carriers.destroy');
     Route::post('carrier/status', 'CarrierController@status')->name('carriers.status');
     Route::post('carrier/configuration', 'CarrierController@configuration')->name('carriers.configuration');
