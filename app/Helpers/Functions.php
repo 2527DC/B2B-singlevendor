@@ -189,7 +189,7 @@ if (!function_exists('menuManagerCheck')) {
 }
 if (!function_exists('asset_path')) {
     function asset_path($path = null){
-        return 'public/'.$path;
+        return $path;
     }
 }
 function setEnv($name, $value)
@@ -204,7 +204,7 @@ function setEnv($name, $value)
 if (!function_exists('isRtl')) {
     function isRtl()
     {
-        if (app('current_lang')->rtl == 1) {
+        if (app()->bound('current_lang') && app('current_lang')->rtl == 1) {
             return true;
         }
         return false;

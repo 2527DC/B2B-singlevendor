@@ -25,7 +25,7 @@ class CheckAffiliateLinkListener
         if(isset($_SERVER['HTTP_HOST'])){
             $url = Request::getRequestUri();
             $host = $_SERVER['HTTP_HOST'];
-            $protocol = $_SERVER['REQUEST_SCHEME'];
+            $protocol = Request::getScheme();
             $url = $protocol.'://'.$host.$url;
         }else{
             $url = \URL::to('/') . Request::getRequestUri();
