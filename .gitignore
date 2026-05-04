@@ -4,3 +4,5 @@ storage/logs/driver-auth-*.log
 public/backend/photo_proof/*
 !public/backend/photo_proof/.gitkeepvendor/
 vendor
+.env
+.htaccess 
