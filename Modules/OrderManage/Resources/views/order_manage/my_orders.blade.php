@@ -167,6 +167,7 @@
                                                         <th>{{__('common.sl')}}</th>
                                                         <th width="10%">{{__('common.date')}}</th>
                                                         <th>{{__('common.order_id')}}</th>
+                                                        <th>Shop Name</th>
                                                         <th>{{__('common.email')}}</th>
                                                         <th>{{__('order.order_state')}}</th>
                                                         <th>{{__('common.total_amount')}}</th>
@@ -222,6 +223,7 @@
                                                         <th>{{__('common.sl')}}</th>
                                                         <th width="10%">{{__('common.date')}}</th>
                                                         <th>{{__('common.order_id')}}</th>
+                                                        <th>Shop Name</th>
                                                         <th>{{__('common.email')}}</th>
                                                         <th>{{__('order.delivery_status')}}</th>
                                                         <th>{{__('common.total_amount')}}</th>
@@ -255,6 +257,7 @@
                                                         <th>{{__('common.sl')}}</th>
                                                         <th width="10%">{{__('common.date')}}</th>
                                                         <th>{{__('common.order_id')}}</th>
+                                                        <th>Shop Name</th>
                                                         <th>{{__('common.email')}}</th>
                                                         <th>{{__('order.order_state')}}</th>
                                                         <th>{{__('common.total_amount')}}</th>
@@ -289,6 +292,7 @@
                                                         <th>{{__('common.sl')}}</th>
                                                         <th width="10%">{{__('common.date')}}</th>
                                                         <th>{{__('common.order_id')}}</th>
+                                                        <th>Shop Name</th>
                                                         <th>{{__('common.email')}}</th>
                                                         <th>{{__('order.order_state')}}</th>
                                                         <th>{{__('common.total_amount')}}</th>
@@ -323,6 +327,7 @@
                                                         <th>{{__('common.sl')}}</th>
                                                         <th width="10%">{{__('common.date')}}</th>
                                                         <th>{{__('common.order_id')}}</th>
+                                                        <th>Shop Name</th>
                                                         <th>{{__('common.email')}}</th>
                                                         <th>{{__('order.order_state')}}</th>
                                                         <th>{{__('common.total_amount')}}</th>
@@ -377,6 +382,7 @@
                         }},
                         { data: 'date', name: 'date' },
                         { data: 'order_number', name: 'order.order_number' },
+                        { data: 'shop_name', name: 'shop_name' },
                         { data: 'email', name: 'email' },
                         { data: 'order_state', name: 'order_state' },
                         { data: 'total_amount', name: 'order.grand_total' },
@@ -480,6 +486,7 @@
                         }},
                         { data: 'date', name: 'date' },
                         { data: 'order_number', name: 'order.order_number' },
+                        { data: 'shop_name', name: 'shop_name' },
                         { data: 'email', name: 'email' },
                         { data: 'order_state', name: 'order_state' },
                         { data: 'total_amount', name: 'order.grand_total' },
@@ -589,6 +596,7 @@
                         }},
                         { data: 'date', name: 'date' },
                         { data: 'order_number', name: 'order.order_number' },
+                        { data: 'shop_name', name: 'shop_name' },
                         { data: 'email', name: 'email' },
                         { data: 'order_state', name: 'order_state' },
                         { data: 'total_amount', name: 'order.grand_total' },
@@ -691,6 +699,7 @@
                         }},
                         { data: 'date', name: 'date' },
                         { data: 'order_number', name: 'order.order_number' },
+                        { data: 'shop_name', name: 'shop_name' },
                         { data: 'email', name: 'email' },
                         { data: 'order_state', name: 'order_state' },
                         { data: 'total_amount', name: 'order.grand_total' },
@@ -794,6 +803,7 @@
                         }},
                         { data: 'date', name: 'date' },
                         { data: 'order_number', name: 'order.order_number' },
+                        { data: 'shop_name', name: 'shop_name' },
                         { data: 'email', name: 'email' },
                         { data: 'order_state', name: 'order_state' },
                         { data: 'total_amount', name: 'order.grand_total' },

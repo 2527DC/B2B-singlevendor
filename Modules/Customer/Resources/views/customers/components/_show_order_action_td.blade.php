@@ -3,6 +3,10 @@
             aria-expanded="false"> {{__('common.select')}}
     </button>
     <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenu2">
-        <a href="{{route('order_manage.show_details',$order->id)}}" target="_blank" class="dropdown-item" type="button">{{__('common.details')}}</a>
+        @if(auth()->user()->role->type == 'admin' || auth()->user()->role->type == 'staff')
+            <a href="{{route('order_manage.show_details',$order->id)}}" target="_blank" class="dropdown-item" type="button">{{__('common.details')}}</a>
+        @else
+            <a href="{{route('order_manage.show_details_mine',$order->id)}}" target="_blank" class="dropdown-item" type="button">{{__('common.details')}}</a>
+        @endif
     </div>
 </div>

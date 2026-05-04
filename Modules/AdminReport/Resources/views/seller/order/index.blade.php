@@ -96,10 +96,16 @@
                                             <th>{{__('common.sl')}}</th>
                                             <th width="10%">{{__('common.date')}}</th>
                                             <th>{{__('common.order_id')}}</th>
+                                            <th>Shop Name</th>
+                                            <th>Customer Name</th>
+                                            <th>Phone</th>
+                                            <th>Address</th>
+                                            <th>Pincode</th>
                                             <th>{{__('common.email')}}</th>
                                             <th>{{__('order.product_qty')}}</th>
                                             <th>{{__('common.total_amount')}}</th>
                                             <th>{{__('order.order_status')}}</th>
+                                            <th>Payment Status</th>
                                             <th>{{__('order.is_paid')}}</th>
                                         </tr>
                                     </thead>
@@ -127,10 +133,16 @@
                                             <th>{{__('common.sl')}}</th>
                                             <th width="10%">{{__('common.date')}}</th>
                                             <th>{{__('common.order_id')}}</th>
+                                            <th>Shop Name</th>
+                                            <th>Customer Name</th>
+                                            <th>Phone</th>
+                                            <th>Address</th>
+                                            <th>Pincode</th>
                                             <th>{{__('common.email')}}</th>
                                             <th>{{__('order.product_qty')}}</th>
                                             <th>{{__('common.total_amount')}}</th>
                                             <th>{{__('order.order_status')}}</th>
+                                            <th>Payment Status</th>
                                             <th>{{__('order.is_paid')}}</th>
                                         </tr>
                                     </thead>
@@ -158,10 +170,16 @@
                                             <th>{{__('common.sl')}}</th>
                                             <th width="10%">{{__('common.date')}}</th>
                                             <th>{{__('common.order_id')}}</th>
+                                            <th>Shop Name</th>
+                                            <th>Customer Name</th>
+                                            <th>Phone</th>
+                                            <th>Address</th>
+                                            <th>Pincode</th>
                                             <th>{{__('common.email')}}</th>
                                             <th>{{__('order.product_qty')}}</th>
                                             <th>{{__('common.total_amount')}}</th>
                                             <th>{{__('order.order_status')}}</th>
+                                            <th>Payment Status</th>
                                             <th>{{__('order.is_paid')}}</th>
                                         </tr>
                                     </thead>
@@ -189,10 +207,16 @@
                                             <th>{{__('common.sl')}}</th>
                                             <th width="10%">{{__('common.date')}}</th>
                                             <th>{{__('common.order_id')}}</th>
+                                            <th>Shop Name</th>
+                                            <th>Customer Name</th>
+                                            <th>Phone</th>
+                                            <th>Address</th>
+                                            <th>Pincode</th>
                                             <th>{{__('common.email')}}</th>
                                             <th>{{__('order.product_qty')}}</th>
                                             <th>{{__('common.total_amount')}}</th>
                                             <th>{{__('order.order_status')}}</th>
+                                            <th>Payment Status</th>
                                             <th>{{__('order.is_paid')}}</th>
                                         </tr>
                                     </thead>
@@ -221,10 +245,16 @@
                                             <th>{{__('common.sl')}}</th>
                                             <th width="10%">{{__('common.date')}}</th>
                                             <th>{{__('common.order_id')}}</th>
+                                            <th>Shop Name</th>
+                                            <th>Customer Name</th>
+                                            <th>Phone</th>
+                                            <th>Address</th>
+                                            <th>Pincode</th>
                                             <th>{{__('common.email')}}</th>
                                             <th>{{__('order.product_qty')}}</th>
                                             <th>{{__('common.total_amount')}}</th>
                                             <th>{{__('order.order_status')}}</th>
+                                            <th>Payment Status</th>
                                             <th>{{__('order.is_paid')}}</th>
                                         </tr>
                                     </thead>
@@ -294,12 +324,17 @@
                 { data: 'DT_RowIndex', name: 'id' },
                 { data: 'date', name: 'date' },
                 { data: 'order_number', name: 'order_number' },
+                { data: 'shop_name', name: 'shop_name', visible: false },
+                { data: 'customer_name', name: 'customer_name', visible: false },
+                { data: 'phone', name: 'phone', visible: false },
+                { data: 'address', name: 'address', visible: false },
+                { data: 'pincode', name: 'pincode', visible: false },
                 { data: 'email', name: 'email' },
                 { data: 'total_qty', name: 'total_qty' },
                 { data: 'total_amount', name: 'total_amount' },
                 { data: 'order_status', name: 'order_status' },
+                { data: 'payment_status_text', name: 'payment_status_text', visible: false },
                 { data: 'is_paid', name: 'is_paid' },
-
             ],
 
             bLengthChange: false,
@@ -330,7 +365,6 @@
                     title: $("#header_title").text(),
                     margin: [10, 10, 10, 0],
                     exportOptions: {
-                        columns: ':visible',
                         columns: ':not(:last-child)',
                     },
 
@@ -394,12 +428,17 @@
                 { data: 'DT_RowIndex', name: 'id' },
                 { data: 'date', name: 'date' },
                 { data: 'order_number', name: 'order_number' },
+                { data: 'shop_name', name: 'shop_name', visible: false },
+                { data: 'customer_name', name: 'customer_name', visible: false },
+                { data: 'phone', name: 'phone', visible: false },
+                { data: 'address', name: 'address', visible: false },
+                { data: 'pincode', name: 'pincode', visible: false },
                 { data: 'email', name: 'email' },
                 { data: 'total_qty', name: 'total_qty' },
                 { data: 'total_amount', name: 'total_amount' },
                 { data: 'order_status', name: 'order_status' },
+                { data: 'payment_status_text', name: 'payment_status_text', visible: false },
                 { data: 'is_paid', name: 'is_paid' },
-
             ],
 
             bLengthChange: false,
@@ -430,7 +469,6 @@
                     title: $("#header_title").text(),
                     margin: [10, 10, 10, 0],
                     exportOptions: {
-                        columns: ':visible',
                         columns: ':not(:last-child)',
                     },
 
@@ -493,12 +531,17 @@
             { data: 'DT_RowIndex', name: 'id' },
             { data: 'date', name: 'date' },
             { data: 'order_number', name: 'order_number' },
+            { data: 'shop_name', name: 'shop_name', visible: false },
+            { data: 'customer_name', name: 'customer_name', visible: false },
+            { data: 'phone', name: 'phone', visible: false },
+            { data: 'address', name: 'address', visible: false },
+            { data: 'pincode', name: 'pincode', visible: false },
             { data: 'email', name: 'email' },
             { data: 'total_qty', name: 'total_qty' },
             { data: 'total_amount', name: 'total_amount' },
             { data: 'order_status', name: 'order_status' },
+            { data: 'payment_status_text', name: 'payment_status_text', visible: false },
             { data: 'is_paid', name: 'is_paid' },
-
         ],
 
         bLengthChange: false,
@@ -529,7 +572,6 @@
                 title: $("#header_title").text(),
                 margin: [10, 10, 10, 0],
                 exportOptions: {
-                    columns: ':visible',
                     columns: ':not(:last-child)',
                 },
 
@@ -592,12 +634,17 @@
             { data: 'DT_RowIndex', name: 'id' },
             { data: 'date', name: 'date' },
             { data: 'order_number', name: 'order_number' },
+            { data: 'shop_name', name: 'shop_name', visible: false },
+            { data: 'customer_name', name: 'customer_name', visible: false },
+            { data: 'phone', name: 'phone', visible: false },
+            { data: 'address', name: 'address', visible: false },
+            { data: 'pincode', name: 'pincode', visible: false },
             { data: 'email', name: 'email' },
             { data: 'total_qty', name: 'total_qty' },
             { data: 'total_amount', name: 'total_amount' },
             { data: 'order_status', name: 'order_status' },
+            { data: 'payment_status_text', name: 'payment_status_text', visible: false },
             { data: 'is_paid', name: 'is_paid' },
-
         ],
 
         bLengthChange: false,
@@ -628,7 +675,6 @@
                 title: $("#header_title").text(),
                 margin: [10, 10, 10, 0],
                 exportOptions: {
-                    columns: ':visible',
                     columns: ':not(:last-child)',
                 },
 
@@ -691,12 +737,17 @@
             { data: 'DT_RowIndex', name: 'id' },
             { data: 'date', name: 'date' },
             { data: 'order_number', name: 'order_number' },
+            { data: 'shop_name', name: 'shop_name', visible: false },
+            { data: 'customer_name', name: 'customer_name', visible: false },
+            { data: 'phone', name: 'phone', visible: false },
+            { data: 'address', name: 'address', visible: false },
+            { data: 'pincode', name: 'pincode', visible: false },
             { data: 'email', name: 'email' },
             { data: 'total_qty', name: 'total_qty' },
             { data: 'total_amount', name: 'total_amount' },
             { data: 'order_status', name: 'order_status' },
+            { data: 'payment_status_text', name: 'payment_status_text', visible: false },
             { data: 'is_paid', name: 'is_paid' },
-
         ],
 
         bLengthChange: false,
@@ -727,7 +778,6 @@
                 title: $("#header_title").text(),
                 margin: [10, 10, 10, 0],
                 exportOptions: {
-                    columns: ':visible',
                     columns: ':not(:last-child)',
                 },
 

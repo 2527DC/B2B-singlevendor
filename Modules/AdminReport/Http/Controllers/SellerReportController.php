@@ -58,7 +58,25 @@ class SellerReportController extends Controller
                     return date(app('general_setting')->dateFormat->format, strtotime($order->created_at));
                 })
                 ->addColumn('email', function ($order) {
-                    return ($order->customer_id) ? @$order->customer->email : @$order->guest_info->shipping_email;;
+                    return ($order->customer_id) ? @$order->customer->email : @$order->guest_info->shipping_email;
+                })
+                ->addColumn('shop_name', function ($order) {
+                    return ($order->customer_id) ? @$order->customer->store_name : '';
+                })
+                ->addColumn('customer_name', function ($order) {
+                    return ($order->customer_id) ? @$order->address->shipping_name : @$order->guest_info->shipping_name;
+                })
+                ->addColumn('phone', function ($order) {
+                    return ($order->customer_id) ? @$order->address->shipping_phone : @$order->guest_info->shipping_phone;
+                })
+                ->addColumn('address', function ($order) {
+                    return ($order->customer_id) ? @$order->address->shipping_address : @$order->guest_info->shipping_address;
+                })
+                ->addColumn('pincode', function ($order) {
+                    return ($order->customer_id) ? @$order->address->shipping_postcode : @$order->guest_info->shipping_post_code;
+                })
+                ->addColumn('payment_status_text', function ($order) {
+                    return ($order->is_paid) ? 'Paid' : 'Pending';
                 })
                 ->addColumn('total_qty', function ($order) {
                     return $order->packages->sum('number_of_product');

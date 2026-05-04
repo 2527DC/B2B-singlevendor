@@ -74,6 +74,12 @@ class OrderManageController extends Controller
                 ->addColumn('email', function ($order_package) {
                     return ($order_package->order->customer_id) ? @$order_package->order->customer->email : @$order_package->order->guest_info->shipping_email;
                 })
+                ->addColumn('shop_name', function ($order_package) {
+                    if ($order_package->order->customer_id) {
+                        return @$order_package->order->customer->store_name ? @$order_package->order->customer->store_name : @$order_package->order->customer->first_name . ' ' . @$order_package->order->customer->last_name;
+                    }
+                    return @$order_package->order->guest_info->shipping_name;
+                })
                 ->addColumn('order_state', function ($order_package) {
                     return view('ordermanage::order_manage.components._my_order_order_state_td', compact('order_package'));
                 })
