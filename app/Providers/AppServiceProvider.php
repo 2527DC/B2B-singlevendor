@@ -69,5 +69,10 @@ class AppServiceProvider extends ServiceProvider
 
         Paginator::useBootstrap();
 
+        app()->singleton('permission_list', function() {
+            return \Modules\RolePermission\Entities\Role::with(['permissions' => function($query){
+                $query->select('route','module_id','parent_id','role_permission.role_id', 'permissions.id');
+            }])->get(['id','name']);
+        });
     }
 }

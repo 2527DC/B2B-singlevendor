@@ -522,6 +522,28 @@ class MerchantController extends Controller
 
     }
 
+    public function update_short_code(Request $request)
+    {
+        $request->validate([
+            'seller_id' => 'required',
+            'short_code' => 'required|string|max:10|unique:users,short_code,' . $request->seller_id,
+        ]);
+
+        try {
+            $user = User::findOrFail($request->seller_id);
+            $user->short_code = strtoupper($request->short_code);
+            $user->save();
+            
+            Toastr::success(__('common.updated_successfully'),__('common.success'));
+            return redirect()->back();
+
+        } catch (\Exception $e) {
+            LogActivity::errorLog($e->getMessage());
+            Toastr::error(__('common.operation_failed'));
+            return back();
+        }
+    }
+
     public function changeSellerPasswordStore(SellerPassordChangeRequest $request){
         try{
             $this->profileService->sellerChangePassword($request->all());

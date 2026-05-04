@@ -74,10 +74,47 @@ class ShippingOrderController extends Controller
     }
 
     $orders = [];
+    $invoice_numbers = [];
 
     foreach ($invoiceIds as $id) {
         $order = $this->orderRepo->order($id);
         if ($order) {
+            // Generate or fetch invoice number from invoices table
+            $existingInvoice = \Illuminate\Support\Facades\DB::table('invoices')
+                ->where('order_package_id', $id)
+                ->first();
+
+            if ($existingInvoice) {
+                $invoice_numbers[$id] = $existingInvoice->invoice_number;
+            } else {
+                $seller_id = $order->seller_id;
+                \Illuminate\Support\Facades\DB::transaction(function () use ($id, $seller_id, &$invoice_numbers) {
+                    $lastInvoice = \Illuminate\Support\Facades\DB::table('invoices')
+                        ->where('seller_id', $seller_id)
+                        ->lockForUpdate()
+                        ->orderBy('invoice_sequence', 'desc')
+                        ->first();
+
+                    $new_sequence = $lastInvoice ? $lastInvoice->invoice_sequence + 1 : 1;
+
+                    $seller = \App\Models\User::find($seller_id);
+                    $short_code = $seller && $seller->short_code ? $seller->short_code : 'INV';
+
+                    $invoice_number = date('Y') . '-' . $short_code . '-' . $new_sequence;
+
+                    \Illuminate\Support\Facades\DB::table('invoices')->insert([
+                        'order_package_id' => $id,
+                        'seller_id' => $seller_id,
+                        'invoice_sequence' => $new_sequence,
+                        'invoice_number' => $invoice_number,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+
+                    $invoice_numbers[$id] = $invoice_number;
+                });
+            }
+
             $orders[] = $order;
         }
     }
@@ -99,13 +136,12 @@ class ShippingOrderController extends Controller
     }];
 
     $filename = 'bulk_invoices_' . now()->format('Ymd_His') . '.pdf';
-    $pdf = PDF::loadView('shipping::order.bulk_invoice_pdf', ['orders' => $orders], [], $config);
+    $pdf = PDF::loadView('shipping::order.bulk_invoice_pdf', ['orders' => $orders, 'invoice_numbers' => $invoice_numbers], [], $config);
 
     // Produce raw PDF content
     $pdfContent = $pdf->output();
 
-    // Stream download response with headers forcing attachment. Using application/octet-stream
-    // increases chance browser shows "Save As" dialog instead of opening inline.
+    // Stream download response with headers forcing attachment.
     return response()->streamDownload(function() use ($pdfContent) {
         echo $pdfContent;
     }, $filename, [
@@ -198,6 +234,44 @@ class ShippingOrderController extends Controller
     {
         try {
             $data['order'] = $this->orderRepo->order($id);
+
+            $orderPackage = $data['order'];
+            $seller_id = $orderPackage->seller_id;
+            
+            $existingInvoice = \Illuminate\Support\Facades\DB::table('invoices')
+                ->where('order_package_id', $id)
+                ->first();
+
+            if ($existingInvoice) {
+                $data['invoice_number'] = $existingInvoice->invoice_number;
+            } else {
+                \Illuminate\Support\Facades\DB::transaction(function () use ($id, $seller_id, &$data) {
+                    $lastInvoice = \Illuminate\Support\Facades\DB::table('invoices')
+                        ->where('seller_id', $seller_id)
+                        ->lockForUpdate()
+                        ->orderBy('invoice_sequence', 'desc')
+                        ->first();
+
+                    $new_sequence = $lastInvoice ? $lastInvoice->invoice_sequence + 1 : 1;
+                    
+                    $seller = \App\Models\User::find($seller_id);
+                    $short_code = $seller && $seller->short_code ? $seller->short_code : 'INV';
+                    
+                    $invoice_number = date('Y') . '-' . $short_code . '-' . $new_sequence;
+
+                    \Illuminate\Support\Facades\DB::table('invoices')->insert([
+                        'order_package_id' => $id,
+                        'seller_id' => $seller_id,
+                        'invoice_sequence' => $new_sequence,
+                        'invoice_number' => $invoice_number,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+
+                    $data['invoice_number'] = $invoice_number;
+                });
+            }
+
             return $this->getPDF('shipping::order.invoice_pdf', $data,$data['order']->package_code.'_invoice');
         } catch (\Exception $e) {
             LogActivity::errorLog($e->getMessage());

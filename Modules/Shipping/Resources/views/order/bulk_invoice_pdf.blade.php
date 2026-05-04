@@ -165,33 +165,30 @@
                     <h1>Tax Invoice</h1>
                     <div class="seller-name">{{ $seller_name }} @if(@$seller->SellerBusinessInformation->business_tax_id)
                     GSTIN:{{$seller->SellerBusinessInformation->business_tax_id}} @endif</div>
-                    <div>{{ @$seller->SellerBusinessInformation->business_address1 ?: app('general_setting')->address }}
-                    </div>
-                    <div>{{ @$seller->SellerBusinessInformation->business_city }}
-                        {{ @$seller->SellerBusinessInformation->business_state }}
-                        {{ @$seller->SellerBusinessInformation->business_postcode }}</div>
+                    <div>{{ @$seller->SellerBusinessInformation->business_address1 ?: app('general_setting')->address }}</div>
+                    <div>{{ @$seller->SellerBusinessInformation->city->name }} {{ @$seller->SellerBusinessInformation->state->name }} {{ @$seller->SellerBusinessInformation->business_postcode }}</div>
                 </td>
                 <td class="header-right">
+                    @php
+                        $inv_number = isset($invoice_numbers[$order->id]) ? $invoice_numbers[$order->id] : $order->package_code;
+                    @endphp
                     <table class="metadata" style="width:100%; text-align:right;">
                         <tr>
                             <td width="60%">Inv. No.</td>
-                            <td width="40%">{{ $order->package_code }}</td>
+                            <td width="40%">{{ $inv_number }}</td>
                         </tr>
                         <tr>
                             <td>Order #</td>
                             <td>{{ $order->order->order_number }}</td>
                         </tr>
+                       
                         <tr>
                             <td>Inv. Date</td>
                             <td>{{ $order->created_at->format('M d, Y') }}</td>
                         </tr>
-                        <tr>
-                            <td colspan="2" style="font-weight:bold;">ORIGINAL FOR RECIPIENT</td>
-                        </tr>
+                       
                     </table>
-                    <div class="barcode">
-                        <div style="margin-top:10px;">{{ $order->package_code }}</div>
-                    </div>
+              
                 </td>
             </tr>
         </table>
@@ -204,18 +201,34 @@
                     <div class="address-title">SHIP TO</div>
                     <div style="font-weight:bold;">{{ $shipping_addr->shipping_name ?? $shipping_addr->name }}</div>
                     <div>{{ $shipping_addr->shipping_address ?? $shipping_addr->address }}</div>
-                    <div>{{ @$shipping_addr->getShippingCity->name ?? @$shipping_addr->getCity->name }},
-                        {{ @$shipping_addr->getShippingState->name ?? @$shipping_addr->getState->name }}
-                        {{ $shipping_addr->shipping_postcode ?? $shipping_addr->postal_code }}</div>
+                    @php
+                        if ($order->order->customer_id) {
+                            $ship_city  = optional($order->order->shipping_address->getCity()->first())->name;
+                            $ship_state = optional($order->order->shipping_address->getState()->first())->name;
+                        } else {
+                            $ship_city  = optional($order->order->guest_info->getShippingCity()->first())->name;
+                            $ship_state = optional($order->order->guest_info->getShippingState()->first())->name;
+                        }
+                        $ship_postcode = $shipping_addr->shipping_postcode ?? $shipping_addr->postal_code ?? '';
+                    @endphp
+                    <div>{{ $ship_city }}, {{ $ship_state }} {{ $ship_postcode }}</div>
                     <div>Phone: {{ $shipping_addr->shipping_phone ?? $shipping_addr->phone }}</div>
                 </td>
                 <td class="address-box">
                     <div class="address-title">BILL TO</div>
                     <div style="font-weight:bold;">{{ $billing_addr->billing_name ?? $billing_addr->name }}</div>
                     <div>{{ $billing_addr->billing_address ?? $billing_addr->address }}</div>
-                    <div>{{ @$billing_addr->getBillingCity->name ?? @$billing_addr->getCity->name }},
-                        {{ @$billing_addr->getBillingState->name ?? @$billing_addr->getState->name }}
-                        {{ $billing_addr->billing_postcode ?? $billing_addr->postal_code }}</div>
+                    @php
+                        if ($order->order->customer_id) {
+                            $bill_city  = optional($order->order->billing_address->getCity()->first())->name;
+                            $bill_state = optional($order->order->billing_address->getState()->first())->name;
+                        } else {
+                            $bill_city  = optional($order->order->guest_info->getBillingCity()->first())->name;
+                            $bill_state = optional($order->order->guest_info->getBillingState()->first())->name;
+                        }
+                        $bill_postcode = $billing_addr->billing_postcode ?? $billing_addr->postal_code ?? '';
+                    @endphp
+                    <div>{{ $bill_city }}, {{ $bill_state }} {{ $bill_postcode }}</div>
                 </td>
             </tr>
         </table>
@@ -327,12 +340,16 @@
                                lapse: separate; padding: 5px;">
                         <tr>
                             <td style="vertical-align: middle; width: 60px;">
-
-                                                               @php
-                                                                $upi_id = "50200093720385@hdfc0005661.ifsc.npci";
-                                                                $upi_link = "upi://pay?pa=" . $upi_id . "&pn=" . urlencode("Shree Dhatri Enterprises") . "&am=" . $grand_total . "&cu=INR";
-                                                            @endphp
-                                <img src="data:image/png;base64,{{ (new \Milon\Barcode\DNS2D)->getBarcodePNG($upi_link, 'QRCODE') }}" alt="QR Code" style="width: 60px; height: 60px;">
+                                @php
+                                    $qr_path = public_path('uploads/qrscanner.png');
+                                    $qr_base64 = '';
+                                    if(file_exists($qr_path)) {
+                                        $qr_base64 = 'data:image/png;base64,' . base64_encode(file_get_contents($qr_path));
+                                    }
+                                @endphp
+                                @if($qr_base64)
+                                    <img src="{{ $qr_base64 }}" alt="QR Code" style="width: 60px; height: 60px;">
+                                @endif
                             </td>
                             <td style="vertical-align: middle; padding-left: 8px;">
                                 <div style="font-size: 14px; font-weight: bold; margin-bottom: 2px;">{{ single_price($grand_total) }}</div>

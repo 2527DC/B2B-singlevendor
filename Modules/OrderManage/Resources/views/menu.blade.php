@@ -76,6 +76,11 @@
                 <a href="{{route('order_manage.my_sales_index')}}" @if (strpos(request()->getUri(),'my-sales-list') != false || strpos(request()->getUri(),'my-sales-details') != false) class="active" @endif>{{ __('order.my_order') }}</a>
             </li>
             @endif
+            @if (permissionCheck('seller.inhouse-order.index'))
+                <li>
+                    <a href="{{route('seller.inhouse-order.index')}}" @if (request()->is('seller/in-house-order') || request()->is('seller/in-house-order/create')) class="active" @endif>{{ __('order.inhouse_orders') }}</a>
+                </li>
+            @endif
         </ul>
     </li>
 @endif

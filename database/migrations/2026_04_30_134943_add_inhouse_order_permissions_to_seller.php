@@ -1,27 +1,18 @@
 <?php
 
-namespace Modules\InhouseOrder\Database\Seeders;
-
-use Illuminate\Database\Seeder;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 use Modules\RolePermission\Entities\Permission;
 use Illuminate\Support\Facades\DB;
 
-class InhouseOrderDatabaseSeeder extends Seeder
+class AddInhouseOrderPermissionsToSeller extends Migration
 {
-    /**
-     * Run the database seeds.
-     *
-     * @return void
-     */
-    public function run()
+    public function up()
     {
-        Model::unguard();
-
         // 1. Add Permissions
         $seller_order_manage = Permission::where('id', 153)->first();
         if ($seller_order_manage) {
-            
             DB::table('permissions')->updateOrInsert([
                 'route' => 'seller.inhouse-order.index',
             ], [
@@ -30,7 +21,8 @@ class InhouseOrderDatabaseSeeder extends Seeder
                 'parent_id' => 153,
                 'name' => 'InHouse Order',
                 'type' => 2,
-                'status' => 1
+                'status' => 1,
+                'module' => 'MultiVendor'
             ]);
 
             $permissions = [
@@ -51,7 +43,8 @@ class InhouseOrderDatabaseSeeder extends Seeder
                     'module_id' => 11,
                     'name' => $permission['name'],
                     'type' => $permission['type'],
-                    'status' => 1
+                    'status' => 1,
+                    'module' => 'MultiVendor'
                 ]);
             }
 
@@ -69,18 +62,37 @@ class InhouseOrderDatabaseSeeder extends Seeder
         }
 
         // 3. Add to Backend Menu
-        $seller_menu_parent = DB::table('backendmenus')->where('id', 30)->first();
+        $seller_menu_parent = DB::table('backendmenus')->where('name', 'seller.Seller Order Manage')->first();
         if ($seller_menu_parent) {
             DB::table('backendmenus')->updateOrInsert([
                 'route' => 'seller.inhouse-order.index',
-                'parent_id' => 30,
             ], [
                 'name' => 'order.inhouse_orders',
                 'icon' => 'fas fa-shopping-cart',
+                'parent_id' => $seller_menu_parent->id,
                 'is_admin' => 0,
                 'is_seller' => 1,
-                'position' => 2
+                'position' => 2,
+                'module' => 'MultiVendor'
             ]);
+        }
+    }
+
+    public function down()
+    {
+        $inhouse_parent = Permission::where('route', 'seller.inhouse-order.index')->first();
+        if ($inhouse_parent) {
+            $ids = Permission::where('parent_id', $inhouse_parent->id)->pluck('id')->toArray();
+            $ids[] = $inhouse_parent->id;
+
+            DB::table('role_permission')->whereIn('permission_id', $ids)->delete();
+            Permission::whereIn('id', $ids)->delete();
+        }
+
+        $menu = DB::table('backendmenus')->where('route', 'seller.inhouse-order.index')->first();
+        if ($menu) {
+            DB::table('backendmenu_users')->where('backendmenu_id', $menu->id)->delete();
+            DB::table('backendmenus')->where('id', $menu->id)->delete();
         }
     }
 }

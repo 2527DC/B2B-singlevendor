@@ -20,10 +20,15 @@ class InhouseOrderRepository
 {
     use PickupLocation;
     public function getProducts(){
-
-        return SellerProduct::where('status', 1)->whereHas('product', function($q){
+        $products = SellerProduct::where('status', 1)->whereHas('product', function($q){
             return $q->where('is_physical', 1);
-        })->latest()->activeSeller()->get();
+        })->latest()->activeSeller();
+        
+        if(auth()->user()->role->type == 'seller'){
+            $products = $products->where('user_id', auth()->id());
+        }
+        
+        return $products->get();
     }
 
     public function getCountries(){
@@ -522,7 +527,13 @@ class InhouseOrderRepository
     }
 
     public function inhouseOrderList(){
-        return Order::where('order_type', 'inhouse_order')->latest();
+        $orders = Order::where('order_type', 'inhouse_order');
+        if(auth()->user()->role->type == 'seller'){
+            $orders = $orders->whereHas('packages', function($q){
+                $q->where('seller_id', auth()->id());
+            });
+        }
+        return $orders->latest();
     }
 
 }

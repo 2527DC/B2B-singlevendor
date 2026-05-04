@@ -99,6 +99,15 @@
                                 <h3>{{__('common.account_information')}}</h3>
                                 <table class="table table-borderless customer_view">
                                     <tr>
+                                        <td class="first_row_width">Seller Short Code</td>
+                                        <td>: <span class="ml-1"></span>
+                                            {{ $user->short_code ?? 'INV' }}
+                                            <a href="#" class="edit_short_code_btn ml-2" data-short-code="{{ $user->short_code }}" data-id="{{ $user->id }}">
+                                                <i class="ti-pencil"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <tr>
                                         <td class="first_row_width">{{ __('common.phone') }}</td>
                                         <td>: <span class="ml-1"></span>{{ getNumberTranslate(@$user->SellerAccount->seller_phone) }}</td>
                                     </tr>
@@ -530,6 +539,39 @@
             </div>
         </div>
     </section>
+     <div class="modal fade admin-query" id="ShortCode_Edit">
+        <div class="modal-dialog modal_800px modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Edit Seller Short Code</h4>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <i class="ti-close "></i>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <form action="{{ route('admin.update_short_code') }}" method="POST" id="short_code_EditForm">
+                        @csrf
+                        <div class="row">
+                            <input type="hidden" name="seller_id" id="short_code_seller_id" value="">
+                            <div class="col-xl-12">
+                                <div class="primary_input mb-25">
+                                    <label class="primary_input_label" for="">Short Code *</label>
+                                    <input name="short_code" id="input_short_code" class="primary_input_field" placeholder="Short Code (e.g., SDE)" type="text" value="" required>
+                                </div>
+                            </div>
+                            <div class="col-lg-12 text-center">
+                                <div class="d-flex justify-content-center pt_20">
+                                    <button type="submit" class="primary_btn_2"><i class="ti-check"></i>{{ __('common.update') }}</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
      <div class="modal fade admin-query" id="Commission_Edit">
         <div class="modal-dialog modal_800px modal-dialog-centered">
             <div class="modal-content">
@@ -627,6 +669,15 @@
                     $('#Commission_Edit').modal('show');
                     $('#seller_account_id').val(id);
                     $('.rate').val(rate);
+                });
+
+                $(document).on('click', '.edit_short_code_btn', function(event){
+                    event.preventDefault();
+                    let id = $(this).data('id');
+                    let short_code = $(this).data('short-code');
+                    $('#ShortCode_Edit').modal('show');
+                    $('#short_code_seller_id').val(id);
+                    $('#input_short_code').val(short_code);
                 });
 
                 $(document).on('click', '.trusted_seller_btn', function(event){

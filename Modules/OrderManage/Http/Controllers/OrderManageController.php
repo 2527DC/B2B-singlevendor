@@ -233,6 +233,9 @@ class OrderManageController extends Controller
             ->where('is_active', 1)
             ->get();
         
+        $cancelReasonRepo = new CancelReasonRepository;
+        $data['cancel_reasons'] = $cancelReasonRepo->getAll();
+        
         return view('ordermanage::order_manage.my_sale_details', $data);
     }
 
@@ -268,15 +271,23 @@ class OrderManageController extends Controller
             ]);
     
             $data['order'] = $this->ordermanageService->orderInfoUpdate($data, $id);
-    
+            
             if ($data['order'] === false) {
-    
                 Log::warning('Order update failed in service', [
                     'order_id' => $id,
                 ]);
-    
+
                 Toastr::warning(__('order.please_create_account_for_deposite_main_income_seller_income_product_wise_tax_and_gst_tax'));
                 return back();
+            }
+
+            // If delivery_status is provided and we are a seller, update our package too
+            if (auth()->user()->role->type == 'seller' && isset($data['delivery_status'])) {
+                $order = $this->ordermanageService->findOrderByID($id);
+                $package = $order->packages->where('seller_id', getParentSellerId())->first();
+                if ($package) {
+                    $this->ordermanageService->updateDeliveryStatus($request->only(['delivery_status', 'note']), $package->id);
+                }
             }
     
             Log::info('Sales info updated successfully', [

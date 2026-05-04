@@ -20,7 +20,6 @@ class Permission
             return $next($request);
         }
         $roles = app('permission_list');
-
         $role = $roles->where('id',auth()->user()->role_id)->first();
 
         if(".create" == substr($request->route()->getName(), -7)){

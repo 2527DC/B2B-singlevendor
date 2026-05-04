@@ -148,7 +148,7 @@
                             </div>
                             @php
                                 $seller_id = getParentSellerId();
-                                $order_packages = $order->packages->where('seller_id', $seller_id)->where('package_code', $package->package_code)->first();
+                                $order_packages = $package;
                                 $total_gst = 0;
                             @endphp
                             @if (file_exists(base_path().'/Modules/GST/') && (app('gst_config')['enable_gst'] == "gst" || app('gst_config')['enable_gst'] == "flat_tax"))
@@ -396,49 +396,84 @@
                 </div>
                 <div class="col-lg-4 student-details">
                     @if ($order->is_cancelled != 1 && $order_packages->is_cancelled != 1)
-                        @if (permissionCheck('order_manage.update_delivery_status'))
-                            <form action="{{ route('order_manage.update_delivery_status', $order_packages->id) }}" method="post">
-                                @csrf
-                                <div class="row white_box p-25 box_shadow_white mr-0 ml-0">
-                                    @if($order_packages->order->is_confirmed == 0)
-                                    <div class="col-lg-12">
-                                        <div class="primary_input">
-                                            <label class="primary_selectlabel alert alert-warning">
-                                                {{__('order.status_is_changable_after_confirmed_the_order')}}
-                                            </label>
-                                        </div>
-                                    </div>
-                                    @endif
-                                    <div class="col-lg-12 p-0">
-                                        <div class="primary_input mb-25">
-                                            <label class="primary_input_label" for=""> <strong>{{ __('order.delivery_status') }}</strong></label>
-                                            <select class="primary_select mb-25" name="delivery_status" id="delivery_status" {{$order_packages->order->is_confirmed == 0 ?'disabled':''}}>
-                                                @foreach ($processes as $key => $process)
-                                                    <option value="{{ $process->id }}" @if ($order_packages->delivery_status == $process->id) selected @endif>{{ $process->name }}</option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-12 p-0">
-                                        <div class="primary_input mb-25">
-                                            <label class="primary_input_label" for=""> <strong>{{ __('order.note') }}</strong> </label>
-                                            <textarea class="primary_textarea height_112 address" placeholder="{{ __('order.note') }}" name="note" spellcheck="false"></textarea>
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-12 p-0 text-center">
-                                        <button class="primary_btn_2"><i class="ti-check"></i>{{ __('common.update') }}
-                                        </button>
-                                    </div>
-                                </div>
-                            </form>
-                        @endif
-
-                        {{-- Driver Assignment --}}
-
-                            <div class="row white_box p-25 box_shadow_white mr-0 ml-0 mt-2">
+                        <form action="{{ route('order_manage.order_update_info_mine', $order->id) }}" method="post">
+                            @csrf
+                            <div class="row white_box p-25 ml-0 mr-0 box_shadow_white">
                                 <div class="col-lg-12 p-0">
                                     <div class="primary_input mb-25">
-                                        <label class="primary_input_label" for=""> <strong>{{ __('order.assign_driver') }}</strong></label>
+                                        <label class="primary_input_label" for="">
+                                            <strong>{{ __('order.order_confirmation') }}</strong> </label>
+                                        <select class="primary_select mb-25" name="is_confirmed" id="is_confirmed">
+                                            @if ($order->is_confirmed == 1 && $order->is_completed == 1)
+                                                <option value="1" @if ($order->is_confirmed == 1) selected @endif>{{ __('order.confirmed') }}
+                                                </option>
+                                            @elseif($order->is_confirmed == 1 && $order->is_completed == 0)
+                                                <option value="1" @if ($order->is_confirmed == 1) selected @endif>{{ __('order.confirmed') }}
+                                                </option>
+                                                <option value="2" @if ($order->is_confirmed == 2) selected @endif>{{ __('order.declined') }}
+                                                </option>
+                                            @else
+                                                <option value="0" @if ($order->is_confirmed == 0) selected @endif>{{ __('order.pending') }}
+                                                </option>
+                                                <option value="1" @if ($order->is_confirmed == 1) selected @endif>{{ __('order.confirmed') }}
+                                                </option>
+                                                <option value="2" @if ($order->is_confirmed == 2) selected @endif>{{ __('order.declined') }}
+                                                </option>
+                                            @endif
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-12 p-0 d-none" id="cancel_reason_selector">
+                                    <div class="primary_input mb-25">
+                                        <label class="primary_input_label" for="">
+                                            <strong>{{ __('common.cancel_reason') }}</strong> </label>
+                                            <select class="primary_select mb-25" name="cancel_reason_id" id="cancel_reason_id">
+                                                <option value="" selected> {{ __('common.select_cancel_reason') }}</option>
+                                                @foreach($cancel_reasons as $reason)
+                                                 <option value="{{$reason->id}}">{{ $reason->name }}</option>
+                                                @endforeach
+                                            </select>
+                                    </div>
+                                </div>
+                                <div class="col-lg-12 p-0" id="is_paid_div">
+                                    <div class="primary_input mb-25">
+                                        <label class="primary_input_label" for="">
+                                            <strong>{{ __('order.payment_status') }}</strong> </label>
+                                        <select class="primary_select mb-25" name="is_paid" id="is_paid">
+                                            <option value="0" @if ($order->is_paid == 0) selected @endif>{{ __('order.pending') }}</option>
+                                            <option value="1" @if ($order->is_paid == 1) selected @endif>{{ __('order.paid') }}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-lg-12 p-0" id='is_completed_div'>
+                                    <div class="primary_input mb-25">
+                                        <label class="primary_input_label" for="">
+                                            <strong>{{ __('order.is_completed') }}</strong> </label>
+                                        <select class="primary_select mb-25" name="is_completed" id="is_completed">
+                                            <option value="0" @if ($order->is_completed == 0) selected @endif>{{ __('order.pending') }}</option>
+                                            <option value="1" @if ($order->is_completed == 1) selected @endif>{{ __('order.complete') }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-lg-12 p-0" id='delivery_status_div'>
+                                    <div class="primary_input mb-25">
+                                        <label class="primary_input_label" for="">
+                                            <strong>{{ __('order.delivery_status') }}</strong></label>
+                                        <select class="primary_select mb-25" name="delivery_status" id="delivery_status" {{$order->is_confirmed == 0 ?'disabled':''}}>
+                                            @foreach ($processes as $key => $process)
+                                                <option value="{{ $process->id }}" @if ($order_packages->delivery_status == $process->id) selected @endif>{{ $process->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-12 p-0" id='driver_assignment_div'>
+                                    <div class="primary_input mb-25">
+                                        <label class="primary_input_label" for="">
+                                            <strong>{{ __('order.assign_driver') }}</strong></label>
                                         <select class="primary_select mb-25" name="driver_id" id="order_driver_id">
                                             <option value="">Select Driver</option>
                                             @foreach ($drivers as $driver)
@@ -449,12 +484,20 @@
                                         </select>
                                     </div>
                                 </div>
+
+                                <div class="col-lg-12 p-0">
+                                    <div class="primary_input mb-25">
+                                        <label class="primary_input_label" for=""> <strong>{{ __('order.note') }}</strong> </label>
+                                        <textarea class="primary_textarea height_112 address" placeholder="{{ __('order.note') }}" name="note" spellcheck="false"></textarea>
+                                    </div>
+                                </div>
+
                                 <div class="col-lg-12 p-0 text-center">
-                                    <button type="button" class="primary_btn_2" id="assign_driver_btn">
-                                        <i class="ti-check"></i>{{ __('order.assign_driver') }}
+                                    <button class="primary_btn_2"><i class="ti-check"></i>{{ __('common.update') }}
                                     </button>
                                 </div>
                             </div>
+                        </form>
 
 
                         <div class="row mt-2 mr-0 ml-0 white_box p-25 box_shadow_white">
@@ -581,38 +624,28 @@
                     }, 15000);
                 }
 
-                // Driver assignment for order detail page
-                $('#assign_driver_btn').on('click', function(){
-                    var driverId = $('#order_driver_id').val();
-                    if(driverId == '') driverId = null;
-                    var orderId = {{ $order->id }};
-
-                    var csrfToken = $('meta[name="csrf-token"]').attr('content') || $('meta[name="_token"]').attr('content');
-                    $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': csrfToken } });
-                    $.ajax({
-                        url: "/ordermanage/order/" + orderId + "/assign-driver",
-                        method: 'POST',
-                        data: { driver_id: driverId },
-                        beforeSend: function(){
-                            $('#assign_driver_btn').prop('disabled', true);
-                        },
-                        success: function(res){
-                            toastr.success(res.message || 'Driver assigned successfully', 'Success');
-                            $('#assign_driver_btn').prop('disabled', false);
-                            setTimeout(function(){
-                                window.location.reload();
-                            }, 1000);
-                        },
-                        error: function(err){
-                            var msg = 'Operation failed';
-                            if(err.responseJSON && err.responseJSON.message) {
-                                msg = err.responseJSON.message;
-                            }
-                            toastr.error(msg, 'Error');
-                            $('#assign_driver_btn').prop('disabled', false);
-                        }
-                    });
+                $(document).on('change','#is_confirmed',function(){
+                    let selected_status = $(this).val();
+                    if(selected_status == 2){
+                        $('#cancel_reason_selector').removeClass('d-none');
+                        $("#is_paid_div").addClass('d-none');
+                        $("#is_completed_div").addClass('d-none');
+                        $("#delivery_status_div").addClass('d-none');
+                    }else{
+                        $('#cancel_reason_selector').addClass('d-none');
+                        $("#is_paid_div").removeClass('d-none');
+                        $("#is_completed_div").removeClass('d-none');
+                        $("#delivery_status_div").removeClass('d-none');
+                    }
                 });
+
+                // Initial check
+                if($('#is_confirmed').val() == 2){
+                    $('#cancel_reason_selector').removeClass('d-none');
+                    $("#is_paid_div").addClass('d-none');
+                    $("#is_completed_div").addClass('d-none');
+                    $("#delivery_status_div").addClass('d-none');
+                }
             });
         })(jQuery);
 

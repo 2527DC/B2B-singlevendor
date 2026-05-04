@@ -19,6 +19,7 @@ Route::prefix('ordermanage')->middleware(['auth','seller'])->group(function () {
     Route::get('/my-sales-list/get-data', 'OrderManageController@my_sales_get_data')->name('order_manage.my_sales_get_data')->middleware(['seller']);
     Route::get('/my-sales-details/{id}', 'OrderManageController@my_sale_show')->name('order_manage.show_details_mine')->middleware(['seller']);
     Route::get('/my-sales-details-refund/{id}', 'OrderManageController@my_sale_show_for_refund')->name('order_manage.my_sale_show_for_refund')->middleware(['seller']);
+    Route::post('/my-sales-info-update/{id}', 'OrderManageController@sales_info_update')->name('order_manage.order_update_info_mine')->middleware(['seller']);
     Route::get('/sales-details-print/{id}', 'OrderManageController@globalPrint')->name('order_manage.print_order_details')->middleware(['seller']);
     Route::get('/my-sales-details-print/{id}', 'OrderManageController@personalPrint')->name('my_order_manage.print_order_details')->middleware(['seller']);
     Route::post('/sales-info-update-delivery/{id}', 'OrderManageController@update_delivery')->name('order_manage.update_delivery_status')->middleware(['seller']);

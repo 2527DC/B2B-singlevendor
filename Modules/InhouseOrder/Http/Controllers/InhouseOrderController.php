@@ -74,9 +74,20 @@ class InhouseOrderController extends Controller
 
                 })
                 ->addColumn('total_qty', function($order){
+                    if(auth()->user()->role->type == 'seller'){
+                        return getNumberTranslate($order->packages->where('seller_id', auth()->id())->sum('number_of_product'));
+                    }
                     return getNumberTranslate($order->packages->sum('number_of_product'));
                 })
                 ->addColumn('total_amount',function($order){
+                    if(auth()->user()->role->type == 'seller'){
+                        $package = $order->packages->where('seller_id', auth()->id())->first();
+                        $total = 0;
+                        if($package){
+                            $total = $package->products->sum('total_price') + $package->shipping_cost + $package->tax_amount;
+                        }
+                        return single_price($total);
+                    }
                     return single_price($order->grand_total);
 
                 })
@@ -135,6 +146,9 @@ class InhouseOrderController extends Controller
             }
             LogActivity::successLog('order created successful.');
             Toastr::success(__('common.created_successfully'),__('common.success'));
+            if(auth()->user()->role->type == 'seller'){
+                return redirect()->route('seller.inhouse-order.index');
+            }
             return redirect()->route('admin.inhouse-order.index');
 
         }catch(Exception $e){

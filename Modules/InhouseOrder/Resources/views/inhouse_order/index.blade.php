@@ -1,4 +1,7 @@
 @extends('backEnd.master')
+@php
+    $route_prefix = auth()->user()->role->type == 'seller' ? 'seller' : 'admin';
+@endphp
 
 @section('styles')
 <link rel="stylesheet" href="{{asset(asset_path('modules/inhouseorder/css/create.css'))}}" />
@@ -47,9 +50,9 @@
                                         </li>
                                     @endif
 
-                                    @if (permissionCheck('admin.inhouse-order.create'))
+                                    @if (permissionCheck($route_prefix . '.inhouse-order.create'))
                                         <li class="nav-item mt-10">
-                                            <a class="primary-btn radius_30px mr-10 fix-gr-bg add_new_product" href="{{ route('admin.inhouse-order.create') }}"><i class="ti-plus"></i>{{ __('order.create_new_order') }}</a>
+                                            <a class="primary-btn radius_30px mr-10 fix-gr-bg add_new_product" href="{{ route($route_prefix . '.inhouse-order.create') }}"><i class="ti-plus"></i>{{ __('order.create_new_order') }}</a>
                                         </li>
                                     @endif
 
@@ -216,7 +219,7 @@
                     serverSide: true,
                     stateSave: true,
                     "ajax": ( {
-                        url: "{{ route('admin.inhouse-order.get-data') }}" + '?table=pending_payment'
+                        url: "{{ route($route_prefix . '.inhouse-order.get-data') }}" + '?table=pending_payment'
                     }),
                     "initComplete":function(json){
 
@@ -319,7 +322,7 @@
                     serverSide: true,
                     stateSave: true,
                     "ajax": ( {
-                        url: "{{ route('admin.inhouse-order.get-data') }}" + '?table=confirmed'
+                        url: "{{ route($route_prefix . '.inhouse-order.get-data') }}" + '?table=confirmed'
                     }),
                     "initComplete":function(json){
 
@@ -422,7 +425,7 @@
                     serverSide: true,
                     stateSave: true,
                     "ajax": ( {
-                        url: "{{ route('admin.inhouse-order.get-data') }}" + '?table=completed'
+                        url: "{{ route($route_prefix . '.inhouse-order.get-data') }}" + '?table=completed'
                     }),
                     "initComplete":function(json){
 
@@ -525,7 +528,7 @@
                     serverSide: true,
                     stateSave: true,
                     "ajax": ( {
-                        url: "{{ route('admin.inhouse-order.get-data') }}" + '?table=canceled'
+                        url: "{{ route($route_prefix . '.inhouse-order.get-data') }}" + '?table=canceled'
                     }),
                     "initComplete":function(json){
 

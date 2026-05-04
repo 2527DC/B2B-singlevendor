@@ -1,4 +1,7 @@
 @extends('backEnd.master')
+@php
+    $route_prefix = auth()->user()->role->type == 'seller' ? 'seller' : 'admin';
+@endphp
 @section('styles')
     <link rel="stylesheet" href="{{asset(asset_path('modules/inhouseorder/css/create.css'))}}">
     <link rel="stylesheet" href="{{asset(asset_path('backend/css/cart_modal.css'))}}"/>
@@ -15,7 +18,7 @@
         </div>
         <div id="formHtml" class="col-lg-12">
             <div class="white-box">
-                <form action="{{route('admin.inhouse-order.store')}}" id="add_form" method="POST" enctype="multipart/form-data">
+                <form action="{{route($route_prefix . '.inhouse-order.store')}}" id="add_form" method="POST" enctype="multipart/form-data">
                     @csrf
                     <div class="add-visitor">
                         <div class="row">
@@ -81,11 +84,12 @@
             "use strict";
             $(document).ready(function(){
                 let base_url = $('#url').val();
+                let route_prefix = "{{$route_prefix}}";
                 $(document).on('change', '#product', function(event){
                     let product_id = $('#product').val();
                     $('#pre-loader').removeClass('d-none');
                     if(product_id){
-                        let url = base_url + '/admin/in-house-order/get-product-variant?product_id=' + product_id;
+                        let url = base_url + '/' + route_prefix + '/in-house-order/get-product-variant?product_id=' + product_id;
                         $.get(url, function(data){
                             if(data.productType == 'variant_product'){
                                 $('#productVariantDiv').html(data.modalData);
@@ -232,7 +236,7 @@
                             return false;
                         }
                     }
-                    $.post("{{route('admin.inhouse-order.save_address')}}", data, function(response){
+                    $.post("{{route($route_prefix . '.inhouse-order.save_address')}}", data, function(response){
                         $('#pre-loader').addClass('d-none');
                         if(response.PackageData){
                             $('#PackageDiv').html(response.PackageData);
@@ -245,7 +249,7 @@
                 $(document).on('click', '#resetAddress', function(event){
                     event.preventDefault();
                     $('#pre-loader').removeClass('d-none');
-                    let url = base_url + '/admin/in-house-order/reset-address';
+                    let url = base_url + '/' + route_prefix + '/in-house-order/reset-address';
                     $.get(url, function(response){
                         $('#pre-loader').addClass('d-none');
                         if(response.PackageData){
@@ -283,7 +287,7 @@
                     formData.append('type', type);
                     $('#pre-loader').removeClass('d-none');
                     $.ajax({
-                        url: "{{route('admin.inhouse-order.add-to-cart')}}",
+                        url: "{{route($route_prefix . '.inhouse-order.add-to-cart')}}",
                         type: "POST",
                         cache: false,
                         contentType: false,
@@ -322,7 +326,7 @@
                         'seller_id' : seller_id,
                         'method_id' : method_id
                     }
-                    $.post("{{route('admin.inhouse-order.change-shipping-method')}}", data, function(response){
+                    $.post("{{route($route_prefix . '.inhouse-order.change-shipping-method')}}", data, function(response){
                         if(response.PackageData){
                             $('#PackageDiv').html(response.PackageData);
                             $('.shipping_method').niceSelect();
@@ -343,7 +347,7 @@
                         'product_id' : product_id,
                         'qty' : qty
                     }
-                    $.post("{{route('admin.inhouse-order.change-qty')}}", data, function(response){
+                    $.post("{{route($route_prefix . '.inhouse-order.change-qty')}}", data, function(response){
                         if(response.PackageData){
                             $('#PackageDiv').html(response.PackageData);
                             $('.shipping_method').niceSelect();
@@ -372,7 +376,7 @@
                         }
                         $('#pre-loader').removeClass('d-none');
                         $('#deleteProductModal').modal('hide');
-                        $.post("{{route('admin.inhouse-order.delete')}}",data, function(response){
+                        $.post("{{route($route_prefix . '.inhouse-order.delete')}}",data, function(response){
                             if(response.PackageData){
                                 $('#PackageDiv').html(response.PackageData);
                                 $('.shipping_method').niceSelect();

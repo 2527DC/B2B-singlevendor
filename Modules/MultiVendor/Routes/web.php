@@ -34,6 +34,7 @@ Route::middleware(['auth','admin'])->prefix('admin')->group(function() {
     Route::get('/merchant/{id}/details/get-product', 'MerchantController@getProduct')->name('admin.merchant_show_details.get-product');
     Route::get('/profile-edit/{id}','MerchantController@edit')->name('admin.merchant_edit_profile')->middleware(['permission']);
     Route::post('/commission-update','MerchantController@update_commission')->name('admin.update_commission')->middleware(['permission','prohibited_demo_mode']);
+    Route::post('/merchant-short-code-update', 'MerchantController@update_short_code')->name('admin.update_short_code')->middleware('prohibited_demo_mode');
     Route::get('/change-trusted-status/{id}','MerchantController@change_merchant_trusted_status')->name('admin.change_merchant_trusted_status')->middleware(['permission','prohibited_demo_mode']);
     Route::get('/update-status/{userId}','MerchantController@update_status')->name('admin.update_status')->middleware(['prohibited_demo_mode']);
     Route::post('/change-seller-password-store','MerchantController@changeSellerPasswordStore')->name('admin.change-seller-password-store')->middleware(['prohibited_demo_mode']);
