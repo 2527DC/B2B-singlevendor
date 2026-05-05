@@ -11,14 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('invoices', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('order_package_id')->nullable();
-            $table->unsignedBigInteger('seller_id')->nullable();
-            $table->integer('invoice_sequence')->default(0);
-            $table->string('invoice_number')->nullable();
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('invoices')) {
+            Schema::create('invoices', function (Blueprint $table) {
+                $table->id();
+                $table->unsignedBigInteger('order_package_id')->nullable();
+                $table->unsignedBigInteger('seller_id')->nullable();
+                $table->integer('invoice_sequence')->default(0);
+                $table->string('invoice_number')->nullable();
+                $table->timestamps();
+            });
+        }
     }
 
     /**

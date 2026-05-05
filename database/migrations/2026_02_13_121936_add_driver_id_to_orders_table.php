@@ -11,10 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('orders', function (Blueprint $table) {
-            $table->unsignedBigInteger('driver_id')->nullable()->after('customer_id');
-            $table->foreign('driver_id')->references('id')->on('drivers')->onDelete('set null');
-        });
+        if (!Schema::hasColumn('orders', 'driver_id')) {
+            Schema::table('orders', function (Blueprint $table) {
+                $table->unsignedBigInteger('driver_id')->nullable()->after('customer_id');
+                $table->foreign('driver_id')->references('id')->on('drivers')->onDelete('set null');
+            });
+        }
     }
 
     /**

@@ -12,9 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('refund_requests', function (Blueprint $table) {
-            $table->bigInteger('driver_id')->nullable()->after('customer_id');
-            $table->tinyInteger('return_status')->default(0)->after('driver_id');
-            $table->timestamp('assigned_at')->nullable()->after('return_status');
+            if (!Schema::hasColumn('refund_requests', 'driver_id')) {
+                $table->bigInteger('driver_id')->nullable()->after('customer_id');
+            }
+            if (!Schema::hasColumn('refund_requests', 'return_status')) {
+                $table->tinyInteger('return_status')->default(0)->after('driver_id');
+            }
+            if (!Schema::hasColumn('refund_requests', 'assigned_at')) {
+                $table->timestamp('assigned_at')->nullable()->after('return_status');
+            }
         });
     }
 

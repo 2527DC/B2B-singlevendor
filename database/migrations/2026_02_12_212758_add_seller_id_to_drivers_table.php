@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('drivers', function (Blueprint $table) {
-            $table->bigInteger('seller_id')->nullable()->after('id');
-        });
+        if (!Schema::hasColumn('drivers', 'seller_id')) {
+            Schema::table('drivers', function (Blueprint $table) {
+                $table->bigInteger('seller_id')->nullable()->after('id');
+            });
+        }
     }
 
     /**

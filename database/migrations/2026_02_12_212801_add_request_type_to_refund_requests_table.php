@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('refund_requests', function (Blueprint $table) {
-            $table->tinyInteger('request_type')->default(1)->comment('1: Customer Refund, 2: Driver Return')->after('id');
-        });
+        if (!Schema::hasColumn('refund_requests', 'request_type')) {
+            Schema::table('refund_requests', function (Blueprint $table) {
+                $table->tinyInteger('request_type')->default(1)->comment('1: Customer Refund, 2: Driver Return')->after('id');
+            });
+        }
     }
 
     /**

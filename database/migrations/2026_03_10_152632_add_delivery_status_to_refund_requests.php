@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('refund_requests', function (Blueprint $table) {
-            $table->string('delivery_status')->default('processing')->after('driver_id')->nullable();
-        });
+        if (!Schema::hasColumn('refund_requests', 'delivery_status')) {
+            Schema::table('refund_requests', function (Blueprint $table) {
+                $table->string('delivery_status')->default('processing')->after('driver_id')->nullable();
+            });
+        }
     }
 
     /**

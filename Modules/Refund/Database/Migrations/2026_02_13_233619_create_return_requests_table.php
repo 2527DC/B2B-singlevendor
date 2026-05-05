@@ -13,20 +13,22 @@ class CreateReturnRequestsTable extends Migration
      */
     public function up()
     {
-        Schema::create('return_requests', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('order_id');
-            $table->unsignedBigInteger('package_id')->nullable();
-            $table->unsignedBigInteger('customer_id');
-            $table->unsignedBigInteger('seller_id');
-            $table->unsignedBigInteger('driver_id')->nullable();
-            $table->string('status')->default('pending'); // pending, assigned, picked_up, at_warehouse, completed, cancelled
-            $table->string('return_type'); // delivery_failure, customer_return
-            $table->string('reason', 255)->nullable();
-            $table->text('note')->nullable();
-            $table->text('pick_up_address')->nullable();
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('return_requests')) {
+            Schema::create('return_requests', function (Blueprint $table) {
+                $table->id();
+                $table->unsignedBigInteger('order_id');
+                $table->unsignedBigInteger('package_id')->nullable();
+                $table->unsignedBigInteger('customer_id');
+                $table->unsignedBigInteger('seller_id');
+                $table->unsignedBigInteger('driver_id')->nullable();
+                $table->string('status')->default('pending'); // pending, assigned, picked_up, at_warehouse, completed, cancelled
+                $table->string('return_type'); // delivery_failure, customer_return
+                $table->string('reason', 255)->nullable();
+                $table->text('note')->nullable();
+                $table->text('pick_up_address')->nullable();
+                $table->timestamps();
+            });
+        }
     }
 
     /**
