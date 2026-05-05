@@ -176,6 +176,7 @@ return [
     'basic_info' => 'Basic Info',
     'select_one' => 'Select One',
     'password' => 'Password',
+    'new_password' => 'New Password',
     'profile_picture' => 'Profile Picture',
     'opening_balance' => 'Opening Balance',
     'email_or_phone'  => 'Email or Phone',

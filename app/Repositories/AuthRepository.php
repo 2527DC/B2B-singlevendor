@@ -40,6 +40,7 @@ class AuthRepository{
             'document'      => $data['document_path'] ?? null, // ✅ Add document path
             'store_image'   => $data['store_image'] ?? null,   // ✅ Add store image path
             'warehouse_id'  => $data['warehouse_id'] ?? null,  // ✅ Add warehouse_id
+            'gst_number'    => $data['gst_number'] ?? null,
         ]);
     
         // User Notification Setting

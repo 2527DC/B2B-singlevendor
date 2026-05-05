@@ -507,6 +507,7 @@ public function register(Request $request)
             'document_path' => $documentPath,                  // Add the document path
             'referral_code' => $request->input('referral_code'),
             'warehouse_id'  => $request->input('warehouse_id'), // warehouse_id (added via SQL, registered here)
+            'gst_number'    => $request->input('gst_number'),
         ];
 
         // Check if user already exists by phone or email

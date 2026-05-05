@@ -18,7 +18,7 @@
                         <div class="alert alert-danger">
                             <ul>
                                 @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
+                                    <li>{{ is_array($error) ? implode(', ', $error) : $error }}</li>
                                 @endforeach
                             </ul>
                         </div>
@@ -31,7 +31,7 @@
                                     <thead>
                                         <tr>
                                             <th scope="col">{{ __('ID') }}</th>
-                                            <th scope="col">{{ __('Name') }}</th>
+                                            <th scope="col">{{ __('common.name') }}</th>
                                             <th scope="col">{{ __('Phone') }}</th>
                                             <th scope="col">{{ __('Vehicle No') }}</th>
                                             <th scope="col">{{ __('Assigned Seller') }}</th>
@@ -43,10 +43,10 @@
                                         @foreach($drivers as $driver)
                                         <tr>
                                             <th>{{ $loop->iteration }}</th>
-                                            <td>{{ $driver->name }}</td>
-                                            <td>{{ $driver->phone }}</td>
-                                            <td>{{ $driver->vehicle_number }}</td>
-                                            <td>{{ @$driver->seller->first_name }}</td>
+                                            <td>{{ is_array($driver->name) ? implode(', ', $driver->name) : $driver->name }}</td>
+                                            <td>{{ is_array($driver->phone) ? implode(', ', $driver->phone) : $driver->phone }}</td>
+                                            <td>{{ is_array($driver->vehicle_number) ? implode(', ', $driver->vehicle_number) : $driver->vehicle_number }}</td>
+                                            <td>{{ $driver->seller ? (is_array($driver->seller->first_name) ? implode(', ', $driver->seller->first_name) : $driver->seller->first_name) : '' }}</td>
                                             <td>
                                                 @php
                                                     $isActive = isset($driver->is_active) && (int)$driver->is_active === 1;
@@ -67,17 +67,17 @@
                                                         aria-labelledby="dropdownMenu2">
                                                         <a class="dropdown-item edit_driver"
                                                             data-driver-id="{{ $driver->id }}"
-                                                            data-driver-name="{{ $driver->name }}"
-                                                            data-driver-phone="{{ $driver->phone }}"
-                                                            data-driver-vehicle-number="{{ $driver->vehicle_number }}"
+                                                            data-driver-name="{{ is_array($driver->name) ? implode(', ', $driver->name) : $driver->name }}"
+                                                            data-driver-phone="{{ is_array($driver->phone) ? implode(', ', $driver->phone) : $driver->phone }}"
+                                                            data-driver-vehicle-number="{{ is_array($driver->vehicle_number) ? implode(', ', $driver->vehicle_number) : $driver->vehicle_number }}"
                                                             data-driver-seller-id="{{ $driver->seller_id }}"
                                                             data-driver-is-active="{{ isset($driver->is_active) ? (int)$driver->is_active : 1 }}"
                                                             >{{__('Edit')}}</a>
                                                         
                                                         <a class="dropdown-item reset_password"
                                                             data-driver-id="{{ $driver->id }}"
-                                                            data-driver-name="{{ $driver->name }}"
-                                                            >{{__('Reset Password')}}</a>
+                                                            data-driver-name="{{ is_array($driver->name) ? implode(', ', $driver->name) : $driver->name }}"
+                                                            >{{__('common.reset_password')}}</a>
 
                                                         <a class="dropdown-item delete_driver" 
                                                            data-id="{{ $driver->id }}"
@@ -114,8 +114,8 @@
                         <div class="row">
                             <div class="col-xl-12">
                                 <div class="primary_input mb-25">
-                                    <label class="primary_input_label" for="name">{{ __('Name') }} <span class="text-danger">*</span></label>
-                                    <input name="name" class="primary_input_field name" id="name" placeholder="{{ __('Name') }}" type="text" required>
+                                    <label class="primary_input_label" for="name">{{ __('common.name') }} <span class="text-danger">*</span></label>
+                                    <input name="name" class="primary_input_field name" id="name" placeholder="{{ __('common.name') }}" type="text" required>
                                 </div>
                             </div>
                             <div class="col-xl-12">
@@ -136,15 +136,15 @@
                                     <select name="seller_id" class="form-control mb-25" id="create_seller_id">
                                         <option value="">{{ __('Select Seller') }}</option>
                                         @foreach($sellers as $seller)
-                                            <option value="{{ $seller->id }}">{{ $seller->first_name }} {{ $seller->last_name }} ({{ $seller->email }})</option>
+                                            <option value="{{ $seller->id }}">{{ is_array($seller->first_name) ? implode(' ', (array)$seller->first_name) : $seller->first_name }} {{ is_array($seller->last_name) ? implode(' ', (array)$seller->last_name) : $seller->last_name }} ({{ is_array($seller->email) ? implode(' ', (array)$seller->email) : $seller->email }})</option>
                                         @endforeach
                                     </select>
                                 </div>
                             </div>
                              <div class="col-xl-12">
                                 <div class="primary_input mb-25">
-                                    <label class="primary_input_label" for="password">{{ __('Password') }} <span class="text-danger">*</span></label>
-                                    <input name="password" class="primary_input_field name" id="password" placeholder="{{ __('Password') }}" type="password" required>
+                                    <label class="primary_input_label" for="password">{{ __('common.password') }} <span class="text-danger">*</span></label>
+                                    <input name="password" class="primary_input_field name" id="password" placeholder="{{ __('common.password') }}" type="password" required>
                                 </div>
                             </div>
                             <div class="col-xl-12">
@@ -188,8 +188,8 @@
                         <div class="row">
                             <div class="col-xl-12">
                                 <div class="primary_input mb-25">
-                                    <label class="primary_input_label" for="edit_name">{{ __('Name') }} <span class="text-danger">*</span></label>
-                                    <input name="name" class="primary_input_field name" id="edit_name" placeholder="{{ __('Name') }}" type="text" required>
+                                    <label class="primary_input_label" for="edit_name">{{ __('common.name') }} <span class="text-danger">*</span></label>
+                                    <input name="name" class="primary_input_field name" id="edit_name" placeholder="{{ __('common.name') }}" type="text" required>
                                 </div>
                             </div>
                             <div class="col-xl-12">
@@ -210,7 +210,7 @@
                                     <select name="seller_id" class="form-control mb-25" id="edit_seller_id">
                                         <option value="">{{ __('Select Seller') }}</option>
                                         @foreach($sellers as $seller)
-                                            <option value="{{ $seller->id }}">{{ $seller->first_name }} {{ $seller->last_name }} ({{ $seller->email }})</option>
+                                            <option value="{{ $seller->id }}">{{ is_array($seller->first_name) ? implode(' ', (array)$seller->first_name) : $seller->first_name }} {{ is_array($seller->last_name) ? implode(' ', (array)$seller->last_name) : $seller->last_name }} ({{ is_array($seller->email) ? implode(' ', (array)$seller->email) : $seller->email }})</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -243,7 +243,7 @@
         <div class="modal-dialog modal_800px modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title">{{ __('Reset Password') }}</h4>
+                    <h4 class="modal-title">{{ __('common.reset_password') }}</h4>
                     <button type="button" class="close" data-dismiss="modal">
                         <i class="ti-close "></i>
                     </button>
@@ -256,20 +256,20 @@
                         <div class="row">
                             <div class="col-xl-12">
                                 <div class="primary_input mb-25">
-                                    <label class="primary_input_label" for="new_password">{{ __('New Password') }} <span class="text-danger">*</span></label>
-                                    <input name="new_password" class="primary_input_field name" id="new_password" placeholder="{{ __('New Password') }}" type="password" required>
+                                    <label class="primary_input_label" for="new_password">{{ __('common.new_password') }} <span class="text-danger">*</span></label>
+                                    <input name="new_password" class="primary_input_field name" id="new_password" placeholder="{{ __('common.new_password') }}" type="password" required>
                                 </div>
                             </div>
                             <div class="col-xl-12">
                                 <div class="primary_input mb-25">
-                                    <label class="primary_input_label" for="confirm_password">{{ __('Confirm Password') }} <span class="text-danger">*</span></label>
-                                    <input name="new_password_confirmation" class="primary_input_field name" id="confirm_password" placeholder="{{ __('Confirm Password') }}" type="password" required>
+                                    <label class="primary_input_label" for="confirm_password">{{ __('common.confirm_password') }} <span class="text-danger">*</span></label>
+                                    <input name="new_password_confirmation" class="primary_input_field name" id="confirm_password" placeholder="{{ __('common.confirm_password') }}" type="password" required>
                                 </div>
                             </div>
                             <div class="col-lg-12 text-center">
                                 <div class="d-flex justify-content-center pt_20">
                                     <button type="submit" class="primary-btn semi_large2 fix-gr-bg">
-                                        <i class="ti-check"></i>{{ __('Reset Password') }}
+                                        <i class="ti-check"></i>{{ __('common.reset_password') }}
                                     </button>
                                 </div>
                             </div>

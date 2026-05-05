@@ -399,6 +399,14 @@
                                                     onblur="this.placeholder = '{{__('amazy.Min. 8 Character')}}'"
                                                     class="primary_input3 radius_5px" type="password">
                                             </div>
+                                            <div class="col-12 mb_20">
+                                                <label class="primary_label2">GST Number (Optional)</label>
+                                                <input name="gst_number" id="gst_number" value="{{ old('gst_number') }}"
+                                                    placeholder="Enter GST Number" onfocus="this.placeholder = ''"
+                                                    onblur="this.placeholder = 'Enter GST Number'"
+                                                    class="primary_input3 radius_5px" type="text">
+                                                <span class="text-danger">{{ $errors->first('gst_number') }}</span>
+                                            </div>
 
                                             <!-- ── Warehouse Selection ── -->
                                             <div class="col-12 mb_20">

@@ -49,6 +49,7 @@ class CustomerRepository
              // ✅ ADD THESE TWO LINES
             'store_name' => $data['store_name'],
             'store_image' => $data['store_image'] ?? null,
+            'gst_number' => isset($data['gst_number']) && $data['gst_number'] != 'NA' ? $data['gst_number'] : null,
 
             'document'   => $data['document'] ?? null,
             'verify_code' => sha1(time()),
@@ -101,6 +102,7 @@ class CustomerRepository
             'phone' => isset($phone) ? $phone : NULL,
             'store_name' => $data['store_name'],
             'store_image' => $data['store_image'] ?? $user->store_image,
+            'gst_number' => isset($data['gst_number']) && $data['gst_number'] != 'NA' ? $data['gst_number'] : null,
             'document'   => $data['document'] ?? $user->document,
             'password' => ($data['password'] != null)?Hash::make($data['password']):$user->password,
             'is_active' => $data['status'],

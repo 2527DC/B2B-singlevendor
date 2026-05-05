@@ -181,6 +181,7 @@ class RegisterController extends Controller
             // 'document_type' => $data['document_type'],
             'document' => $documentPath,
             'warehouse_id' => $data['warehouse_id'],
+            'gst_number' => $data['gst_number'] ?? null,
 
             'others' => $this->othersFieldValue($c_data),
             'currency_id' => app('general_setting')->currency,

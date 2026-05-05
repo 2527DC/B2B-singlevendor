@@ -168,7 +168,8 @@ class CustomerController extends Controller
             'password' => 'required|confirmed|min:8',
             'referral_code' => ['sometimes', 'nullable', Rule::exists('referral_codes', 'referral_code')->where('status', 1)],
             'status' => 'required',
-            'warehouse_id' => 'required'
+            'warehouse_id' => 'required',
+            'gst_number' => 'nullable|string|max:255'
         ]);
 
         try {
@@ -236,7 +237,8 @@ class CustomerController extends Controller
             'document' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
             'password' => 'sometimes|nullable|confirmed|min:8',
             'status' => 'required',
-            'warehouse_id' => 'required'
+            'warehouse_id' => 'required',
+            'gst_number' => 'nullable|string|max:255'
         ]);
         try {
             $data = $request->except('_token');

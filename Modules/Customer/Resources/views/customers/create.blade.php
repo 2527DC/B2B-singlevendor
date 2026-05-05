@@ -100,6 +100,16 @@
                                     </div>
                                 </div>
 
+                                <div class="col-xl-4">
+                                    <div class="primary_input mb-25">
+                                        <label class="primary_input_label" for="gst_number">GST Number</label>
+                                        <input name="gst_number" id="gst_number" class="primary_input_field"
+                                            placeholder="GST Number" type="text"
+                                            value="{{ old('gst_number', 'NA') }}">
+                                        <span class="text-danger">{{ $errors->first('gst_number') }}</span>
+                                    </div>
+                                </div>
+
                                 <!-- Store Image Upload -->
                                 <div class="col-xl-4">
                                     <div class="primary_input mb-25">

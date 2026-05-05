@@ -5,41 +5,8 @@
 
 <style>
     /* SELECT ALL Checkbox Column */
-    .checkbox-column-all {
-        width: 60px !important;
-        text-align: center;
-        padding: 12px 8px !important;
-        background-color: #e8f1ff;
-        border-right: 2px solid #2196F3;
-        font-weight: 600;
-        color: #1976D2;
-    }
     
-    #orderConfimedTable tbody td.checkbox-column-all {
-        text-align: center;
-        padding: 12px 8px !important;
-        background-color: #f5f9ff;
-        border-right: 2px solid #2196F3;
-        vertical-align: middle;
-    }
     
-    .checkbox-column-all::before {
-        content: "ALL";
-        display: block;
-        font-size: 10px;
-        font-weight: 700;
-        margin-bottom: 6px;
-        letter-spacing: 1px;
-        color: #1976D2;
-    }
-    
-    .checkbox-column-all input[type="checkbox"] {
-        cursor: pointer;
-        width: 20px;
-        height: 20px;
-        margin: 0;
-        vertical-align: middle;
-    }
     
     /* Individual Select Checkbox Column */
     .checkbox-column-item {
@@ -60,15 +27,6 @@
         vertical-align: middle;
     }
     
-    .checkbox-column-item::before {
-        content: "SELECT";
-        display: block;
-        font-size: 10px;
-        font-weight: 700;
-        margin-bottom: 6px;
-        letter-spacing: 0.5px;
-        color: #666;
-    }
     
     .checkbox-column-item input[type="checkbox"] {
         cursor: pointer;
@@ -79,12 +37,27 @@
     }
     
     /* Hover effects */
-    #orderConfimedTable tbody tr:hover td.checkbox-column-all {
-        background-color: #e3f2fd;
-    }
     
     #orderConfimedTable tbody tr:hover td.checkbox-column-item {
         background-color: #f5f5f5;
+    }
+    .dtr-control {
+        width: 40px !important;
+        text-align: center !important;
+        cursor: pointer;
+    }
+    
+    .checkbox-column-item {
+        width: 60px !important;
+        text-align: center !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    .checkbox-column-item input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
     }
 </style>
 
@@ -148,11 +121,13 @@
                                     <div class="mr-2">
                                         <button type="button" class="btn btn-primary" id="apply_bulk_confirm_pending" disabled>{{__('common.confirm') ?? 'Confirm Selected'}}</button>
                                     </div>
+{{-- 
                                     @if (permissionCheck('shipping.invoice_generate'))
                                         <div class="mr-2">
                                             <button type="button" class="btn btn-info bulk_download_invoices_btn" data-table-type="pending" title="Download Selected Invoices" disabled><i class="fa fa-download"></i></button>
                                         </div>
                                     @endif
+--}}
                                 </div>
 
                                 <div class="QA_section QA_section_heading_custom check_box_table">
@@ -162,8 +137,8 @@
                                             <table class="table shadow_none" id="orderPendingTable">
                                                 <thead>
                                                     <tr>
-                                                        <th class="checkbox-column-all"><input type="checkbox" id="select_all_pending" title="{{__('order.select_all_orders')}}"></th>
-                                                        <th class="checkbox-column-item"></th>
+                                                        <th></th>
+                                                        <th class="checkbox-column-item"><input type="checkbox" id="select_all_pending" title="{{__('order.select_all_orders')}}"></th>
                                                         <th>{{__('common.sl')}}</th>
                                                         <th width="10%">{{__('common.date')}}</th>
                                                         <th>{{__('common.order_id')}}</th>
@@ -218,8 +193,8 @@
                                             <table class="table shadow_none" id="orderConfimedTable">
                                                 <thead>
                                                     <tr>
-                                                        <th class="checkbox-column-all"><input type="checkbox" id="select_all_confirmed" title="{{__('order.select_all_orders')}}"></th>
-                                                        <th class="checkbox-column-item"></th>
+                                                        <th></th>
+                                                        <th class="checkbox-column-item"><input type="checkbox" id="select_all_confirmed" title="{{__('order.select_all_orders')}}"></th>
                                                         <th>{{__('common.sl')}}</th>
                                                         <th width="10%">{{__('common.date')}}</th>
                                                         <th>{{__('common.order_id')}}</th>
@@ -254,6 +229,7 @@
                                             <table class="table shadow_none" id="orderCompletedTable">
                                                 <thead>
                                                     <tr>
+                                                        <th></th>
                                                         <th>{{__('common.sl')}}</th>
                                                         <th width="10%">{{__('common.date')}}</th>
                                                         <th>{{__('common.order_id')}}</th>
@@ -289,6 +265,7 @@
                                             <table class="table shadow_none" id="orderPendingPaymentTable">
                                                 <thead>
                                                     <tr>
+                                                        <th></th>
                                                         <th>{{__('common.sl')}}</th>
                                                         <th width="10%">{{__('common.date')}}</th>
                                                         <th>{{__('common.order_id')}}</th>
@@ -324,6 +301,7 @@
                                             <table class="table shadow_none" id="orderCanceledTable">
                                                 <thead>
                                                     <tr>
+                                                        <th></th>
                                                         <th>{{__('common.sl')}}</th>
                                                         <th width="10%">{{__('common.date')}}</th>
                                                         <th>{{__('common.order_id')}}</th>
@@ -373,7 +351,7 @@
                     columns: [
                         { data: null, orderable: false, searchable: false, render: function(data,type,row){
                                 return '';
-                            }, className: 'checkbox-column-all'},
+                            }, className: 'dtr-control'},
                         { data: null, orderable: false, searchable: false, render: function(data,type,row){
                                 return '<input type="checkbox" class="bulk-select-confirmed" data-package-id="'+row.id+'" data-order-id="'+row.order_id+'" />';
                             }, className: 'checkbox-column-item'},
@@ -464,9 +442,10 @@
                             postfixButtons: ['colvisRestore']
                         }
                     ],
-                    columnDefs: [{
-                        visible: false
-                    }],
+                    columnDefs: [
+                        { responsivePriority: 1, targets: [0, 1] },
+                        { responsivePriority: 2, targets: -1 }
+                    ],
                     responsive: true,
                 });
 
@@ -481,7 +460,7 @@
 
                     },
                     columns: [
-                        { data: 'DT_RowIndex', name: 'id',render:function(data){
+                        { data: null, orderable: false, searchable: false, render: function(data,type,row){ return ""; }, className: "dtr-control"},                        { data: 'DT_RowIndex', name: 'id',render:function(data){
                             return numbertrans(data)
                         }},
                         { data: 'date', name: 'date' },
@@ -568,9 +547,10 @@
                             postfixButtons: ['colvisRestore']
                         }
                     ],
-                    columnDefs: [{
-                        visible: false
-                    }],
+                    columnDefs: [
+                        { responsivePriority: 1, targets: [0, 1] },
+                        { responsivePriority: 2, targets: -1 }
+                    ],
                     responsive: true,
                 });
 
@@ -587,7 +567,7 @@
                     columns: [
                         { data: null, orderable: false, searchable: false, render: function(data,type,row){
                                 return '';
-                            }, className: 'checkbox-column-all'},
+                            }, className: 'dtr-control'},
                         { data: null, orderable: false, searchable: false, render: function(data,type,row){
                                 return '<input type="checkbox" class="bulk-select-pending" data-package-id="'+row.id+'" data-order-id="'+row.order_id+'" />';
                             }, className: 'checkbox-column-item'},
@@ -677,9 +657,10 @@
                             postfixButtons: ['colvisRestore']
                         }
                     ],
-                    columnDefs: [{
-                        visible: false
-                    }],
+                    columnDefs: [
+                        { responsivePriority: 1, targets: [0, 1] },
+                        { responsivePriority: 2, targets: -1 }
+                    ],
                     responsive: true,
                 });
 
@@ -694,7 +675,7 @@
 
                     },
                     columns: [
-                        { data: 'DT_RowIndex', name: 'id',render:function(data){
+                        { data: null, orderable: false, searchable: false, render: function(data,type,row){ return ""; }, className: "dtr-control"},                        { data: 'DT_RowIndex', name: 'id',render:function(data){
                             return numbertrans(data)
                         }},
                         { data: 'date', name: 'date' },
@@ -781,9 +762,10 @@
                             postfixButtons: ['colvisRestore']
                         }
                     ],
-                    columnDefs: [{
-                        visible: false
-                    }],
+                    columnDefs: [
+                        { responsivePriority: 1, targets: [0, 1] },
+                        { responsivePriority: 2, targets: -1 }
+                    ],
                     responsive: true,
                 });
 
@@ -798,7 +780,7 @@
 
                     },
                     columns: [
-                        { data: 'DT_RowIndex', name: 'id',render:function(data){
+                        { data: null, orderable: false, searchable: false, render: function(data,type,row){ return ""; }, className: "dtr-control"},                        { data: 'DT_RowIndex', name: 'id',render:function(data){
                             return numbertrans(data)
                         }},
                         { data: 'date', name: 'date' },
@@ -885,9 +867,10 @@
                             postfixButtons: ['colvisRestore']
                         }
                     ],
-                    columnDefs: [{
-                        visible: false
-                    }],
+                    columnDefs: [
+                        { responsivePriority: 1, targets: [0, 1] },
+                        { responsivePriority: 2, targets: -1 }
+                    ],
                     responsive: true,
                 });
             });

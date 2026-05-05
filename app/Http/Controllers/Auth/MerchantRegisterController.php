@@ -438,6 +438,7 @@ class MerchantRegisterController extends Controller
                 'currency_id' => app('general_setting')->currency,
                 'lang_code' => app('general_setting')->language_code,
                 'currency_code' => app('general_setting')->currency_code,
+                'gst_number' => $data['gst_number'] ?? null,
             ];
         }else{
             $user_data = [
@@ -452,6 +453,7 @@ class MerchantRegisterController extends Controller
                 'currency_id' => app('general_setting')->currency,
                 'lang_code' => app('general_setting')->language_code,
                 'currency_code' => app('general_setting')->currency_code,
+                'gst_number' => $data['gst_number'] ?? null,
             ];
         }
 
