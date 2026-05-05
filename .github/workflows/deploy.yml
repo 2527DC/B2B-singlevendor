@@ -1,17 +1,17 @@
-name: Deploy to Development
- 
+name: Deploy to Production Test
+
 on:
   push:
-    branches: [ "dev" ]
- 
+    branches: [ "test" ]
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
- 
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
- 
+
       - name: Deploy to Server (Upload Files)
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -20,10 +20,10 @@ jobs:
           password: ${{ secrets.SSH_PASSWORD }}
           port: 22
           source: "./*"
-          target: "/var/www/html/Production_dev"
+          target: "/var/www/html/Production_Test"
           rm: false
           strip_components: 0
- 
+
       - name: Execute Remote Commands
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -32,10 +32,12 @@ jobs:
           password: ${{ secrets.SSH_PASSWORD }}
           port: 22
           script: |
-            cd /var/www/html/Production_dev
+            cd /var/www/html/Production_Test
+            mkdir -p storage/framework/{sessions,views,cache}
             mkdir -p storage/temp/mpdf
             sudo chmod -R 777 storage bootstrap/cache
             php artisan migrate --force
+            php artisan optimize:clear
             php artisan config:cache
             php artisan route:cache
             php artisan view:cache
