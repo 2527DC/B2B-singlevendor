@@ -51,7 +51,7 @@
                                 <th>{{ __('common.date') }}</th>
                                 <th>{{ __('common.user') }}</th>
                                 <th>{{ __('common.action') }}</th>
-                                <th>{{ __('product.stock') }}</th>
+                                <th>{{ __('product.sku') }}</th>
                                 <th>{{ __('product.old_value') }}</th>
                                 <th>{{ __('product.new_value') }}</th>
                                 <th>{{ __('product.note') }}</th>

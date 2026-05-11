@@ -25,6 +25,7 @@ class DriverOrders extends Model
         'pickup_address',
         'delivery_address',
         'delivery_date',
+        'assigned_date',
     ];
 
     /**
@@ -33,6 +34,7 @@ class DriverOrders extends Model
     protected $casts = [
         'is_confirmed' => 'boolean',
         'delivery_date' => 'date',
+        'assigned_date' => 'datetime',
     ];
 
     /* ==============================

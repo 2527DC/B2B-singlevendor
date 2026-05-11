@@ -161,7 +161,7 @@ class ModuleManagerController extends Controller
             session()->forget('menus');
             $module_tables = [];
             $module_tables_names = [];
-            $dataPath = 'Modules/' . $name . '/' . $name . '.json';        // // Get the contents of the JSON file
+            $dataPath = base_path('Modules/' . $name . '/' . $name . '.json');        // // Get the contents of the JSON file
             $strJsonFileContents = file_get_contents($dataPath);
             $array = json_decode($strJsonFileContents, true);
 
@@ -212,7 +212,7 @@ class ModuleManagerController extends Controller
             if (!empty($migrations)) {
                 if (count($migrations) != 0) {
                     foreach ($migrations as $value) {
-                        $module_tables[] = 'Modules/' . $name . '/Database/Migrations/' . $value;
+                        $module_tables[] = base_path('Modules/' . $name . '/Database/Migrations/' . $value);
                     }
                 }
 
@@ -223,7 +223,7 @@ class ModuleManagerController extends Controller
                 $module_tables_names[] = $value;
             }
 
-            $is_module_available = 'Modules/' . $name .'/'."Providers/". $name . 'ServiceProvider.php';
+            $is_module_available = base_path('Modules/' . $name .'/'."Providers/". $name . 'ServiceProvider.php');
 
             if (file_exists($is_module_available)) {
                 try {
@@ -405,7 +405,7 @@ class ModuleManagerController extends Controller
 
             $module_tables = [];
             $module_tables_names = [];
-            $dataPath = 'Modules/' . $name . '/' . $name . '.json';        // // Get the contents of the JSON file
+            $dataPath = base_path('Modules/' . $name . '/' . $name . '.json');        // // Get the contents of the JSON file
             $strJsonFileContents = file_get_contents($dataPath);
             $array = json_decode($strJsonFileContents, true);
             $migrations = $array[$name]['migration'] ?? '';
@@ -437,7 +437,7 @@ class ModuleManagerController extends Controller
 
             if (!empty($migrations) && count($migrations) != 0) {
                 foreach ($migrations as $value) {
-                    $module_tables[] = 'Modules/' . $name . '/Database/Migrations/' . $value;
+                    $module_tables[] = base_path('Modules/' . $name . '/Database/Migrations/' . $value);
                 }
             }
 
@@ -445,7 +445,7 @@ class ModuleManagerController extends Controller
                 $module_tables_names[] = $value;
             }
 
-            $is_module_available = 'Modules/' . $name . '/Providers/' . $name . 'ServiceProvider.php';
+            $is_module_available = base_path('Modules/' . $name . '/Providers/' . $name . 'ServiceProvider.php');
 
             if (file_exists($is_module_available)) {
 
@@ -496,7 +496,7 @@ class ModuleManagerController extends Controller
 
     public function moduleMigration($module)
     {
-        $dataPath = 'Modules/' . $module . '/' . $module . '.json';        // // Get the contents of the JSON file
+        $dataPath = base_path('Modules/' . $module . '/' . $module . '.json');        // // Get the contents of the JSON file
         $strJsonFileContents = file_get_contents($dataPath);
         $array = json_decode($strJsonFileContents, true);
         $migrations = $array[$module]['migration'] ?? '';
@@ -504,12 +504,12 @@ class ModuleManagerController extends Controller
 
         if (!empty($migrations) && count($migrations) != 0) {
             foreach ($migrations as $value) {
-                $module_tables[] = 'Modules/' . $module . '/Database/Migrations/' . $value;
+                $module_tables[] = base_path('Modules/' . $module . '/Database/Migrations/' . $value);
             }
         }
 
 
-        $is_module_available = 'Modules/' . $module . '/Providers/' . $module . 'ServiceProvider.php';
+        $is_module_available = base_path('Modules/' . $module . '/Providers/' . $module . 'ServiceProvider.php');
 
         if (file_exists($is_module_available)) {
             try {

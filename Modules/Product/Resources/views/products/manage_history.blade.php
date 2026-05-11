@@ -50,7 +50,7 @@
                                         <th>{{ __('common.date') }}</th>
                                         <th>{{ __('common.user') }}</th>
                                         <th>{{ __('common.action') }}</th>
-                                        <th>{{ __('product.stock') }}</th>
+                                        <th>{{ __('product.sku') }}</th>
                                         <th>{{ __('common.old_value') }}</th>
                                         <th>{{ __('common.new_value') }}</th>
                                         <th>{{ __('common.note') }}</th>
@@ -124,13 +124,20 @@ $(document).ready(function() {
 
         let html = '';
         $.each(data, function(index, item) {
+            let actionBadgeClass = 'badge-primary';
+            if (item.action.toLowerCase() === 'in') {
+                actionBadgeClass = 'badge-success';
+            } else if (item.action.toLowerCase() === 'out') {
+                actionBadgeClass = 'badge-danger';
+            }
+
             html += '<tr>';
             html += '<td>' + formatDate(item.created_at) + '</td>';
             html += '<td>' + item.user_name + '</td>';
-            html += '<td><span class="badge badge-primary">' + item.action + '</span></td>';
-            html += '<td><small>' + item.field_name + '</small></td>';
-            html += '<td>' + item.old_value + '</td>';
-            html += '<td>' + item.new_value + '</td>';
+            html += '<td><span class="badge ' + actionBadgeClass + '">' + item.action + '</span></td>';
+            html += '<td>' + item.field_name + '</td>';
+            html += '<td style="font-weight:bold; color: #666;">' + item.old_value + '</td>';
+            html += '<td style="font-weight:bold; color: #000;">' + item.new_value + '</td>';
             html += '<td><small>' + item.note + '</small></td>';
             html += '</tr>';
         });

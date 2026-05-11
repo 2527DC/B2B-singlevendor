@@ -80,8 +80,9 @@ class FrontendOTPController extends Controller
                 Session::forget('otp');
                 Session::forget('validation_time');
                 Session::forget('code_validation_time');
+                $user = User::where('email', $request->login)->orWhere('username', $request->login)->orWhere('phone', $request->login)->first();
                 $loginCon = new LoginController();
-                return $loginCon->loginDone($request);
+                return $loginCon->loginDone($request, $user);
             }
         } catch (Exception $e) {
             LogActivity::errorLog($e->getMessage());

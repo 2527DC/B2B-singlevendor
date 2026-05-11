@@ -717,11 +717,12 @@ class OrderManageController extends Controller
                     continue;
                 }
 
-                // Update driver_id
+                // Update driver_id and assigned_date
                 Log::info('Setting driver_id', ['order_id' => $orderId, 'old_driver_id' => $order->driver_id, 'new_driver_id' => $driverId]);
                 $order->driver_id = $driverId;
+                $order->assigned_date = $driverId ? now() : null;
                 $saved = $order->save();
-                Log::info('Save result', ['order_id' => $orderId, 'saved' => $saved, 'driver_id_after_save' => $order->driver_id]);
+                Log::info('Save result', ['order_id' => $orderId, 'saved' => $saved, 'driver_id_after_save' => $order->driver_id, 'assigned_date' => $order->assigned_date]);
 
                 // Automatically change status to 'shipped' (ID 3) when driver is assigned
                 if ($driverId && $saved) {
@@ -809,8 +810,9 @@ class OrderManageController extends Controller
                 }
             }
 
-            // Update driver_id
+            // Update driver_id and assigned_date
             $order->driver_id = $driverId;
+            $order->assigned_date = $driverId ? now() : null;
             $order->save();
 
             DB::commit();

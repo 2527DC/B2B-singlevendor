@@ -18,48 +18,79 @@ class DriverAuthController extends Controller
  */
 public function login(Request $request)
 {
-    $request->validate([
-        'phone' => 'required|string',
-        'password' => 'required|string|min:6',
+    Log::channel('driver_auth')->info('Driver Login Method Invoked', [
+        'ip' => $request->ip(),
+        'user_agent' => $request->userAgent(),
+        'timestamp' => now()->toDateTimeString(),
+        'phone' => $request->phone,
     ]);
 
-    $driver = Driver::where('phone', $request->phone)->first();
+    try {
+        $request->validate([
+            'phone' => 'required|string',
+            'password' => 'required|string|min:6',
+        ]);
 
-    if (!$driver || !Hash::check($request->password, $driver->password)) {
-        return response()->json([
-            'status' => false,
-            'message' => 'Invalid phone or password',
-        ], 401);
-    }
+        $driver = Driver::where('phone', $request->phone)->first();
 
-    // ✅ ACTIVE / INACTIVE CHECK
-    if ($driver->is_active != 1) {
-        return response()->json([
-            'status' => false,
-            'message' => 'Your account is inactive. Please contact support.',
-        ], 403);
-    }
+        if (!$driver || !Hash::check($request->password, $driver->password)) {
+            Log::channel('driver_auth')->warning('Driver Login failed - Invalid credentials', [
+                'phone' => $request->phone,
+            ]);
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid phone or password',
+            ], 401);
+        }
 
-    // Remove old tokens (optional)
-    $driver->tokens()->delete();
+        // ✅ ACTIVE / INACTIVE CHECK
+        if ($driver->is_active != 1) {
+            Log::channel('driver_auth')->warning('Driver Login failed - Inactive account', [
+                'driver_id' => $driver->id,
+                'phone' => $driver->phone,
+            ]);
+            return response()->json([
+                'status' => false,
+                'message' => 'Your account is inactive. Please contact support.',
+            ], 403);
+        }
 
-    $token = $driver->createToken('driver-api')->plainTextToken;
+        // Remove old tokens (optional)
+        $driver->tokens()->delete();
 
-    return response()->json([
-        'status' => true,
-        'message' => 'Login successful',
-        'token' => $token,
-        'token_type' => 'bearer',
-        'driver' => [
-            'id' => $driver->id,
-            'name' => $driver->name,
+        $token = $driver->createToken('driver-api')->plainTextToken;
+
+        Log::channel('driver_auth')->info('Driver Login successful', [
+            'driver_id' => $driver->id,
             'phone' => $driver->phone,
-            'email' => $driver->email,
-            'is_active' => $driver->is_active,
-            'seller_id' => $driver->seller_id,
-            'vehicle_number' => $driver->vehicle_number,
-        ],
-    ]);
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Login successful',
+            'token' => $token,
+            'token_type' => 'bearer',
+            'driver' => [
+                'id' => $driver->id,
+                'name' => $driver->name,
+                'phone' => $driver->phone,
+                'email' => $driver->email,
+                'is_active' => $driver->is_active,
+                'seller_id' => $driver->seller_id,
+                'seller_name' => @$driver->seller->SellerAccount->seller_shop_display_name,
+                'vehicle_number' => $driver->vehicle_number,
+            ],
+        ]);
+    } catch (\Exception $e) {
+        Log::channel('driver_auth')->error('Driver Login method exception', [
+            'error_message' => $e->getMessage(),
+            'phone' => $request->phone,
+        ]);
+        return response()->json([
+            'status' => false,
+            'message' => 'An error occurred during login',
+        ], 500);
+    }
 }
 
 

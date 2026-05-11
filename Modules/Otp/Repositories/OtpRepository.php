@@ -14,6 +14,7 @@ class OtpRepository
         OtpConfiguration::where('key', 'order_otp_on_verified_customer')->first()->update(['value' => $request->order_otp_on_verified_customer]);
         OtpConfiguration::where('key', 'otp_on_login')->first()->update(['value' => $request->otp_on_login]);
         OtpConfiguration::where('key', 'otp_on_password_reset')->first()->update(['value' => $request->otp_on_password_reset]);
+        OtpConfiguration::where('key', 'login_with_otp_only')->first()->update(['value' => $request->login_with_otp_only]);
         OtpConfiguration::where('key', 'order_cancel_limit_on_verified_customer')->first()->update(['value' => $request->order_cancel_limit_on_verified_customer]);
         if (isModuleActive('MultiVendor')) {
             OtpConfiguration::where('key', 'otp_activation_for_seller')->first()->update(['value' => $request->otp_activation_for_seller]);

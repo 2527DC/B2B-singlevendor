@@ -125,8 +125,8 @@ class DriverOrdersApiController extends Controller
                 ->when(
                     $request->filled('order_date'),
                     function ($query) use ($request) {
-                        // Match ONLY created_at date
-                        $query->whereDate('created_at', $request->order_date);
+                        // Match ONLY assigned_date
+                        $query->whereDate('assigned_date', $request->order_date);
                     }   
                 )
                 ->when(
@@ -151,7 +151,7 @@ class DriverOrdersApiController extends Controller
                         });
                     }
                 )
-                ->orderBy('created_at', 'desc')
+                ->orderBy('assigned_date', 'desc')
                 ->paginate(30);
     
             // Transform orders
@@ -301,8 +301,8 @@ class DriverOrdersApiController extends Controller
                 ->when(
                     $request->filled('order_date'),
                     function ($query) use ($request) {
-                        // Match ONLY created_at date
-                        $query->whereDate('created_at', $request->order_date);
+                        // Match ONLY assigned_date
+                        $query->whereDate('assigned_date', $request->order_date);
                     }   
                 )
                 ->when(
@@ -327,7 +327,7 @@ class DriverOrdersApiController extends Controller
                         });
                     }
                 )
-                ->orderBy('created_at', 'desc')
+                ->orderBy('assigned_date', 'desc')
                 ->paginate(30);
     
             // Transform orders (same as driverOrders method)

@@ -6,3 +6,5 @@ public/backend/photo_proof/*
 vendor
 .env
 .htaccess 
+.agent
+graphify-out

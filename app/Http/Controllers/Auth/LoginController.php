@@ -116,12 +116,17 @@ class LoginController extends Controller
                 return $query->where('type', 'superadmin')->orWhere('type', 'admin')->orWhere('type', 'staff');
             })->first();
         }
+        if(!$user){
+            $user = User::where('phone', $request->login)->where('is_active', 1)->whereHas('role', function($query){
+                return $query->where('type', 'superadmin')->orWhere('type', 'admin')->orWhere('type', 'staff');
+            })->first();
+        }
 
-        if($user){
+        if($user && Hash::check($request->password, $user->password)){
             if (config('app.sync') && $request->auto_login == "true"){
                 return $this->loginDone($request, $user);
             }else{
-                return $this->sendOtpAndCheck($request, null);
+                return $this->loginDone($request, $user);
             }
         }else{
             throw ValidationException::withMessages([
@@ -167,14 +172,19 @@ class LoginController extends Controller
                 return $query->where('type', 'seller');
             })->first();
         }
+        if(!$user){
+            $user = User::where('phone', $request->login)->where('is_active', 1)->whereHas('role', function($query){
+                return $query->where('type', 'seller');
+            })->first();
+        }
 
-        if($user){
+        if($user && Hash::check($request->password, $user->password)){
             $this->setupSidebar($user);
             if (config('app.sync') && $request->auto_login == "true"){
 
                 return $this->loginDone($request, $user);
             }else{
-                return $this->sendOtpAndCheck($request, null);
+                return $this->loginDone($request, $user);
             }
         }else{
             throw ValidationException::withMessages([
@@ -225,8 +235,12 @@ class LoginController extends Controller
             if (config('app.sync') && $request->auto_login == "true"){
                 $user = $check_user;
             } else{
-                $this->validateLogin($request);
-                return $this->sendOtpAndCheck($request, $user);
+                if (isModuleActive('Otp') && otp_configuration('login_with_otp_only')) {
+                    $this->validateOtpOnlyLogin($request);
+                } else {
+                    $this->validateLogin($request);
+                }
+                return $this->sendOtpAndCheck($request, $check_user);
             }
             return $this->loginDone($request, $user);
         }else{
@@ -253,13 +267,28 @@ class LoginController extends Controller
         ]);
     }
 
+    protected function validateOtpOnlyLogin(Request $request)
+    {
+        if (env('NOCAPTCHA_FOR_LOGIN') == "true" && app('theme')->folder_path == 'amazy') {
+            $g_recaptcha = 'required';
+        }else{
+            $g_recaptcha = 'nullable';
+        }
+        $request->validate([
+            $this->username() => 'required|string',
+            'g-recaptcha-response' => $g_recaptcha,
+        ],[
+            'g-recaptcha-response.required' => 'The google recaptcha field is required.',
+        ]);
+    }
+
     public function sendOtpAndCheck($request, $user){
 
         if ($this->hasTooManyLoginAttempts($request)) {
             $this->fireLockoutEvent($request);
             return $this->sendLockoutResponse($request);
         }
-        if (isModuleActive('Otp') && otp_configuration('otp_on_login')) {
+        if (isModuleActive('Otp') && (otp_configuration('otp_on_login') || otp_configuration('login_with_otp_only'))) {
             $userData = User::where('email', $request->login)->where('is_active', 1)->first();
             if(!$userData){
                 $userData = User::where('username', $request->login)->where('is_active', 1)->first();
@@ -267,10 +296,19 @@ class LoginController extends Controller
             if(!$userData){
                 $userData = User::where('phone', $request->login)->where('is_active', 1)->first();
             }
-            if(!$userData || !Hash::check($request->password,$userData->password)){
-                throw ValidationException::withMessages([
-                    'email' => __('auth.failed')
-                ]);
+            
+            if (!otp_configuration('login_with_otp_only')) {
+                if(!$userData || !Hash::check($request->password,$userData->password)){
+                    throw ValidationException::withMessages([
+                        'email' => __('auth.failed')
+                    ]);
+                }
+            } else {
+                if(!$userData){
+                    throw ValidationException::withMessages([
+                        'email' => __('auth.failed')
+                    ]);
+                }
             }
             try {
                 if (!$this->sendLoginOtp($request)) {

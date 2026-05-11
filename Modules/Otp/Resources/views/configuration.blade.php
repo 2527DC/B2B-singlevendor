@@ -261,6 +261,35 @@
 
                                 <div class="col-xl-6">
                                     <div class="primary_input">
+                                        <label class="primary_input_label" for="">{{__('Login with OTP Only (Passwordless)')}}</label>
+                                        <ul id="theme_nav" class="permission_list sms_list ">
+                                            <li>
+                                                <label data-id="bg_option" class="primary_checkbox d-flex mr-12">
+                                                    <input name="login_with_otp_only" id="status_active" value="1"
+                                                        {{otp_configuration('login_with_otp_only')==1?'checked':''}}
+                                                        class="active" type="radio">
+                                                    <span class="checkmark"></span>
+                                                </label>
+                                                <p>{{ __('common.active') }}</p>
+                                            </li>
+                                            <li>
+                                                <label data-id="color_option" class="primary_checkbox d-flex mr-12">
+                                                    <input name="login_with_otp_only" value="0"
+                                                        id="status_inactive"
+                                                        {{otp_configuration('login_with_otp_only')==0?'checked':''}}
+                                                        class="de_active" type="radio">
+                                                    <span class="checkmark"></span>
+                                                </label>
+                                                <p>{{ __('common.inactive') }}</p>
+                                            </li>
+
+                                        </ul>
+                                        <span class="text-danger" id="status_error"></span>
+                                    </div>
+                                </div>
+
+                                <div class="col-xl-6">
+                                    <div class="primary_input">
                                         <label class="primary_input_label" for="">{{__('OTP On Password Reset')}}</label>
                                         <ul id="theme_nav" class="permission_list sms_list ">
                                             <li>

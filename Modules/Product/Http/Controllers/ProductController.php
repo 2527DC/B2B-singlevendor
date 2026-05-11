@@ -1020,7 +1020,6 @@ class ProductController extends Controller
             $toDate = $request->to_date;
 
             $skuIds = [];
-            $skuTableName = 'product_sku';
 
             if (isModuleActive('MultiVendor')) {
                 // Get all SKU IDs for this product from seller_product_s_k_us table
@@ -1028,7 +1027,6 @@ class ProductController extends Controller
                     ->where('product_id', $productId)
                     ->pluck('id')
                     ->toArray();
-                $skuTableName = 'seller_product_s_k_us';
             } else {
                 // Get all SKU IDs for this product from product_sku table
                 $skuIds = DB::table('product_sku')
@@ -1038,20 +1036,25 @@ class ProductController extends Controller
             }
             
             if (empty($skuIds)) {
-                $response = [
+                return response()->json([
                     'status' => true,
                     'data' => [],
                     'message' => 'No stock history found for this product'
-                ];
-                \Illuminate\Support\Facades\Log::info("Stock History Load (Empty): ", $response);
-                return response()->json($response);
+                ]);
             }
 
             // Query stock history for all SKUs of this product
             $query = DB::table('stock_histories')
-                ->leftJoin('users', 'stock_histories.user_id', '=', 'users.id')
-                ->leftJoin($skuTableName . ' as current_sku_table', 'stock_histories.product_sku_id', '=', 'current_sku_table.id')
-                ->whereIn('stock_histories.product_sku_id', $skuIds)
+                ->leftJoin('users', 'stock_histories.user_id', '=', 'users.id');
+
+            if (isModuleActive('MultiVendor')) {
+                $query->leftJoin('seller_product_s_k_us', 'stock_histories.product_sku_id', '=', 'seller_product_s_k_us.id')
+                      ->leftJoin('product_sku', 'seller_product_s_k_us.product_sku_id', '=', 'product_sku.id');
+            } else {
+                $query->leftJoin('product_sku', 'stock_histories.product_sku_id', '=', 'product_sku.id');
+            }
+
+            $query->whereIn('stock_histories.product_sku_id', $skuIds)
                 ->select(
                     'stock_histories.id',
                     'stock_histories.created_at',
@@ -1061,7 +1064,7 @@ class ProductController extends Controller
                     'stock_histories.previous_stock as old_value',
                     'stock_histories.new_stock as new_value',
                     'stock_histories.note',
-                    'stock_histories.type'
+                    'product_sku.sku as sku_name'
                 );
 
             if ($fromDate) {
@@ -1077,33 +1080,16 @@ class ProductController extends Controller
             // Format history data
             $formattedHistory = [];
             foreach ($history as $log) {
-                // Resolve original SKU name
-                $skuNumber = 'Unknown';
-                if (isModuleActive('MultiVendor')) {
-                    $sellerSku = \Modules\Seller\Entities\SellerProductSKU::find($log->id ?? 0);
-                    if ($sellerSku && $sellerSku->sku) {
-                        $skuNumber = $sellerSku->sku->sku;
-                    }
-                } else {
-                    $originalSku = \Modules\Product\Entities\ProductSku::find($log->id ?? 0);
-                    if ($originalSku) {
-                        $skuNumber = $originalSku->sku;
-                    }
-                }
-
                 $formattedHistory[] = [
                     'created_at' => $log->created_at,
                     'user_name' => trim($log->user_name) ?: 'System',
                     'action' => ucfirst($log->action),
-                    'field_name' => 'SKU: ' . $skuNumber . ' | Qty: ' . $log->quantity,
-                    'old_value' => $log->old_value ?? 'N/A',
-                    'new_value' => $log->new_value ?? 'N/A',
+                    'field_name' => 'SKU: ' . ($log->sku_name ?? 'Unknown') . ' | Qty: ' . $log->quantity,
+                    'old_value' => $log->old_value ?? '0',
+                    'new_value' => $log->new_value ?? '0',
                     'note' => $log->note ?? 'Stock ' . strtolower($log->action)
                 ];
             }
-
-            // LOG CONTENT HERE AS REQUESTED
-            \Illuminate\Support\Facades\Log::info("Manage History fetched for product {$productId}: ", $formattedHistory);
 
             return response()->json([
                 'status' => true,
@@ -1111,11 +1097,7 @@ class ProductController extends Controller
                 'message' => count($formattedHistory) > 0 ? 'History loaded successfully' : 'No history found'
             ]);
         } catch (\Exception $e) {
-            // LOG EXCEPTION HERE AS REQUESTED
             \Illuminate\Support\Facades\Log::error("Manage History Error for Product {$request->product_id}: " . $e->getMessage());
-            \Illuminate\Support\Facades\Log::error($e->getTraceAsString());
-            
-            LogActivity::errorLog($e->getMessage());
             return response()->json([
                 'status' => false,
                 'message' => 'Error fetching history: ' . $e->getMessage()

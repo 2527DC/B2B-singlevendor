@@ -63,94 +63,112 @@ class ShippingOrderController extends Controller
     // Bulk invoice import feature removed
 
     public function bulkInvoiceDownload(Request $request)
-{
-    $invoiceIds = $request->invoice_ids;
+    {
+        $invoiceIds = $request->invoice_ids;
 
-    if (empty($invoiceIds)) {
-        return response()->json([
-            'success' => false,
-            'message' => 'No invoices selected'
-        ], 400);
-    }
+        if (empty($invoiceIds)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No invoices selected'
+            ], 400);
+        }
 
-    $orders = [];
-    $invoice_numbers = [];
+        $orders = [];
+        $invoice_numbers = [];
 
-    foreach ($invoiceIds as $id) {
-        $order = $this->orderRepo->order($id);
-        if ($order) {
-            // Generate or fetch invoice number from invoices table
-            $existingInvoice = \Illuminate\Support\Facades\DB::table('invoices')
-                ->where('order_package_id', $id)
-                ->first();
+        foreach ($invoiceIds as $id) {
+            $order = $this->orderRepo->order($id);
+            if ($order) {
+                // Generate or fetch invoice number from invoices table
+                $existingInvoice = \Illuminate\Support\Facades\DB::table('invoices')
+                    ->where('order_package_id', $id)
+                    ->first();
 
-            if ($existingInvoice) {
-                $invoice_numbers[$id] = $existingInvoice->invoice_number;
-            } else {
-                $seller_id = $order->seller_id;
-                \Illuminate\Support\Facades\DB::transaction(function () use ($id, $seller_id, &$invoice_numbers) {
-                    $lastInvoice = \Illuminate\Support\Facades\DB::table('invoices')
-                        ->where('seller_id', $seller_id)
-                        ->lockForUpdate()
-                        ->orderBy('invoice_sequence', 'desc')
-                        ->first();
+                if ($existingInvoice) {
+                    $invoice_numbers[$id] = $existingInvoice->invoice_number;
+                } else {
+                    $seller_id = $order->seller_id;
+                    \Illuminate\Support\Facades\DB::transaction(function () use ($id, $seller_id, &$invoice_numbers) {
+                        $lastInvoice = \Illuminate\Support\Facades\DB::table('invoices')
+                            ->where('seller_id', $seller_id)
+                            ->lockForUpdate()
+                            ->orderBy('invoice_sequence', 'desc')
+                            ->first();
 
-                    $new_sequence = $lastInvoice ? $lastInvoice->invoice_sequence + 1 : 1;
+                        $new_sequence = $lastInvoice ? $lastInvoice->invoice_sequence + 1 : 1;
 
-                    $seller = \App\Models\User::find($seller_id);
-                    $short_code = $seller && $seller->short_code ? $seller->short_code : 'INV';
+                        $seller = \App\Models\User::find($seller_id);
+                        $short_code = $seller && $seller->short_code ? $seller->short_code : 'INV';
 
-                    $invoice_number = date('Y') . '-' . $short_code . '-' . $new_sequence;
+                        $invoice_number = date('Y') . '-' . $short_code . '-' . $new_sequence;
 
-                    \Illuminate\Support\Facades\DB::table('invoices')->insert([
-                        'order_package_id' => $id,
-                        'seller_id' => $seller_id,
-                        'invoice_sequence' => $new_sequence,
-                        'invoice_number' => $invoice_number,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
+                        \Illuminate\Support\Facades\DB::table('invoices')->insert([
+                            'order_package_id' => $id,
+                            'seller_id'        => $seller_id,
+                            'invoice_sequence' => $new_sequence,
+                            'invoice_number'   => $invoice_number,
+                            'created_at'       => now(),
+                            'updated_at'       => now(),
+                        ]);
 
-                    $invoice_numbers[$id] = $invoice_number;
-                });
+                        $invoice_numbers[$id] = $invoice_number;
+                    });
+                }
+
+                $orders[] = $order;
+            }
+        }
+
+        if (empty($orders)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No valid invoices found'
+            ], 404);
+        }
+
+        // ---------------------------------------------------------------
+        // Fix: render ONE invoice at a time to avoid mPDF pcre.backtrack_limit
+        // error that occurs when all invoices are merged into one huge HTML blob.
+        // We instantiate mPDF directly and call WriteHTML() per invoice.
+        // ---------------------------------------------------------------
+        $mpdf = new \Mpdf\Mpdf([
+            'autoScriptToLang' => true,
+            'baseScript'       => 1,
+            'autoVietnamese'   => true,
+            'autoArabic'       => true,
+            'autoLangToFont'   => true,
+        ]);
+
+        foreach ($orders as $index => $order) {
+            $invoice_number = $invoice_numbers[$order->id] ?? $order->package_code;
+
+            // Render a single invoice to HTML string
+            $html = view('shipping::order.invoice_pdf', [
+                'order'          => $order,
+                'invoice_number' => $invoice_number,
+            ])->render();
+
+            if ($index > 0) {
+                // Add a new page for every invoice after the first
+                $mpdf->AddPage();
             }
 
-            $orders[] = $order;
+            // Write this invoice's HTML — small enough to stay within pcre limit
+            $mpdf->WriteHTML($html);
         }
+
+        $filename   = 'bulk_invoices_' . now()->format('Ymd_His') . '.pdf';
+        $pdfContent = $mpdf->Output('', \Mpdf\Output\Destination::STRING_RETURN);
+
+        return response()->streamDownload(function () use ($pdfContent) {
+            echo $pdfContent;
+        }, $filename, [
+            'Content-Type'              => 'application/octet-stream',
+            'Content-Length'            => strlen($pdfContent),
+            'Content-Transfer-Encoding' => 'binary',
+            'Content-Disposition'       => 'attachment; filename="' . $filename . '"',
+        ]);
     }
-
-    if (empty($orders)) {
-        return response()->json([
-            'success' => false,
-            'message' => 'No valid invoices found'
-        ], 404);
-    }
-
-    // generate single PDF with multiple invoices and force download
-    $config = ['instanceConfigurator' => function($mpdf) {
-        $mpdf->autoScriptToLang = true;
-        $mpdf->baseScript = 1;
-        $mpdf->autoVietnamese = true;
-        $mpdf->autoArabic = true;
-        $mpdf->autoLangToFont = true;
-    }];
-
-    $filename = 'bulk_invoices_' . now()->format('Ymd_His') . '.pdf';
-    $pdf = PDF::loadView('shipping::order.bulk_invoice_pdf', ['orders' => $orders, 'invoice_numbers' => $invoice_numbers], [], $config);
-
-    // Produce raw PDF content
-    $pdfContent = $pdf->output();
-
-    // Stream download response with headers forcing attachment.
-    return response()->streamDownload(function() use ($pdfContent) {
-        echo $pdfContent;
-    }, $filename, [
-        'Content-Type' => 'application/octet-stream',
-        'Content-Length' => strlen($pdfContent),
-        'Content-Transfer-Encoding' => 'binary',
-        'Content-Disposition' => 'attachment; filename="' . $filename . '"'
-    ]);
-}
 
 
     // Carrier import helpers removed

@@ -190,7 +190,7 @@ class OrderManageRepository
             }
         } else {
             // MultiVendor mode - confirmation creates processing status
-            if ($order->is_confirmed == 1 && $data['is_confirmed'] == 1) {
+            if ($order->is_confirmed == 0 && $data['is_confirmed'] == 1) {
                 foreach ($order->packages as $key => $package) {
                     $this->updateStock($package);
                     $package->update(['delivery_status' => 2]);
@@ -271,6 +271,7 @@ class OrderManageRepository
 
         if (isset($data['driver_id'])) {
             $updateData['driver_id'] = $data['driver_id'];
+            $updateData['assigned_date'] = $data['driver_id'] ? now() : null;
         }
 
         $order->update($updateData);

@@ -289,7 +289,7 @@ class MerchantRegisterController extends Controller
             return Validator::make(
                 $data,
                 [
-                    'name' => ['required', 'string', 'max:255','unique:seller_accounts,seller_shop_display_name',new SellerValidateRule($data['name'])],
+                    'name' => ['required', 'string', 'max:255'],
                     'first_name' => ['required', 'string'],
                     'last_name' => ['required', 'string'],
                     'email' => $email,
@@ -312,7 +312,7 @@ class MerchantRegisterController extends Controller
         return Validator::make(
             $data,
             [
-                'name' => ['required', 'string', 'max:255','unique:seller_accounts,seller_shop_display_name',new SellerValidateRule($data['name'])],
+                'name' => ['required', 'string', 'max:255'],
                 'email' => $email,
                 'phone' => ['required', 'string', 'max:255', 'unique:users'],
                 'password' => ['required', 'string', 'min:8', 'confirmed'],

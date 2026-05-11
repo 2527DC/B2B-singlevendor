@@ -291,7 +291,7 @@ class MerchantController extends Controller
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'commission_id' => 'required',
             'commission_rate' => 'required',
-            'shop_name' => ['required','max:100','unique:seller_accounts,seller_shop_display_name', new SellerValidateRule($data['shop_name'])]
+            'shop_name' => ['required','max:100']
         ],
         [
             'name.required' => "This Name Filed is required",

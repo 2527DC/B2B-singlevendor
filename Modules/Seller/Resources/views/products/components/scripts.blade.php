@@ -865,14 +865,25 @@
                             }
                             let html = '';
                             $.each(response.data, function(i, item) {
+                                let actionBadgeClass = 'badge-primary';
+                                if (item.action.toLowerCase() === 'in') {
+                                    actionBadgeClass = 'badge-success';
+                                } else if (item.action.toLowerCase() === 'out') {
+                                    actionBadgeClass = 'badge-danger';
+                                }
+
                                 let date = new Date(item.created_at);
-                                html += '<tr><td>' + date.toLocaleDateString() + ' ' + date.toLocaleTimeString() + '</td>'
-                                      + '<td>' + item.user_name + '</td>'
-                                      + '<td><span class="badge badge-primary">' + item.action + '</span></td>'
-                                      + '<td><small>' + item.field_name + '</small></td>'
-                                      + '<td>' + item.old_value + '</td>'
-                                      + '<td>' + item.new_value + '</td>'
-                                      + '<td><small>' + item.note + '</small></td></tr>';
+                                let formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+
+                                html += '<tr>';
+                                html += '<td>' + formattedDate + '</td>';
+                                html += '<td>' + item.user_name + '</td>';
+                                html += '<td><span class="badge ' + actionBadgeClass + '">' + item.action + '</span></td>';
+                                html += '<td>' + item.field_name + '</td>';
+                                html += '<td style="font-weight:bold; color: #666;">' + item.old_value + '</td>';
+                                html += '<td style="font-weight:bold; color: #000;">' + item.new_value + '</td>';
+                                html += '<td><small>' + item.note + '</small></td>';
+                                html += '</tr>';
                             });
                             $('#history_tbody').html(html);
                         } else {

@@ -14,9 +14,7 @@ class SellerAccountRequest extends FormRequest
         return [
             'first_name' => 'required|max:255',
             'email' => 'required|max:255|email|unique:users,email,'.$this->id,
-            'shop_display_name' => ['required','max:255',Rule::unique('seller_accounts','seller_shop_display_name')->where(function($query){
-                return $query->where('id','!=', $this->seller_account_id);
-            }), new SellerProfileUpdateRule($this->shop_display_name)],
+            'shop_display_name' => ['required','max:255'],
             'seller_phone' => 'required|max:100|unique:users,username,'.$this->id,
         ];
     }

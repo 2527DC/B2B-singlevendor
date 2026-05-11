@@ -38,6 +38,10 @@
                                         <td>: <span class="ml-1"></span>{{ (getNumberTranslate($customer->phone)) ?? $customer->username }}</td>
                                     </tr>
                                     <tr>
+                                        <td>GST Number</td>
+                                        <td>: <span class="ml-1"></span>{{ $customer->gst_number ?? '—' }}</td>
+                                    </tr>
+                                    <tr>
                                         <td>{{ __('common.registered_date') }}</td>
                                         <td>: <span class="ml-1"></span>{{ dateConvert($customer->created_at) }}</td>
                                     </tr>

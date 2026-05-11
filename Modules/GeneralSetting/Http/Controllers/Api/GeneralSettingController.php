@@ -178,98 +178,158 @@ class GeneralSettingController extends Controller
     }
 
     public function sendOTPForAPI(Request $request){
-
-
-        $request->validate([
-            'type' => 'required'
+        \Log::info('sendOTPForAPI Method Invoked', [
+            'ip' => $request->ip(),
+            'timestamp' => now()->toDateTimeString(),
+            'payload' => $request->except(['password']),
         ]);
 
-        if($request->type == 'otp_on_customer_registration'){
+        try {
+            $request->validate([
+                'type' => 'required'
+            ]);
 
-            $request->validate([
-                'code' => ['required', 'numeric', 'digits:6'],
-                'email' => ['required', 'string', 'max:255',],
-                'first_name' => 'required'
-            ]);
-           // dd($request->all());
-
-        }elseif($request->type == 'otp_on_order_with_cod'){
-            $request->validate([
-                'code' => ['required', 'numeric', 'digits:6'],
-                'email' => 'required',
-                'name' => 'required',
-                'phone' => 'required'
-            ]);
-        }
-        elseif($request->type == 'otp_on_seller_registration'){
-            $request->validate([
-                'code' => ['required', 'numeric', 'digits:6'],
-                'email' => 'required',
-                'name' => 'required',
-                'phone' => 'required'
-            ]);
-        }
-        elseif($request->type == 'otp_on_login'){
-
-            $request->validate([
-                'code' => ['required', 'numeric', 'digits:6'],
-                'email' => ['required'],
-                'password' => ['required', 'string','min:8']
-            ]);
-            $user = User::where('email', $request->email)->where('is_active', 1)->whereHas('role', function($q){
-                $q->where('type', 'customer');
-            })->first();
-            if(!$user){
-                $user = User::where('username', $request->email)->where('is_active', 1)->whereHas('role', function($q){
+            if($request->type == 'otp_on_customer_registration'){
+                $request->validate([
+                    'code' => ['required', 'numeric', 'digits:6'],
+                    'email' => ['required', 'string', 'max:255',],
+                    'first_name' => 'required'
+                ]);
+            }elseif($request->type == 'otp_on_order_with_cod'){
+                $request->validate([
+                    'code' => ['required', 'numeric', 'digits:6'],
+                    'email' => 'required',
+                    'name' => 'required',
+                    'phone' => 'required'
+                ]);
+            }
+            elseif($request->type == 'otp_on_seller_registration'){
+                $request->validate([
+                    'code' => ['required', 'numeric', 'digits:6'],
+                    'email' => 'required',
+                    'name' => 'required',
+                    'phone' => 'required'
+                ]);
+            }
+            elseif($request->type == 'otp_on_login'){
+                if (isModuleActive('Otp') && otp_configuration('login_with_otp_only')) {
+                    $request->validate([
+                        'code' => ['required', 'numeric', 'digits:6'],
+                        'email' => ['required'],
+                    ]);
+                } else {
+                    $request->validate([
+                        'code' => ['required', 'numeric', 'digits:6'],
+                        'email' => ['required'],
+                        'password' => ['required', 'string','min:8']
+                    ]);
+                }
+                
+                $user = User::where(function($q) use($request) {
+                    $login = $request->email;
+                    $q->where('email', $login)
+                      ->orWhere('username', $login)
+                      ->orWhere('phone', $login);
+                    
+                    if (!str_starts_with($login, '+')) {
+                        $q->orWhere('phone', '+' . $login);
+                    } else {
+                        $q->orWhere('phone', ltrim($login, '+'));
+                    }
+                })
+                ->where('is_active', 1)
+                ->whereHas('role', function($q){
                     $q->where('type', 'customer');
                 })->first();
-            }
 
-            if(!$user || !Hash::check($request->password,$user->password)){
+                if(!$user){
+                    \Log::warning('sendOTPForAPI - User not found', ['email' => $request->email]);
+                    throw ValidationException::withMessages([
+                        'email' => __('auth.failed')
+                    ]);
+                }
+
+                if (!filter_var($request->email, FILTER_VALIDATE_EMAIL)) {
+                    $request->merge(['email' => $user->phone]);
+                }
+
+                if (!isModuleActive('Otp') || !otp_configuration('login_with_otp_only')) {
+                    if(!Hash::check($request->password,$user->password)){
+                        \Log::warning('sendOTPForAPI - Password check failed', ['user_id' => $user->id]);
+                        throw ValidationException::withMessages([
+                            'email' => __('auth.failed')
+                        ]);
+                    }
+                }
+            }
+            elseif($request->type == 'otp_on_password_reset'){
+                $request->validate([
+                    'code' => ['required', 'numeric', 'digits:6'],
+                    'email' => 'required'
+                ]);
+                $user = User::where(function($q) use($request) {
+                    $login = $request->email;
+                    $q->where('email', $login)
+                      ->orWhere('username', $login)
+                      ->orWhere('phone', $login);
+                    
+                    if (!str_starts_with($login, '+')) {
+                        $q->orWhere('phone', '+' . $login);
+                    } else {
+                        $q->orWhere('phone', ltrim($login, '+'));
+                    }
+                })
+                ->where('is_active', 1)
+                ->whereHas('role', function($q){
+                    $q->where('type', 'customer');
+                })->first();
+                if(!$user){
+                    \Log::warning('sendOTPForAPI - User not found for password reset', ['email' => $request->email]);
+                    throw ValidationException::withMessages([
+                        'email' => __('auth.failed')
+                    ]);
+                }
+
+                if (!filter_var($request->email, FILTER_VALIDATE_EMAIL)) {
+                    $request->merge(['email' => $user->phone]);
+                }
+
+            }else{
+                \Log::warning('sendOTPForAPI - Invalid type', ['type' => $request->type]);
                 throw ValidationException::withMessages([
-                    'email' => __('auth.failed')
+                    'type' => 'invalid type.'
                 ]);
             }
 
-        }
-        elseif($request->type == 'otp_on_password_reset'){
-            $request->validate([
-                'code' => ['required', 'numeric', 'digits:6'],
-                'email' => 'required'
+            \Log::info('sendOTPForAPI - Sending OTP', [
+                'type' => $request->type,
+                'email' => $request->email ?? $request->phone,
+                'code' => $request->code
             ]);
-            $user = User::where('email', $request->email)->where('is_active', 1)->whereHas('role', function($q){
-                $q->where('type', 'customer');
-            })->first();
-            if(!$user){
-                $user = User::where('username', $request->email)->where('is_active', 1)->whereHas('role', function($q){
-                    $q->where('type', 'customer');
-                })->first();
-            }
-            if(!$user){
-                throw ValidationException::withMessages([
-                    'email' => __('auth.failed')
-                ]);
-            }
 
-        }else{
-            throw ValidationException::withMessages([
-                'type' => 'invalid type.'
-            ]);
-        }
-        try{
             $result = $this->sendOTPFromAPI($request);
 
             if($result){
+                \Log::info('sendOTPForAPI - Success');
                 return response()->json([
                     'msg' => trans('app.Success')
                 ], 200);
             }else{
+                \Log::error('sendOTPForAPI - Failed to send OTP');
                 return response()->json([
                     'msg' => trans('app.failed')
                 ], 403);
             }
+        }catch(\Illuminate\Validation\ValidationException $e){
+            \Log::error('sendOTPForAPI - Validation failed', ['errors' => $e->errors()]);
+            throw $e;
         }catch(Exception $e){
+            \Log::error('sendOTPForAPI - Exception', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
+            return response()->json(['msg' => 'Something went wrong'], 500);
         }
-
     }
 }

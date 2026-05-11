@@ -65,8 +65,7 @@
                         <div class="col-xl-6">
                             <div class="primary_input mb-25">
                                 <label class="primary_input_label"
-                                    for="shop_display_name">{{__('seller.display_name')}}/{{__('seller.shop_name')}}
-                                    ({{__('common.unique')}}) <span class="text-danger">*</span></label>
+                                    for="shop_display_name">{{__('seller.display_name')}}/{{__('seller.shop_name')}} <span class="text-danger">*</span></label>
                                 <input name="shop_display_name" class="primary_input_field" placeholder="-" type="text"
                                     value="{{ old('shop_display_name')? old('shop_display_name'):$seller->sellerAccount->seller_shop_display_name }}">
                                 @error('shop_display_name')

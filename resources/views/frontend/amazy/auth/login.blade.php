@@ -60,11 +60,13 @@
                         <span class="text-danger" >{{ $errors->first('email') }}</span>
                         <span class="text-danger" >{{ $errors->first('username') }}</span>
                     </div>
+                    @if(!isModuleActive('Otp') || !otp_configuration('login_with_otp_only'))
                     <div class="col-12 mb_20">
                         <label class="primary_label2">{{ __('common.password') }} <span>*</span></label>
                         <input name="password" id="password" placeholder="{{__('amazy.Min. 8 Character')}}" onfocus="this.placeholder = ''" onblur="this.placeholder = '{{__('amazy.Min. 8 Character')}}'" class="primary_input3 radius_5px" type="password">
                         <span class="text-danger" >{{ $errors->first('password') }}</span>
                     </div>
+                    @endif
                     @if(env('NOCAPTCHA_FOR_LOGIN') == "true")
                     <div class="col-12 mb_20">
                         @if(env('NOCAPTCHA_INVISIBLE') != "true")
@@ -138,12 +140,19 @@
             if(email == ''){
                 $('#login_form > div > div:nth-child(1) > span:nth-child(3)').text('The email or phone field is required.');
                 val_check = 1;
+            }else{
+                // If it's a 10-digit number, prepend +91
+                if(!isNaN(email) && email.length == 10 && !email.startsWith('+')){
+                    $('#text').val('+91' + email);
+                }
             }
 
+            @if(!isModuleActive('Otp') || !otp_configuration('login_with_otp_only'))
             if(password == ''){
                 $('#login_form > div > div:nth-child(2) > span').text('The password field is required.');
                 val_check = 1;
             }
+            @endif
 
             if(val_check == 1){
                 event.preventDefault();

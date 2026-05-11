@@ -129,11 +129,16 @@ class AuthController extends Controller
     
         try {
             \Log::debug('Validating login request');
-            $request->validate([
+            $rules = [
                 'login' => 'required', // can be email or phone
-                'password' => 'required',
                 'device_token' => 'required',
-            ]);
+            ];
+
+            if (!isModuleActive('Otp') || !otp_configuration('login_with_otp_only')) {
+                $rules['password'] = 'required';
+            }
+
+            $request->validate($rules);
     
             $loginInput = $request->login;
     
@@ -168,12 +173,14 @@ class AuthController extends Controller
                 'role_type' => $user->role->type
             ]);
     
-            if (!Hash::check($request->password, $user->password)) {
-                \Log::warning('Password verification failed', [
-                    'user_id' => $user->id
-                ]);
-    
-                return response(['message' => 'Invalid Credentials'], 401);
+            if (!isModuleActive('Otp') || !otp_configuration('login_with_otp_only')) {
+                if (!Hash::check($request->password, $user->password)) {
+                    \Log::warning('Password verification failed', [
+                        'user_id' => $user->id
+                    ]);
+        
+                    return response(['message' => 'Invalid Credentials'], 401);
+                }
             }
     
             // Migrate carts
@@ -238,59 +245,133 @@ class AuthController extends Controller
     
     public function customerLogin(Request $request)
     {
-        $request->validate([
-            'email' => 'required',
-            'password' => 'required',
-            'device_token' => "required"
+        Log::info('Customer Login Method Invoked', [
+            'ip' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'timestamp' => now()->toDateTimeString(),
+            'input_data' => $request->except('password'), 
         ]);
-        $user = User::where('is_active', 1)->whereHas('role', function ($role) {
-            return $role->where('type', 'customer');
-        })
-            ->where('email', $request->email)
-            ->orWhere('username', $request->email)
-            ->first();
-        if ($user && password_verify($request->password, $user->password) && $user->role->type == 'customer') {
-            $token = $user->createToken('my_token')->plainTextToken;
-            Cart::where('session_id',$request->device_token)->update([
-                'user_id' => $user->id,
-                'session_id' => ''
+
+        try {
+            $request->validate([
+                'email' => 'required',
+                'password' => 'required',
+                'device_token' => "required"
             ]);
-            $response = [
-                'user' => $user,
-                'token' => $token,
-                'message' => 'Successfully logged In'
-            ];
-            return response($response, 200);
-        } else {
-            return response(['message' => 'Invalid Credintials'], 401);
+            
+            Log::info('Customer Login attempt', [
+                'login' => $request->email,
+                'device_token' => $request->device_token,
+            ]);
+
+            $user = User::where('is_active', 1)->whereHas('role', function ($role) {
+                return $role->where('type', 'customer');
+            })
+                ->where('email', $request->email)
+                ->orWhere('username', $request->email)
+                ->first();
+
+            if ($user && password_verify($request->password, $user->password) && $user->role->type == 'customer') {
+                $token = $user->createToken('my_token')->plainTextToken;
+                Cart::where('session_id', $request->device_token)->update([
+                    'user_id' => $user->id,
+                    'session_id' => ''
+                ]);
+                
+                $response = [
+                    'user' => $user,
+                    'token' => $token,
+                    'message' => 'Successfully logged In'
+                ];
+                
+                Log::info('Customer Login successful', [
+                    'user_id' => $user->id,
+                    'token_created' => true
+                ]);
+
+                return response($response, 200);
+            } else {
+                Log::warning('Customer Login failed', [
+                    'login' => $request->email,
+                    'reason' => 'Invalid credentials or inactive user'
+                ]);
+                return response(['message' => 'Invalid Credintials'], 401);
+            }
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Customer Login validation failed', [
+                'errors' => $e->errors(),
+                'input' => $request->except('password'),
+            ]);
+            throw $e;
+        } catch (\Exception $e) {
+            Log::error('Customer Login method exception', [
+                'error_message' => $e->getMessage(),
+                'error_file' => $e->getFile(),
+                'error_line' => $e->getLine(),
+                'input' => $request->except('password'),
+            ]);
+            return response(['message' => 'An error occurred during login'], 500);
         }
     }
 
     public function socialLogin(Request $request)
     {
-        $request->validate([
-            'provider_id' => ['required'],
-            'provider_name' => ['required'],
-            'name' => ['nullable'],
-            'email' => ['nullable'],
-            'token' => 'required'
+        Log::info('Social Login Method Invoked', [
+            'ip' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'timestamp' => now()->toDateTimeString(),
+            'payload' => $request->all(),
         ]);
-        if ($request->provider_name == 'google') {
-            $res = \Illuminate\Support\Facades\Http::get('https://oauth2.googleapis.com/tokeninfo?id_token=' . $request->token);
-            if ($res->successful()) {
-                return $this->getTokenBySocial($request);
+
+        try {
+            $request->validate([
+                'provider_id' => ['required'],
+                'provider_name' => ['required'],
+                'name' => ['nullable'],
+                'email' => ['nullable'],
+                'token' => 'required'
+            ]);
+
+            Log::info('Social Login attempt', [
+                'provider' => $request->provider_name,
+                'provider_id' => $request->provider_id,
+                'email' => $request->email,
+            ]);
+
+            if ($request->provider_name == 'google') {
+                $res = \Illuminate\Support\Facades\Http::get('https://oauth2.googleapis.com/tokeninfo?id_token=' . $request->token);
+                if ($res->successful()) {
+                    return $this->getTokenBySocial($request);
+                } else {
+                    Log::warning('Google Social Login failed - Invalid token', [
+                        'provider_id' => $request->provider_id,
+                        'email' => $request->email,
+                    ]);
+                    return response()->json(['message' => 'Invalid token.'], 422);
+                }
+            } elseif ($request->provider_name == 'facebook') {
+                $res = \Illuminate\Support\Facades\Http::get('https://graph.facebook.com/me?access_token=' . $request->token);
+                if ($res->successful()) {
+                    return $this->getTokenBySocial($request);
+                } else {
+                    Log::warning('Facebook Social Login failed - Invalid token', [
+                        'provider_id' => $request->provider_id,
+                        'email' => $request->email,
+                    ]);
+                    return response()->json(['message' => 'Invalid token.'], 422);
+                }
             } else {
-                return response()->json(['message' => 'Invalid token.'], 422);
+                Log::warning('Social Login failed - Invalid provider', [
+                    'provider' => $request->provider_name,
+                ]);
+                return response()->json(['message' => 'Invalid provider name.'], 422);
             }
-        } elseif ($request->provider_name == 'facebook') {
-            $res = \Illuminate\Support\Facades\Http::get('https://graph.facebook.com/me?access_token=' . $request->token);
-            if ($res->successful()) {
-                return $this->getTokenBySocial($request);
-            } else {
-                return response()->json(['message' => 'Invalid token.'], 422);
-            }
-        } else {
-            return response()->json(['message' => 'Invalid provider name.'], 422);
+        } catch (\Exception $e) {
+            Log::error('Social Login method exception', [
+                'error_message' => $e->getMessage(),
+                'payload' => $request->all(),
+            ]);
+            return response()->json(['message' => 'An error occurred during social login'], 500);
         }
     }
 

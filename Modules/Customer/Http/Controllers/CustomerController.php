@@ -69,7 +69,7 @@ class CustomerController extends Controller
                     return view('customer::customers.components._name_td', compact('customer'));
                 })
                 ->addColumn('phone', function ($customer) {
-                    return getNumberTranslate($customer->username);
+                    return getNumberTranslate($customer->phone);
                 })
                 ->addColumn('status', function ($customer) {
                     return view('customer::customers.components._status_td', compact('customer'));

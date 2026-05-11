@@ -31,7 +31,7 @@ trait SendSMS
         }
     }
 
-    function sendSMS($to, $text,$to_name='',$user_email='',$order_tracking_number = '',$secret_code='',$giftcard ='')
+    function sendSMS($to, $text,$to_name='',$user_email='',$order_tracking_number = '',$secret_code='',$giftcard ='',$expiry_time='')
     {
         $text = str_replace("{USER_FIRST_NAME}", $to_name, $text);
         $text = str_replace("{USER_EMAIL}",$user_email, $text);
@@ -39,7 +39,9 @@ trait SendSMS
         $text = str_replace("{WEBSITE_NAME}", app('general_setting')->site_title, $text);
         $text = str_replace("{GIFT_CARD_NAME}", $giftcard, $text);
         $text = str_replace("{SECRET_CODE}", $secret_code, $text);
-        Log::info($text);
+        $text = str_replace("{EXPIRY_TIME}", $expiry_time, $text);
+        Log::info("Sending SMS to: " . $to);
+        Log::info("SMS Text: " . $text);
         $return = true;
         if (BusinessSetting::where('type', 'Twillo')->first()->status == 1) {
             if ($to) {
@@ -54,7 +56,9 @@ trait SendSMS
                             'body' => $text
                         )
                     );
+                    \Log::info('Twilio SMS Success - SID: ' . $message->sid . ' | Status: ' . $message->status);
                 } catch (\Exception $e) {
+                    \Log::error('Twilio SMS Error: ' . $e->getMessage());
                     $return = false;
                 }
             }
