@@ -5,12 +5,23 @@
         _token = $('#csrf_token').val();
     }
     $(document).ready(function(){
-        $(document).on('change','#url',function (event){
-          let url = $(this).val();
+        function generateAffiliateLink() {
+          let url = $('#url').val();
           let userName = $('#user_name').val();
-          let affiliateUrl = url +'?reference='+userName;
-          $('#affiliate_link').val(affiliateUrl);
+          if (url) {
+              let separator = url.indexOf('?') !== -1 ? '&' : '?';
+              let affiliateUrl = url + separator + 'reference=' + userName;
+              $('#affiliate_link').val(affiliateUrl);
+          } else {
+              $('#affiliate_link').val('');
+          }
+        }
+
+        $(document).on('input','#url',function (event){
+          generateAffiliateLink();
         });
+
+        generateAffiliateLink();
 
         $(document).on('click','#withdraw_request_btn',function (event){
             let minimumWithdrawAmount = parseFloat($('#minimum_withdraw_amount').val());

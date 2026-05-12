@@ -248,7 +248,7 @@ trait Otp
             } else {
                 return false;
             }
-        }elseif($request->type == 'otp_on_login'){
+        }elseif($request->type == 'otp_on_login' || $request->type == 'login_with_otp_only'){
             if (filter_var($request->email, FILTER_VALIDATE_EMAIL)) {
                 try{
                     \Log::info('Otp Trait - sendOTPFromAPI - Sending login OTP by Mail');

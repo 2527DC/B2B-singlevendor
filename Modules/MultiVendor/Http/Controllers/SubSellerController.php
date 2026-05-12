@@ -177,27 +177,24 @@ class SubSellerController extends Controller
 
     public function access_permission_store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $request->validate([
             'user_id' => "required",
             'module_id' => "required|array"
         ]);
+        DB::beginTransaction();
         try{
-            if($validator->fails()){
-
-                    $seller_staff  = $this->subSellerService->findUserByID($request->user_id);
-                    $seller_staff->permissions()->detach();
-                    $seller_staff->permissions()->attach(array_unique($request->module_id));
-                DB::commit();
-                LogActivity::successLog('Permission given Successfully');
-                Toastr::success(__('hr.permission_given_successfully'), __('common.success'));
-                return redirect()->back();
-            }
-
+            $seller_staff  = $this->subSellerService->findUserByID($request->user_id);
+            $seller_staff->permissions()->detach();
+            $seller_staff->permissions()->attach(array_unique($request->module_id));
+            DB::commit();
+            LogActivity::successLog('Permission given Successfully');
+            Toastr::success(__('hr.permission_given_successfully'), __('common.success'));
+            return redirect()->back();
         }catch (\Exception $e) {
             LogActivity::errorLog($e->getMessage());
             DB::rollback();
             Toastr::error(__('common.error_message'), __('common.error'));
-           return redirect()->back();
+            return redirect()->back();
         }
     }
 }

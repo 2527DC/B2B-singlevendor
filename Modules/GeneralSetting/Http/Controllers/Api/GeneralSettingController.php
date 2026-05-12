@@ -69,7 +69,16 @@ class GeneralSettingController extends Controller
         $pickup_locations = null;
         $free_shipping = null;
         if(isModuleActive('Otp')){
-            $otp_config = OtpConfiguration::whereIn('key', ['code_validation_time', 'otp_activation_for_seller', 'otp_activation_for_customer', 'otp_activation_for_order','order_otp_on_verified_customer','order_cancel_limit_on_verified_customer','otp_on_login','otp_on_password_reset'])->get();
+            $otp_config = OtpConfiguration::whereIn('key', ['code_validation_time', 'otp_activation_for_seller', 'otp_activation_for_customer', 'otp_activation_for_order','order_otp_on_verified_customer','order_cancel_limit_on_verified_customer','otp_on_login','otp_on_password_reset', 'login_with_otp_only'])->get();
+            
+            $login_with_otp_only = $otp_config->where('key', 'login_with_otp_only')->first();
+            if($login_with_otp_only && $login_with_otp_only->value == 0){
+                $otp_on_login = $otp_config->where('key', 'otp_on_login')->first();
+                if($otp_on_login){
+                    $otp_on_login->value = 0;
+                }
+            }
+
             $otp_configuration = OTPConfigurationResource::collection($otp_config);
         }
         if(isModuleActive('MultiVendor')){
@@ -211,17 +220,25 @@ class GeneralSettingController extends Controller
                     'phone' => 'required'
                 ]);
             }
-            elseif($request->type == 'otp_on_login'){
+            elseif($request->type == 'otp_on_login' || $request->type == 'login_with_otp_only'){
                 if (isModuleActive('Otp') && otp_configuration('login_with_otp_only')) {
                     $request->validate([
                         'code' => ['required', 'numeric', 'digits:6'],
                         'email' => ['required'],
                     ]);
-                } else {
+                } elseif (isModuleActive('Otp') && otp_configuration('otp_on_login')) {
                     $request->validate([
                         'code' => ['required', 'numeric', 'digits:6'],
                         'email' => ['required'],
                         'password' => ['required', 'string','min:8']
+                    ]);
+                } else {
+                    \Log::warning('sendOTPForAPI - OTP login requested but flags are off', [
+                        'login_with_otp_only' => otp_configuration('login_with_otp_only'),
+                        'otp_on_login' => otp_configuration('otp_on_login')
+                    ]);
+                    throw ValidationException::withMessages([
+                        'type' => 'OTP login is not enabled.'
                     ]);
                 }
                 
@@ -248,6 +265,7 @@ class GeneralSettingController extends Controller
                         'email' => __('auth.failed')
                     ]);
                 }
+                $user->update(['verify_code' => $request->code]);
 
                 if (!filter_var($request->email, FILTER_VALIDATE_EMAIL)) {
                     $request->merge(['email' => $user->phone]);
@@ -289,6 +307,7 @@ class GeneralSettingController extends Controller
                         'email' => __('auth.failed')
                     ]);
                 }
+                $user->update(['verify_code' => $request->code]);
 
                 if (!filter_var($request->email, FILTER_VALIDATE_EMAIL)) {
                     $request->merge(['email' => $user->phone]);

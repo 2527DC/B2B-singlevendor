@@ -215,6 +215,12 @@ class LoginController extends Controller
 
     public function login(Request $request)
     {
+        \Log::info('Web Login Method Invoked', [
+            'login' => $request->login,
+            'ip' => $request->ip(),
+            'login_with_otp_only' => isModuleActive('Otp') ? otp_configuration('login_with_otp_only') : 'module_inactive',
+            'otp_on_login' => isModuleActive('Otp') ? otp_configuration('otp_on_login') : 'module_inactive'
+        ]);
         $user = null;
 
         $check_user = User::where('email', $request->login)->where('is_active', 1)->whereHas('role', function($q){
@@ -288,7 +294,7 @@ class LoginController extends Controller
             $this->fireLockoutEvent($request);
             return $this->sendLockoutResponse($request);
         }
-        if (isModuleActive('Otp') && (otp_configuration('otp_on_login') || otp_configuration('login_with_otp_only'))) {
+        if (isModuleActive('Otp') && otp_configuration('login_with_otp_only')) {
             $userData = User::where('email', $request->login)->where('is_active', 1)->first();
             if(!$userData){
                 $userData = User::where('username', $request->login)->where('is_active', 1)->first();

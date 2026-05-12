@@ -24,9 +24,18 @@ class AffiliateRepository
     }
     public function create(array $data)
     {
+        $affiliate_link = $data['affiliate_link'];
+        if (!$affiliate_link && isset($data['url'])) {
+            $user = Auth::user();
+            $userName = !empty($user->email) ? $user->email : $user->username;
+            $url = $data['url'];
+            $separator = strpos($url, '?') !== false ? '&' : '?';
+            $affiliate_link = $url . $separator . 'reference=' . $userName;
+        }
+
         return AffiliateLink::create([
-            'affiliate_link'=>$data['affiliate_link'],
-            'owner_id'=>Auth::id(),
+            'affiliate_link' => $affiliate_link,
+            'owner_id' => Auth::id(),
         ]);
     }
 

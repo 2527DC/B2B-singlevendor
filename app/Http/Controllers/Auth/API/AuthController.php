@@ -134,7 +134,9 @@ class AuthController extends Controller
                 'device_token' => 'required',
             ];
 
-            if (!isModuleActive('Otp') || !otp_configuration('login_with_otp_only')) {
+            if (isModuleActive('Otp') && otp_configuration('login_with_otp_only')) {
+                $rules['code'] = 'required';
+            } else {
                 $rules['password'] = 'required';
             }
 
@@ -173,7 +175,18 @@ class AuthController extends Controller
                 'role_type' => $user->role->type
             ]);
     
-            if (!isModuleActive('Otp') || !otp_configuration('login_with_otp_only')) {
+            if (isModuleActive('Otp') && otp_configuration('login_with_otp_only')) {
+                if ($request->code != $user->verify_code) {
+                    \Log::warning('OTP verification failed', [
+                        'user_id' => $user->id,
+                        'input_code' => $request->code,
+                        'stored_code' => $user->verify_code
+                    ]);
+        
+                    return response(['message' => 'Invalid OTP Code'], 401);
+                }
+                $user->update(['verify_code' => null]);
+            } else {
                 if (!Hash::check($request->password, $user->password)) {
                     \Log::warning('Password verification failed', [
                         'user_id' => $user->id
@@ -253,11 +266,18 @@ class AuthController extends Controller
         ]);
 
         try {
-            $request->validate([
+            $rules = [
                 'email' => 'required',
-                'password' => 'required',
-                'device_token' => "required"
-            ]);
+                'device_token' => 'required',
+            ];
+
+            if (isModuleActive('Otp') && otp_configuration('login_with_otp_only')) {
+                $rules['code'] = 'required';
+            } else {
+                $rules['password'] = 'required';
+            }
+
+            $request->validate($rules);
             
             Log::info('Customer Login attempt', [
                 'login' => $request->email,
@@ -271,7 +291,21 @@ class AuthController extends Controller
                 ->orWhere('username', $request->email)
                 ->first();
 
-            if ($user && password_verify($request->password, $user->password) && $user->role->type == 'customer') {
+            $verified = false;
+            if ($user && $user->role->type == 'customer') {
+                if (isModuleActive('Otp') && otp_configuration('login_with_otp_only')) {
+                    if ($request->code == $user->verify_code) {
+                        $verified = true;
+                        $user->update(['verify_code' => null]);
+                    }
+                } else {
+                    if (password_verify($request->password, $user->password)) {
+                        $verified = true;
+                    }
+                }
+            }
+
+            if ($verified) {
                 $token = $user->createToken('my_token')->plainTextToken;
                 Cart::where('session_id', $request->device_token)->update([
                     'user_id' => $user->id,
