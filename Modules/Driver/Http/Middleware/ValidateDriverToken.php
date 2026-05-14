@@ -20,7 +20,7 @@ class ValidateDriverToken
     public function handle(Request $request, Closure $next)
     {
         // Log token validation attempt
-        Log::channel('driver_auth')->debug('Driver token validation started', [
+        Log::debug('Driver token validation started', [
             'endpoint' => $request->path(),
             'ip' => $request->ip(),
             'method' => $request->method(),
@@ -31,7 +31,7 @@ class ValidateDriverToken
         if (!Auth::guard('sanctum')->check()) {
             $token = $request->bearerToken();
             
-            Log::channel('driver_auth')->warning('Driver authentication failed', [
+            Log::warning('Driver authentication failed', [
                 'reason' => $token ? 'Invalid token' : 'No token provided',
                 'token_preview' => $token ? substr($token, 0, 20) . '...' : 'none',
                 'ip' => $request->ip(),
@@ -52,7 +52,7 @@ class ValidateDriverToken
         
         // Verify it's a Driver instance
         if (!$user instanceof Driver) {
-            Log::channel('driver_auth')->error('Authenticated user is not a Driver instance', [
+            Log::error('Authenticated user is not a Driver instance', [
                 'user_id' => $user->id,
                 'user_type' => get_class($user),
                 'expected_type' => Driver::class,
@@ -69,7 +69,7 @@ class ValidateDriverToken
 
         // Check driver status
         if (isset($user->status) && $user->status !== 'active') {
-            Log::channel('driver_auth')->warning('Driver account not active', [
+            Log::warning('Driver account not active', [
                 'driver_id' => $user->id,
                 'phone' => $user->phone,
                 'status' => $user->status,
@@ -85,7 +85,7 @@ class ValidateDriverToken
         }
 
         // Log successful authentication
-        Log::channel('driver_auth')->debug('Driver authenticated successfully', [
+        Log::debug('Driver authenticated successfully', [
             'driver_id' => $user->id,
             'phone' => $user->phone,
             'endpoint' => $request->path(),

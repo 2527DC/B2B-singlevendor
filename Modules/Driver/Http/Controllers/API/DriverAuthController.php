@@ -18,7 +18,7 @@ class DriverAuthController extends Controller
  */
 public function login(Request $request)
 {
-    Log::channel('driver_auth')->info('Driver Login Method Invoked', [
+    Log::info('Driver Login Method Invoked', [
         'ip' => $request->ip(),
         'user_agent' => $request->userAgent(),
         'timestamp' => now()->toDateTimeString(),
@@ -34,7 +34,7 @@ public function login(Request $request)
         $driver = Driver::where('phone', $request->phone)->first();
 
         if (!$driver || !Hash::check($request->password, $driver->password)) {
-            Log::channel('driver_auth')->warning('Driver Login failed - Invalid credentials', [
+            Log::warning('Driver Login failed - Invalid credentials', [
                 'phone' => $request->phone,
             ]);
             return response()->json([
@@ -45,7 +45,7 @@ public function login(Request $request)
 
         // ✅ ACTIVE / INACTIVE CHECK
         if ($driver->is_active != 1) {
-            Log::channel('driver_auth')->warning('Driver Login failed - Inactive account', [
+            Log::warning('Driver Login failed - Inactive account', [
                 'driver_id' => $driver->id,
                 'phone' => $driver->phone,
             ]);
@@ -60,7 +60,7 @@ public function login(Request $request)
 
         $token = $driver->createToken('driver-api')->plainTextToken;
 
-        Log::channel('driver_auth')->info('Driver Login successful', [
+        Log::info('Driver Login successful', [
             'driver_id' => $driver->id,
             'phone' => $driver->phone,
         ]);
@@ -82,7 +82,7 @@ public function login(Request $request)
             ],
         ]);
     } catch (\Exception $e) {
-        Log::channel('driver_auth')->error('Driver Login method exception', [
+        Log::error('Driver Login method exception', [
             'error_message' => $e->getMessage(),
             'phone' => $request->phone,
         ]);
@@ -104,7 +104,7 @@ public function login(Request $request)
         $driver = Auth::guard('sanctum')->user();
         
         if (!$driver) {
-            Log::channel('driver_auth')->error('Logout failed - No authenticated driver found');
+            Log::error('Logout failed - No authenticated driver found');
             
             return response()->json([
                 'status' => false,
@@ -117,7 +117,7 @@ public function login(Request $request)
         
         if ($token) {
             // Log logout details
-            Log::channel('driver_auth')->info('Driver logout', [
+            Log::info('Driver logout', [
                 'driver_id' => $driver->id,
                 'phone' => $driver->phone,
                 'token_id' => $token->id,
@@ -131,7 +131,7 @@ public function login(Request $request)
             // Fallback: Delete all tokens
             $driver->tokens()->delete();
             
-            Log::channel('driver_auth')->info('Driver logout - cleared all tokens', [
+            Log::info('Driver logout - cleared all tokens', [
                 'driver_id' => $driver->id,
                 'phone' => $driver->phone,
                 'ip_address' => $request->ip(),
@@ -160,7 +160,7 @@ public function login(Request $request)
         }
 
         // Log profile access
-        Log::channel('driver_auth')->debug('Driver profile accessed', [
+        Log::debug('Driver profile accessed', [
             'driver_id' => $driver->id,
             'phone' => $driver->phone,
             'ip_address' => $request->ip(),
@@ -193,7 +193,7 @@ public function login(Request $request)
         }
 
         // Log token validation
-        Log::channel('driver_auth')->debug('Token validation check', [
+        Log::debug('Token validation check', [
             'driver_id' => $driver->id,
             'phone' => $driver->phone,
             'check_timestamp' => now()->toDateTimeString(),
@@ -237,7 +237,7 @@ public function login(Request $request)
             $currentToken->delete();
         }
 
-        Log::channel('driver_auth')->info('Token refreshed', [
+        Log::info('Token refreshed', [
             'driver_id' => $driver->id,
             'old_token_id' => $currentToken ? $currentToken->id : 'none',
             'ip_address' => $request->ip(),

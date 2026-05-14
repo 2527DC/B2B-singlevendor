@@ -280,7 +280,7 @@ class AuthController extends Controller
 
         try {
             $rules = [
-                'email' => 'required',
+                'phone' => 'required',
                 'device_token' => 'required',
             ];
 
@@ -293,15 +293,14 @@ class AuthController extends Controller
             $request->validate($rules);
             
             Log::info('Customer Login attempt', [
-                'login' => $request->email,
+                'login' => $request->phone,
                 'device_token' => $request->device_token,
             ]);
 
             $user = User::where('is_active', 1)->whereHas('role', function ($role) {
                 return $role->where('type', 'customer');
             })
-                ->where('email', $request->email)
-                ->orWhere('username', $request->email)
+                ->where('phone', $request->phone)
                 ->first();
 
             $verified = false;
@@ -343,23 +342,19 @@ class AuthController extends Controller
                     ->whereHas('role', function ($role) {
                         return $role->where('type', 'customer');
                     })
-                    ->where(function ($q) use ($request) {
-                        $q->where('email', $request->email)
-                          ->orWhere('username', $request->email)
-                          ->orWhere('phone', $request->email);
-                    })
+                    ->where('phone', $request->phone)
                     ->first();
 
                 if ($inactiveUser) {
                     Log::info('Customer Login blocked - account pending approval', [
                         'user_id' => $inactiveUser->id,
-                        'login' => $request->email,
+                        'login' => $request->phone,
                     ]);
                     return response(['message' => 'Your account is pending admin approval. Please wait for activation.'], 403);
                 }
 
                 Log::warning('Customer Login failed', [
-                    'login' => $request->email,
+                    'login' => $request->phone,
                     'reason' => 'Invalid credentials or inactive user'
                 ]);
                 return response(['message' => 'Invalid Credintials'], 401);
