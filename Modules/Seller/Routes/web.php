@@ -48,6 +48,14 @@ Route::middleware(['auth','seller'])->prefix('seller')->as('seller.')->group(fun
     Route::resource('/supplier', 'SupplierController')->except('destroy');
     Route::post('/supplier/delete','SupplierController@destroy')->name('supplier.delete');
     Route::post('/supplier/status-update','SupplierController@statusChange')->name('supplier.status-update');
+
+    // Salesman
+    Route::get('/salesmen', 'SalesmanController@index')->name('salesmen.index');
+    Route::post('/salesmen', 'SalesmanController@store')->name('salesmen.store');
+    Route::put('/salesmen/{id}', 'SalesmanController@update')->name('salesmen.update');
+    Route::delete('/salesmen/{id}', 'SalesmanController@destroy')->name('salesmen.destroy');
+    Route::get('/salesmen-download-excel', 'SalesmanController@downloadExcel')->name('salesmen.download_excel');
+    Route::post('/salesmen-upload-excel', 'SalesmanController@uploadExcel')->name('salesmen.upload_excel');
 });
 Route::prefix('seller')->as('seller.')->group(function() {
     Route::get('/profile/get-state',[CountryController::class, 'get_states'])->name('profile.get-state');

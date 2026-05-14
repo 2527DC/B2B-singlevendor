@@ -11,6 +11,7 @@
             <th>{{ __('common.wallet_balance') }}</th>
             <th>{{ __('common.total_orders') }}</th>
             <th>Warehouse Selected</th>
+            <th>Salesman</th>
             <th>{{ __('common.action') }}</th>
         </tr>
     </thead>

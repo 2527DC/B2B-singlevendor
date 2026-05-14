@@ -42,6 +42,7 @@ class AuthRepository{
             'store_image'   => $data['store_image'] ?? null,   // ✅ Add store image path
             'warehouse_id'  => $data['warehouse_id'] ?? null,  // ✅ Add warehouse_id
             'gst_number'    => $data['gst_number'] ?? null,
+            'coordinates'   => $data['coordinates'] ?? null,
         ]);
     
         // User Notification Setting
@@ -93,6 +94,7 @@ class AuthRepository{
                 'password'   => Hash::make($user['password']),
                 'role_id'    => 4,
                 'is_active'  => 0, // ✅ Inactive - requires admin approval
+                'coordinates' => $user['coordinates'] ?? null,
             ]);
     
             return $user_exist;

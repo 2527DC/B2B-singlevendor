@@ -48,7 +48,7 @@ class CustomerController extends Controller
         if (isset($_GET['table'])) {
             $table = $_GET['table'];
             
-            $query = $this->customerService->getAll();
+            $query = $this->customerService->getAll()->with(['salesman', 'warehouse']);
             if (auth()->check() && auth()->user()->role->type == 'seller') {
                 $query->where('warehouse_id', auth()->id());
             }
@@ -91,6 +91,9 @@ class CustomerController extends Controller
                 })
                 ->addColumn('store_name', function ($customer) {
                     return $customer->store_name ? $customer->store_name : '-';
+                })
+                ->addColumn('salesman_name', function ($customer) {
+                    return $customer->salesman ? $customer->salesman->name : '-';
                 })
                 ->rawColumns(['avatar', 'status', 'action', 'name'])
                 ->make(true);

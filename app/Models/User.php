@@ -86,6 +86,8 @@ class User extends Authenticatable
         'club_point',
         'warehouse_id',
         'gst_number',
+        'salesman_id',
+        'coordinates',
     ];
 
     /**
@@ -125,6 +127,7 @@ class User extends Authenticatable
         'is_verified' => 'integer',
         'is_active' => 'integer',
         'email_verified_at' => 'datetime',
+        'coordinates' => 'json',
     ];
 
     protected $appends  = [
@@ -505,5 +508,10 @@ class User extends Authenticatable
     public function lastPosInvoice()
     {
         return $this->hasOne(\Modules\POS\Entities\Sale::class,'customer_id')->where('type',2)->latest();
+    }
+
+    public function salesman()
+    {
+        return $this->belongsTo(\App\Models\Salesman::class, 'salesman_id', 'salesman_id');
     }
 }

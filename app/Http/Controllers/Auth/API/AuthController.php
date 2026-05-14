@@ -539,6 +539,8 @@ public function register(Request $request)
             'store_name'    => 'nullable|string|max:191',
             'store_image'   => 'required|file|mimes:jpeg,png,jpg,gif|max:10240', // Max 10MB, required
             'document'      => 'nullable|file|mimes:jpeg,png,jpg,gif|max:10240', // Max 10MB
+            'latitude'      => 'required|numeric',
+            'longitude'     => 'required|numeric',
         ];
 
         $messages = [
@@ -640,6 +642,10 @@ public function register(Request $request)
             'referral_code' => $request->input('referral_code'),
             'warehouse_id'  => $request->input('warehouse_id'), // warehouse_id (added via SQL, registered here)
             'gst_number'    => $request->input('gst_number'),
+            'coordinates'   => [
+                'latitude'  => $request->input('latitude'),
+                'longitude' => $request->input('longitude'),
+            ],
         ];
 
         // Check if user already exists by phone or email
