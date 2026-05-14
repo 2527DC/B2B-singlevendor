@@ -32,6 +32,7 @@ class AuthRepository{
             'phone'         => $phone,
             'password'      => Hash::make($data['password']),
             'role_id'       => 4, // customer role
+            'is_active'     => 0, // ✅ Inactive by default - requires admin approval
             'currency_id'   => app('general_setting')->currency,
             'lang_code'     => app('general_setting')->language_code,
             'currency_code' => app('general_setting')->currency_code,
@@ -91,7 +92,7 @@ class AuthRepository{
                 'phone'      => $phone,
                 'password'   => Hash::make($user['password']),
                 'role_id'    => 4,
-                'is_active'  => 1,
+                'is_active'  => 0, // ✅ Inactive - requires admin approval
             ]);
     
             return $user_exist;

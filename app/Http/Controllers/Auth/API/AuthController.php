@@ -130,7 +130,7 @@ class AuthController extends Controller
         try {
             \Log::debug('Validating login request');
             $rules = [
-                'login' => 'required', // can be email or phone
+                'phone' => 'required',
                 'device_token' => 'required',
             ];
 
@@ -142,19 +142,16 @@ class AuthController extends Controller
 
             $request->validate($rules);
     
-            $loginInput = $request->login;
+            $loginInput = $request->phone;
     
             \Log::info('Login attempt', [
-                'login' => $loginInput,
+                'phone' => $loginInput,
                 'device_token' => $request->device_token,
             ]);
     
-            \Log::debug('Searching user by phone or email');
+            \Log::debug('Searching user by phone');
     
-            $user = User::where(function ($q) use ($loginInput) {
-                            $q->where('phone', $loginInput)
-                              ->orWhere('email', $loginInput);
-                        })
+            $user = User::where('phone', $loginInput)
                         ->where('is_active', 1)
                         ->whereHas('role', function ($q) {
                             $q->where('type', 'customer');
@@ -162,8 +159,24 @@ class AuthController extends Controller
                         ->first();
     
             if (!$user) {
+                // Check if user exists but is inactive (pending admin approval)
+                $inactiveUser = User::where('phone', $loginInput)
+                ->where('is_active', 0)
+                ->whereHas('role', function ($q) {
+                    $q->where('type', 'customer');
+                })
+                ->first();
+
+                if ($inactiveUser) {
+                    \Log::info('Login blocked - account pending approval', [
+                        'user_id' => $inactiveUser->id,
+                        'phone' => $loginInput,
+                    ]);
+                    return response(['message' => 'Your account is pending admin approval. Please wait for activation.'], 403);
+                }
+
                 \Log::warning('User not found', [
-                    'login' => $loginInput,
+                    'phone' => $loginInput,
                     'reason' => 'User not found or inactive'
                 ]);
     
@@ -325,6 +338,26 @@ class AuthController extends Controller
 
                 return response($response, 200);
             } else {
+                // Check if user exists but is inactive (pending admin approval)
+                $inactiveUser = User::where('is_active', 0)
+                    ->whereHas('role', function ($role) {
+                        return $role->where('type', 'customer');
+                    })
+                    ->where(function ($q) use ($request) {
+                        $q->where('email', $request->email)
+                          ->orWhere('username', $request->email)
+                          ->orWhere('phone', $request->email);
+                    })
+                    ->first();
+
+                if ($inactiveUser) {
+                    Log::info('Customer Login blocked - account pending approval', [
+                        'user_id' => $inactiveUser->id,
+                        'login' => $request->email,
+                    ]);
+                    return response(['message' => 'Your account is pending admin approval. Please wait for activation.'], 403);
+                }
+
                 Log::warning('Customer Login failed', [
                     'login' => $request->email,
                     'reason' => 'Invalid credentials or inactive user'
@@ -504,14 +537,13 @@ public function register(Request $request)
         // Validation rules
         $rules = [
             'first_name'    => 'required|string|max:255',
-            'phone'         => 'nullable|string|max:15|unique:users,phone',
-            'email'         => 'nullable|email|max:255|unique:users,email',
+            'phone'         => 'required|string|max:15|unique:users,phone',
             'password'      => 'required|min:8|confirmed',
             'user_type'     => 'required|in:customer',
             'device_token'  => 'required',
             'store_name'    => 'nullable|string|max:191',
-            'store_image'   => 'required|file|mimes:jpeg,png,jpg,gif|max:5120', // Max 5MB, required
-            'document'      => 'nullable|file|mimes:jpeg,png,jpg,gif,pdf|max:5120', // Max 5MB
+            'store_image'   => 'required|file|mimes:jpeg,png,jpg,gif|max:10240', // Max 10MB, required
+            'document'      => 'nullable|file|mimes:jpeg,png,jpg,gif|max:10240', // Max 10MB
         ];
 
         $messages = [
@@ -519,31 +551,21 @@ public function register(Request $request)
             'password.min'      => 'The password field must be at least 8 characters.',
             'user_type.in'      => 'Invalid user type provided.',
             'phone.unique'      => 'This phone number is already registered.',
-            'email.unique'      => 'This email is already registered.',
-            'email.email'       => 'The email must be a valid email address.',
             'store_image.required' => 'Store image is required.',
             'store_image.file'   => 'Store image must be a file.',
             'store_image.mimes'  => 'Store image must be a jpeg, png, jpg, or gif file.',
-            'store_image.max'    => 'Store image must not exceed 5MB.',
+            'store_image.max'    => 'Store image must not exceed 10MB.',
             'document.file'     => 'The document must be a file.',
-            'document.mimes'    => 'The document must be a jpeg, png, jpg, gif, or pdf file.',
-            'document.max'      => 'The document must not exceed 5MB.',
+            'document.mimes'    => 'The document must be a jpeg, png, jpg, or gif file.',
+            'document.max'      => 'The document must not exceed 10MB.',
         ];
 
         // Create validator
         $validator = \Validator::make($request->all(), $rules, $messages);
         
         // Add custom validation rules
-        $validator->after(function ($validator) use ($request) {
-            // Custom validation: at least one of phone or email must be provided
-            if (!$request->filled('phone') && !$request->filled('email')) {
-                $validator->errors()->add('phone', 'Either phone or email must be provided.');
-                $validator->errors()->add('email', 'Either phone or email must be provided.');
-            }
-            
-            // Removed document_type related custom validations
-            // Users can now upload documents without specifying a type
-        });
+        // Removed document_type related custom validations
+        // Users can now upload documents without specifying a type
 
         // Check if validation fails
         if ($validator->fails()) {
@@ -628,35 +650,42 @@ public function register(Request $request)
         // Check if user already exists by phone or email
         $existingUser = $this->authService->getRegister($userData);
         if ($existingUser) {
-            $response = $this->registerCustomerResponse($existingUser);
-
-            Log::info('Register API response - existing user', [
-                'user_id'  => $existingUser->id ?? null,
-                'response' => $response->getData(true),
-                'status'   => $response->status(),
+            $response = [
+                'message' => 'Registration successful. Your account is pending admin approval. Please wait for activation before logging in.',
+            ];
+            
+            Log::info('Register API req and res', [
+                'req' => $request->except(['password', 'password_confirmation', 'document', 'store_image']),
+                'res' => $response,
+                'user_id' => $existingUser->id ?? null
             ]);
 
-            return $response;
+            // Do NOT auto-login: return success message without token
+            return response()->json($response, 201);
         }
 
         // ✅ Register new user - pass array to repository
         $user = $this->authService->register($userData);
 
-        // Attach guest cart to user
+        // Attach guest cart to user (keep for when they log in later)
         Cart::where('session_id', $request->device_token)->update([
             'user_id'    => $user->id,
             'session_id' => ''
         ]);
 
-        $response = $this->registerCustomerResponse($user);
+        $response = [
+            'message' => 'Registration successful. Your account is pending admin approval. Please wait for activation before logging in.',
+        ];
 
-        Log::info('Register API response - success', [
-            'user_id'  => $user->id,
-            'response' => $response->getData(true),
-            'status'   => $response->status(),
+        Log::info('Register API req and res', [
+            'req' => $request->except(['password', 'password_confirmation', 'document', 'store_image']),
+            'res' => $response,
+            'user_id' => $user->id,
+            'is_active' => $user->is_active,
         ]);
 
-        return $response;
+        // Do NOT auto-login: return success message without token
+        return response()->json($response, 201);
 
     } catch (\Illuminate\Database\QueryException $e) {
         // Handle duplicate entry for unique fields (like phone or email)

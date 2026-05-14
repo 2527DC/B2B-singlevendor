@@ -72,6 +72,15 @@ class OrderManageRepository
         return $orderpackage->where('seller_id', $seller_id);
     }
 
+    public function mySalesList()
+    {
+        $seller_id = getParentSellerId();
+        return OrderPackageDetail::where('seller_id', $seller_id)
+        ->with('order', 'seller', 'order.customer')
+        ->select('order_package_details.*')
+        ->latest();
+    }
+
     public function totalSalesList()
     {
         return Order::with('packages.gst_taxes', 'customer')->latest();

@@ -37,6 +37,11 @@ class OrderManageService
         return $this->ordermanageRepository->myCancelledPaymentSalesList();
     }
 
+    public function mySalesList()
+    {
+        return $this->ordermanageRepository->mySalesList();
+    }
+
     public function totalSalesList()
     {
         return $this->ordermanageRepository->totalSalesList();

@@ -59,6 +59,8 @@ class OrderManageController extends Controller
                 $order_package = $this->ordermanageService->myCompletedSalesList();
             } elseif ($table == 'canceled') {
                 $order_package = $this->ordermanageService->myCancelledPaymentSalesList();
+            } elseif ($table == 'all') {
+                $order_package = $this->ordermanageService->mySalesList(); // I need to verify what the method is
             } else {
                 $order_package = [];
             }

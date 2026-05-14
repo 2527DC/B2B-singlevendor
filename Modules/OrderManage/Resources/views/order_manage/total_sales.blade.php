@@ -59,9 +59,14 @@
                     <div class="box_header_right">
                         <div class="float-lg-right float-none pos_tab_btn justify-content-end">
                             <ul class="nav nav_list" role="tablist">
+                                <li class="nav-item">
+                                    <a class="nav-link active show" href="#all_order_data" role="tab" data-toggle="tab" id="7"
+                                        aria-selected="true">{{__('common.all')}}</a>
+                                </li>
+
                                 @if (permissionCheck('pending_orders'))
                                     <li class="nav-item">
-                                        <a class="nav-link active show" href="#order_pending_data" role="tab" data-toggle="tab"
+                                        <a class="nav-link" href="#order_pending_data" role="tab" data-toggle="tab"
                                             id="1" aria-selected="true">{{__('order.pending_orders')}}</a>
                                     </li>
                                 @endif
@@ -109,22 +114,51 @@
                     <div class="white_box_30px mb_30">
 
                         <div class="tab-content">
+                            <div role="tabpanel" class="tab-pane fade active show" id="all_order_data">
+                                <div class="box_header common_table_header ">
+                                    <div class="main-title d-md-flex">
+                                        <h3 class="mb-0 mr-30 mb_xs_15px mb_sm_20px">{{__('common.all')}}</h3>
+                                    </div>
+                                </div>
+
+
+                                <div class="QA_section QA_section_heading_custom check_box_table">
+                                    <div class="QA_table">
+
+                                        <div class="" id="latest_order_div">
+                                            <table class="table" id="allOrderTable">
+                                                <thead>
+                                                    <tr>
+                                                        <th>{{__('common.sl')}}</th>
+                                                        <th width="10%">{{__('common.date')}}</th>
+                                                        <th>{{__('common.order_id')}}</th>
+                                                        <th>{{__('common.shop_name')}}</th>
+                                                        <th>{{__('phone')}}</th>
+                                                        <th>{{__('common.email')}}</th>
+                                                        <th>{{__('order.total_product_qty')}}</th>
+                                                        <th>{{__('common.mrp')}}</th>
+                                                        <th>{{__('common.taxable_value')}}</th>
+                                                        <th>{{__('common.gst')}}</th>
+                                                        <th>{{__('common.total_amount')}}</th>
+                                                        <th>{{__('order.order_status')}}</th>
+                                                        <th>{{__('order.is_paid')}}</th>
+                                                        <th>{{__('common.action')}}</th>
+                                                    </tr>
+                                                </thead>
+
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             @if (permissionCheck('pending_orders'))
-                                <div role="tabpanel" class="tab-pane fade active show" id="order_pending_data">
+                                <div role="tabpanel" class="tab-pane fade" id="order_pending_data">
                                     <div class="box_header common_table_header ">
                                         <div class="main-title d-md-flex">
                                             <h3 class="mb-0 mr-30 mb_xs_15px mb_sm_20px">{{__('order.pending_orders')}}</h3>
                                         </div>
                                     </div>
-                                    @if(permissionCheck('shipping.invoice_generate'))
-                                        <div class="d-flex mb-3 align-items-center">
-                                            <div class="mr-2">
-                                                <button type="button" class="btn btn-info bulk_download_invoices_btn"
-                                                    data-table-type="pending" title="Download Selected Invoices" disabled><i
-                                                        class="fa fa-download"></i></button>
-                                            </div>
-                                        </div>
-                                    @endif
                                     <div class="QA_section QA_section_heading_custom check_box_table">
                                         <div class="QA_table">
 
@@ -397,6 +431,116 @@
         (function ($) {
             "use strict";
             $(document).ready(function () {
+
+                $('#allOrderTable').DataTable({
+                    processing: true,
+                    serverSide: true,
+                    "stateSave": true,
+                    "ajax": ({
+                        url: "{{ route('order_manage.total_sales_get_data') }}" + '?table=all'
+                    }),
+                    "initComplete": function (json) {
+
+                    },
+                    columns: [
+                        {
+                            data: 'DT_RowIndex', name: 'id', render: function (data) {
+                                return numbertrans(data)
+                            }
+                        },
+                        { data: 'date', name: 'date' },
+                        { data: 'order_number', name: 'order_number' },
+                        { data: 'customer_name', name: 'customer_name' },
+                        { data: 'customer_phone', name: 'customer_phone' },
+                        { data: 'email', name: 'customer.email' },
+                        { data: 'total_qty', name: 'total_qty' },
+                        { data: 'mrp_price', name: 'mrp_price' },
+                        { data: 'taxable_value', name: 'taxable_value' },
+                        { data: 'gst_amount', name: 'gst_amount' },
+                        { data: 'total_amount', name: 'grand_total' },
+                        { data: 'order_status', name: 'order_status' },
+                        { data: 'is_paid', name: 'is_paid' },
+                        { data: 'action', name: 'action' }
+
+                    ],
+
+                    bLengthChange: false,
+                    "bDestroy": true,
+                    language: {
+                        search: "<i class='ti-search'></i>",
+                        searchPlaceholder: trans('common.quick_search'),
+                        paginate: {
+                            next: "<i class='ti-arrow-right'></i>",
+                            previous: "<i class='ti-arrow-left'></i>"
+                        }
+                    },
+                    dom: 'Bfrtip',
+                    buttons: [{
+                        extend: 'copyHtml5',
+                        text: '<i class="fa fa-files-o"></i>',
+                        title: $("#header_title").text(),
+                        titleAttr: 'Copy',
+                        exportOptions: {
+                            columns: ':visible',
+                            columns: ':not(:last-child)',
+                        }
+                    },
+                    {
+                        extend: 'excelHtml5',
+                        text: '<i class="fa fa-file-excel-o"></i>',
+                        titleAttr: 'Excel',
+                        title: $("#header_title").text(),
+                        margin: [10, 10, 10, 0],
+                        exportOptions: {
+                            columns: ':visible',
+                            columns: ':not(:last-child)',
+                        },
+
+                    },
+                    {
+                        extend: 'csvHtml5',
+                        text: '<i class="fa fa-file-text-o"></i>',
+                        titleAttr: 'CSV',
+                        exportOptions: {
+                            columns: ':visible',
+                            columns: ':not(:last-child)',
+                        }
+                    },
+                    {
+                        extend: 'pdfHtml5',
+                        text: '<i class="fa fa-file-pdf-o"></i>',
+                        title: $("#header_title").text(),
+                        titleAttr: 'PDF',
+                        exportOptions: {
+                            columns: ':visible',
+                            columns: ':not(:last-child)',
+                        },
+                        pageSize: 'A4',
+                        margin: [0, 0, 0, 0],
+                        alignment: 'center',
+                        header: true,
+
+                    },
+                    {
+                        extend: 'print',
+                        text: '<i class="fa fa-print"></i>',
+                        titleAttr: 'Print',
+                        title: $("#header_title").text(),
+                        exportOptions: {
+                            columns: ':not(:last-child)',
+                        }
+                    },
+                    {
+                        extend: 'colvis',
+                        text: '<i class="fa fa-columns"></i>',
+                        postfixButtons: ['colvisRestore']
+                    }
+                    ],
+                    columnDefs: [{
+                        visible: false
+                    }],
+                    responsive: true,
+                });
 
                 $('#orderPendingTable').DataTable({
                     processing: true,
