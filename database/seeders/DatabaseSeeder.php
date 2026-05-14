@@ -25,5 +25,6 @@ class DatabaseSeeder extends Seeder
         $this->call(BrandTableSeeder::class);
         $this->call(ProductDatabaseSeeder::class);
         $this->call(DriverSidebarSeeder::class);//dhanush
+        $this->call(SalesmanSidebarSeeder::class);
     }
 }
