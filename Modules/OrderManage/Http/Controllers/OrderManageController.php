@@ -78,7 +78,9 @@ class OrderManageController extends Controller
                 })
                 ->addColumn('shop_name', function ($order_package) {
                     if ($order_package->order->customer_id) {
-                        return @$order_package->order->customer->store_name ? @$order_package->order->customer->store_name : @$order_package->order->customer->first_name . ' ' . @$order_package->order->customer->last_name;
+                        $shop = @$order_package->order->customer->store_name ? @$order_package->order->customer->store_name : @$order_package->order->customer->first_name . ' ' . @$order_package->order->customer->last_name;
+                        $salesman = optional($order_package->order->customer->salesman)->name;
+                        return $shop . ($salesman ? "<br/><small class='text-muted'>Salesman: $salesman</small>" : "");
                     }
                     return @$order_package->order->guest_info->shipping_name;
                 })
@@ -97,7 +99,7 @@ class OrderManageController extends Controller
                 ->addColumn('action', function ($order_package) {
                     return view('ordermanage::order_manage.components._my_order_action_td', compact('order_package'));
                 })
-                ->rawColumns(['order_status', 'is_paid', 'action', 'vehicle_no'])
+                ->rawColumns(['shop_name', 'order_status', 'is_paid', 'action', 'vehicle_no'])
                 ->toJson();
         }
     }
@@ -143,7 +145,9 @@ class OrderManageController extends Controller
                 })
                 ->addColumn('customer_name', function ($order) {
                     if ($order->customer_id) {
-                        return @$order->customer->store_name ? @$order->customer->store_name : @$order->customer->first_name . ' ' . @$order->customer->last_name;
+                        $customer = @$order->customer->store_name ? @$order->customer->store_name : @$order->customer->first_name . ' ' . @$order->customer->last_name;
+                        $salesman = optional($order->customer->salesman)->name;
+                        return $customer . ($salesman ? "<br/><small class='text-muted'>Salesman: $salesman</small>" : "");
                     }
                     return @$order->guest_info->shipping_name;
                 })
@@ -202,7 +206,7 @@ class OrderManageController extends Controller
                 ->addColumn('action', function ($order) use($table) {
                     return view('ordermanage::order_manage.components._action_td', compact('order', 'table'));
                 })
-                ->rawColumns(['order_confirm','order_status', 'is_paid', 'action', 'mrp_price', 'taxable_value', 'gst_amount', 'total_amount'])
+                ->rawColumns(['customer_name', 'order_confirm','order_status', 'is_paid', 'action', 'mrp_price', 'taxable_value', 'gst_amount', 'total_amount'])
                 ->make(true);
         } else {
             return [];

@@ -193,6 +193,31 @@ class GeneralSettingController extends Controller
             'payload' => $request->except(['password']),
         ]);
 
+        if ($request->has('phone') && !$request->has('email')) {
+            $phone = $request->phone;
+            // Normalize: if it doesn't start with '+', add '+91'
+            if (!str_starts_with($phone, '+')) {
+                if (str_starts_with($phone, '91') && strlen($phone) == 12) {
+                    $phone = '+' . $phone;
+                } else {
+                    $phone = '+91' . ltrim($phone, '0');
+                }
+            }
+            $request->merge(['email' => $phone]);
+        } elseif ($request->has('email')) {
+            $email = $request->email;
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                if (!str_starts_with($email, '+')) {
+                    if (str_starts_with($email, '91') && strlen($email) == 12) {
+                        $email = '+' . $email;
+                    } else {
+                        $email = '+91' . ltrim($email, '0');
+                    }
+                }
+                $request->merge(['email' => $email]);
+            }
+        }
+
         try {
             $request->validate([
                 'type' => 'required'
@@ -233,13 +258,14 @@ class GeneralSettingController extends Controller
                         'password' => ['required', 'string','min:8']
                     ]);
                 } else {
-                    \Log::warning('sendOTPForAPI - OTP login requested but flags are off', [
+                    \Log::warning('sendOTPForAPI - OTP login requested but both flags are off, use password login', [
                         'login_with_otp_only' => otp_configuration('login_with_otp_only'),
                         'otp_on_login' => otp_configuration('otp_on_login')
                     ]);
-                    throw ValidationException::withMessages([
-                        'type' => 'OTP login is not enabled.'
-                    ]);
+                    return response()->json([
+                        'msg'  => 'OTP login is not enabled. Please use password login.',
+                        'mode' => 'password_login',
+                    ], 422);
                 }
                 
                 $user = User::where(function($q) use($request) {
@@ -250,8 +276,14 @@ class GeneralSettingController extends Controller
                     
                     if (!str_starts_with($login, '+')) {
                         $q->orWhere('phone', '+' . $login);
+                        if (!str_starts_with($login, '91') && strlen($login) == 10) {
+                            $q->orWhere('phone', '+91' . $login);
+                        }
                     } else {
                         $q->orWhere('phone', ltrim($login, '+'));
+                        if (str_starts_with($login, '+91') && strlen($login) == 13) {
+                            $q->orWhere('phone', substr($login, 3));
+                        }
                     }
                 })
                 ->where('is_active', 1)
@@ -293,8 +325,14 @@ class GeneralSettingController extends Controller
                     
                     if (!str_starts_with($login, '+')) {
                         $q->orWhere('phone', '+' . $login);
+                        if (!str_starts_with($login, '91') && strlen($login) == 10) {
+                            $q->orWhere('phone', '+91' . $login);
+                        }
                     } else {
                         $q->orWhere('phone', ltrim($login, '+'));
+                        if (str_starts_with($login, '+91') && strlen($login) == 13) {
+                            $q->orWhere('phone', substr($login, 3));
+                        }
                     }
                 })
                 ->where('is_active', 1)

@@ -119,6 +119,19 @@
                                                     </p>
                                                 </td>
                                            </tr>
+                                           @if ($order->customer_id && optional($order->customer)->gst_number)
+                                           <tr>
+                                                <td>
+                                                    <p class="line_grid_2" >
+                                                        <span>
+                                                            <span>GST Number</span>
+                                                            <span>:</span>
+                                                        </span>
+                                                        {{ $order->customer->gst_number }}
+                                                    </p>
+                                                </td>
+                                           </tr>
+                                           @endif
                                        </tbody>
                                    </table>
                                    <!--/ single table  -->

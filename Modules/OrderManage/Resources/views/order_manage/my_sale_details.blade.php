@@ -72,6 +72,18 @@
                                         <td>{{__('common.postcode')}}</td>
                                         <td>: {{getNumberTranslate(($order->customer_id) ? @$order->address->billing_postcode : @$order->guest_info->billing_post_code)}}</td>
                                     </tr>
+                                    @if ($order->customer_id && optional($order->customer)->gst_number)
+                                    <tr>
+                                        <td>GST Number</td>
+                                        <td>: {{ $order->customer->gst_number }}</td>
+                                    </tr>
+                                    @endif
+                                    @if ($order->customer_id && optional($order->customer->salesman)->name)
+                                    <tr>
+                                        <td>Salesman</td>
+                                        <td>: {{ $order->customer->salesman->name }}</td>
+                                    </tr>
+                                    @endif
                                 </table>
                             </div>
                             <div class="col-md-6 col-lg-6">

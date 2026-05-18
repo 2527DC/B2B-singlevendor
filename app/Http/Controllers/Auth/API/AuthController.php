@@ -151,16 +151,42 @@ class AuthController extends Controller
     
             \Log::debug('Searching user by phone');
     
-            $user = User::where('phone', $loginInput)
-                        ->where('is_active', 1)
-                        ->whereHas('role', function ($q) {
-                            $q->where('type', 'customer');
-                        })
-                        ->first();
+            $user = User::where(function($q) use($loginInput) {
+                        $q->where('phone', $loginInput);
+                        if (!str_starts_with($loginInput, '+')) {
+                            $q->orWhere('phone', '+' . $loginInput);
+                            if (!str_starts_with($loginInput, '91') && strlen($loginInput) == 10) {
+                                $q->orWhere('phone', '+91' . $loginInput);
+                            }
+                        } else {
+                            $q->orWhere('phone', ltrim($loginInput, '+'));
+                            if (str_starts_with($loginInput, '+91') && strlen($loginInput) == 13) {
+                                $q->orWhere('phone', substr($loginInput, 3));
+                            }
+                        }
+                    })
+                    ->where('is_active', 1)
+                    ->whereHas('role', function ($q) {
+                        $q->where('type', 'customer');
+                    })
+                    ->first();
     
             if (!$user) {
                 // Check if user exists but is inactive (pending admin approval)
-                $inactiveUser = User::where('phone', $loginInput)
+                $inactiveUser = User::where(function($q) use($loginInput) {
+                    $q->where('phone', $loginInput);
+                    if (!str_starts_with($loginInput, '+')) {
+                        $q->orWhere('phone', '+' . $loginInput);
+                        if (!str_starts_with($loginInput, '91') && strlen($loginInput) == 10) {
+                            $q->orWhere('phone', '+91' . $loginInput);
+                        }
+                    } else {
+                        $q->orWhere('phone', ltrim($loginInput, '+'));
+                        if (str_starts_with($loginInput, '+91') && strlen($loginInput) == 13) {
+                            $q->orWhere('phone', substr($loginInput, 3));
+                        }
+                    }
+                })
                 ->where('is_active', 0)
                 ->whereHas('role', function ($q) {
                     $q->where('type', 'customer');

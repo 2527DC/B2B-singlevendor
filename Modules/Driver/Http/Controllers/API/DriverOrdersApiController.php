@@ -119,7 +119,7 @@ class DriverOrdersApiController extends Controller
             ]);
     
             // Fetch CONFIRMED orders with pagination (30 per page)
-            $orders = DriverOrders::with('addressDetails')
+            $orders = DriverOrders::with(['addressDetails', 'customer'])
                 ->where('is_confirmed', 1) // Only get confirmed orders (is_confirmed = 1)
                 ->where('driver_id', auth('sanctum')->id()) // Filter by logged-in driver
                 ->when(
@@ -158,6 +158,7 @@ class DriverOrdersApiController extends Controller
             $transformedOrders = $orders->map(function ($order) {
     
                 $orderData = $order->toArray();
+                $orderData['customer_coordinates'] = $order->customer ? $order->customer->coordinates : null;
                 $addressDetails = $order->addressDetails;
     
                 if (!$addressDetails) {
@@ -295,7 +296,7 @@ class DriverOrdersApiController extends Controller
             ]);
     
             // Fetch CANCELLED orders with pagination (30 per page)
-            $orders = DriverOrders::with('addressDetails')
+            $orders = DriverOrders::with(['addressDetails', 'customer'])
                 ->where('is_cancelled', 1) // Only get cancelled orders
                 ->where('driver_id', auth('sanctum')->id()) // Filter by logged-in driver
                 ->when(
@@ -334,6 +335,7 @@ class DriverOrdersApiController extends Controller
             $transformedOrders = $orders->map(function ($order) {
     
                 $orderData = $order->toArray();
+                $orderData['customer_coordinates'] = $order->customer ? $order->customer->coordinates : null;
                 $addressDetails = $order->addressDetails;
     
                 if (!$addressDetails) {
@@ -654,11 +656,13 @@ public function orderDetails($id)
                 'customer_info' => $order->customer ? [
                     'name' => $order->customer->first_name . ' ' . $order->customer->last_name,
                     'email' => $order->customer->email,
-                    'phone' => $order->customer->phone
+                    'phone' => $order->customer->phone,
+                    'coordinates' => $order->customer->coordinates
                 ] : ($order->guest_info ? [
                     'name' => $order->guest_info->shipping_name,
                     'email' => $order->guest_info->shipping_email,
-                    'phone' => $order->guest_info->shipping_phone
+                    'phone' => $order->guest_info->shipping_phone,
+                    'coordinates' => null
                 ] : null),
                 'packages' => $order->packages->map(function($package) {
                     return [
