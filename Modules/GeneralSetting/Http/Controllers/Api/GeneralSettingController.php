@@ -194,28 +194,7 @@ class GeneralSettingController extends Controller
         ]);
 
         if ($request->has('phone') && !$request->has('email')) {
-            $phone = $request->phone;
-            // Normalize: if it doesn't start with '+', add '+91'
-            if (!str_starts_with($phone, '+')) {
-                if (str_starts_with($phone, '91') && strlen($phone) == 12) {
-                    $phone = '+' . $phone;
-                } else {
-                    $phone = '+91' . ltrim($phone, '0');
-                }
-            }
-            $request->merge(['email' => $phone]);
-        } elseif ($request->has('email')) {
-            $email = $request->email;
-            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                if (!str_starts_with($email, '+')) {
-                    if (str_starts_with($email, '91') && strlen($email) == 12) {
-                        $email = '+' . $email;
-                    } else {
-                        $email = '+91' . ltrim($email, '0');
-                    }
-                }
-                $request->merge(['email' => $email]);
-            }
+            $request->merge(['email' => $request->phone]);
         }
 
         try {
@@ -293,8 +272,16 @@ class GeneralSettingController extends Controller
 
                 if(!$user){
                     \Log::warning('sendOTPForAPI - User not found', ['email' => $request->email]);
+                    
+                    $message = 'The phone number has not been registered yet. Please register to login.';
+                    $errorKey = 'phone';
+                    if (filter_var($request->email, FILTER_VALIDATE_EMAIL)) {
+                        $message = 'The email has not been registered yet. Please register to login.';
+                        $errorKey = 'email';
+                    }
+                    
                     throw ValidationException::withMessages([
-                        'email' => __('auth.failed')
+                        $errorKey => [$message]
                     ]);
                 }
                 $user->update(['verify_code' => $request->code]);
@@ -341,8 +328,16 @@ class GeneralSettingController extends Controller
                 })->first();
                 if(!$user){
                     \Log::warning('sendOTPForAPI - User not found for password reset', ['email' => $request->email]);
+                    
+                    $message = 'The phone number has not been registered yet. Please register to login.';
+                    $errorKey = 'phone';
+                    if (filter_var($request->email, FILTER_VALIDATE_EMAIL)) {
+                        $message = 'The email has not been registered yet. Please register to login.';
+                        $errorKey = 'email';
+                    }
+                    
                     throw ValidationException::withMessages([
-                        'email' => __('auth.failed')
+                        $errorKey => [$message]
                     ]);
                 }
                 $user->update(['verify_code' => $request->code]);

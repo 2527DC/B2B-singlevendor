@@ -206,7 +206,7 @@ class AuthController extends Controller
                     'reason' => 'User not found or inactive'
                 ]);
     
-                return response(['message' => 'Invalid Credentials'], 401);
+                return response(['message' => 'The phone number has not been registered yet. Please register to login.'], 401);
             }
     
             \Log::debug('User found, verifying password and role', [

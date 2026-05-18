@@ -33,6 +33,17 @@ trait SendSMS
 
     function sendSMS($to, $text,$to_name='',$user_email='',$order_tracking_number = '',$secret_code='',$giftcard ='',$expiry_time='')
     {
+        if ($to) {
+            $to = preg_replace('/\s+/', '', $to);
+            if (!str_starts_with($to, '+')) {
+                if (str_starts_with($to, '91') && strlen($to) == 12) {
+                    $to = '+' . $to;
+                } else {
+                    $to = '+91' . ltrim($to, '0');
+                }
+            }
+        }
+
         $text = str_replace("{USER_FIRST_NAME}", $to_name, $text);
         $text = str_replace("{USER_EMAIL}",$user_email, $text);
         $text = str_replace("{ORDER_TRACKING_NUMBER}", $order_tracking_number, $text);
