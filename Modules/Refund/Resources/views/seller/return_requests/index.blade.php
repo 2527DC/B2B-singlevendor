@@ -92,7 +92,8 @@
                                             <th>{{ __('common.sl') }}</th>
                                             <th width="10%">{{ __('common.date') }}</th>
                                             <th>{{ __('common.order_id') }}</th>
-                                            <th>{{ __('common.email') }}</th>
+                                            <th>{{ __('common.shop_name') }}</th>
+                                            <th>{{ __('common.total_amount') }}</th>
                                             <th>{{ __('refund.driver') }}</th>
                                             <th>{{ __('common.status') }}</th>
                                             <th>{{ __('common.action') }}</th>
@@ -129,7 +130,8 @@
                     }},
                     { data: 'date', name: 'date' },
                     { data: 'order_id', name: 'order_id' },
-                    { data: 'email', name: 'email' },
+                    { data: 'shop_name', name: 'shop_name' },
+                    { data: 'total_amount', name: 'total_amount' },
                     { data: 'driver_name', name: 'driver_name' },
                     { data: 'status', name: 'status' },
                     { data: 'action', name: 'action' },

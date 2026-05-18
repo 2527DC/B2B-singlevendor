@@ -580,6 +580,76 @@ class OrderManageController extends Controller
         }
     }
 
+    public function rto_confirmed(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'package_id' => 'required|integer',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' => __('validation.failed'), 'errors' => $validator->errors()], 422);
+        }
+
+        DB::beginTransaction();
+        try {
+            $package_id = $request->input('package_id');
+            $package = \App\Models\OrderPackageDetail::with('order')->findOrFail($package_id);
+            $order = $package->order;
+
+            if (!$order) {
+                return response()->json(['message' => 'Order not found'], 404);
+            }
+
+            // 1. Mark order as cancelled
+            $order->update([
+                'is_cancelled' => 1,
+                'is_confirmed' => 2, // 2 is cancelled status for is_confirmed
+                'order_status' => 0, // cancelled
+            ]);
+
+            // 2. Mark all packages of this order as cancelled
+            foreach ($order->packages as $pkg) {
+                $pkg->update([
+                    'is_cancelled' => 1,
+                    'delivery_status' => 0 // 0 is cancelled / inactive
+                ]);
+            }
+
+            // 3. Process Wallet Refund if paid via wallet
+            if (@$order->order_payment->payment_method == 2 && $order->customer_id) {
+                $wallet_service = new \Modules\Wallet\Repositories\WalletRepository;
+                $wallet_service->cartPaymentData($order->id, $order->grand_total, "Refund Back", $order->customer_id, 'registered');
+            }
+
+            // 4. Create an entry in return_requests
+            $returnRequest = \Modules\Refund\Entities\ReturnRequest::create([
+                'order_id' => $order->id,
+                'package_id' => $package->id,
+                'customer_id' => $order->customer_id ?? \App\Models\User::where('role_id', 4)->first()?->id ?? 1,
+                'seller_id' => $package->seller_id,
+                'driver_id' => $order->driver_id,
+                'status' => 'completed',
+                'return_type' => 'delivery_failure',
+                'reason' => 'RTO (Return To Origin) - Customer Refused or Delivery Failed',
+                'note' => 'Automatically created via RTO option in Confirmed Orders list.',
+                'pick_up_address' => optional($order->shipping_address)->shipping_address ?? 'Same as shipping address',
+            ]);
+
+            DB::commit();
+            LogActivity::successLog('Order RTO processed successfully.');
+            return response()->json([
+                'message' => 'Order RTO processed successfully. Order marked as cancelled and Return Request created as completed.',
+                'return_request_id' => $returnRequest->id
+            ], 200);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('rto_confirmed exception', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            LogActivity::errorLog($e->getMessage());
+            return response()->json(['message' => __('common.operation_failed')], 500);
+        }
+    }
+
 
     public function track_order_configuration()
     {

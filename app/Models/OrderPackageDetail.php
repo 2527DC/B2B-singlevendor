@@ -104,6 +104,16 @@ class OrderPackageDetail extends Model
 
     public function getDeliveryStateNameAttribute()
     {
+        if ($this->order && $this->order->is_cancelled == 1) {
+            $rto = \Modules\Refund\Entities\ReturnRequest::where('package_id', $this->id)
+                ->where('return_type', 'delivery_failure')
+                ->first();
+            if ($rto) {
+                return "RTO";
+            }
+            return "Cancelled";
+        }
+
         if($this->delivery_status <= 1) {
             return "Pending";
         }

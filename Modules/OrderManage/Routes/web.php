@@ -27,6 +27,7 @@ Route::prefix('ordermanage')->middleware(['auth','seller'])->group(function () {
     Route::post('/my-sales-list/bulk-update-delivery', 'OrderManageController@bulk_update_delivery')->name('order_manage.bulk_update_delivery_seller')->middleware(['seller']);
     Route::post('/my-sales-list/bulk-assign-driver', 'OrderManageController@bulk_assign_driver')->name('order_manage.bulk_assign_driver')->middleware(['seller']);
     Route::post('/my-sales-list/bulk-confirm-pending', 'OrderManageController@bulk_confirm_pending')->name('order_manage.bulk_confirm_pending')->middleware(['seller']);
+    Route::post('/my-sales-list/rto-confirmed', 'OrderManageController@rto_confirmed')->name('order_manage.rto_confirmed')->middleware(['seller']);
     Route::post('/order/{id}/assign-driver', 'OrderManageController@assign_driver')->name('order_manage.assign_driver')->middleware(['seller']);
 
     Route::post('send-gift-card-code-to-mail', 'OrderManageController@send_gift_card_code')->name('send_gift_card_code_to_customer');

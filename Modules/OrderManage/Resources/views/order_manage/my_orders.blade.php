@@ -132,7 +132,6 @@
                                                     <th width="10%">{{__('common.date')}}</th>
                                                     <th>{{__('common.order_id')}}</th>
                                                     <th>Shop Name</th>
-                                                    <th>{{__('common.email')}}</th>
                                                     <th>{{__('order.order_state')}}</th>
                                                     <th>{{__('common.total_amount')}}</th>
                                                     <th>{{__('order.order_status')}}</th>
@@ -181,7 +180,6 @@
                                                         <th width="10%">{{__('common.date')}}</th>
                                                         <th>{{__('common.order_id')}}</th>
                                                         <th>Shop Name</th>
-                                                        <th>{{__('common.email')}}</th>
                                                         <th>{{__('order.order_state')}}</th>
                                                         <th>{{__('common.total_amount')}}</th>
                                                         <th>{{__('order.order_status')}}</th>
@@ -217,6 +215,9 @@
                                     <div class="mr-2">
                                         <button type="button" class="btn btn-success" id="apply_bulk_driver_confirmed">Assign Driver</button>
                                     </div>
+                                    <div class="mr-2">
+                                        <button type="button" class="btn btn-danger" id="rto_btn_confirmed" disabled>RTO</button>
+                                    </div>
                                     @if (permissionCheck('shipping.invoice_generate'))
                                         <div class="mr-2">
                                             <button type="button" class="btn btn-info bulk_download_invoices_btn" data-table-type="confirmed" title="Download Selected Invoices" disabled><i class="fa fa-download"></i></button>
@@ -237,7 +238,6 @@
                                                         <th width="10%">{{__('common.date')}}</th>
                                                         <th>{{__('common.order_id')}}</th>
                                                         <th>Shop Name</th>
-                                                        <th>{{__('common.email')}}</th>
                                                         <th>{{__('order.delivery_status')}}</th>
                                                         <th>{{__('common.total_amount')}}</th>
                                                         <th>{{__('order.order_status')}}</th>
@@ -272,7 +272,6 @@
                                                         <th width="10%">{{__('common.date')}}</th>
                                                         <th>{{__('common.order_id')}}</th>
                                                         <th>Shop Name</th>
-                                                        <th>{{__('common.email')}}</th>
                                                         <th>{{__('order.order_state')}}</th>
                                                         <th>{{__('common.total_amount')}}</th>
                                                         <th>{{__('order.order_status')}}</th>
@@ -308,7 +307,6 @@
                                                         <th width="10%">{{__('common.date')}}</th>
                                                         <th>{{__('common.order_id')}}</th>
                                                         <th>Shop Name</th>
-                                                        <th>{{__('common.email')}}</th>
                                                         <th>{{__('order.order_state')}}</th>
                                                         <th>{{__('common.total_amount')}}</th>
                                                         <th>{{__('order.order_status')}}</th>
@@ -344,7 +342,6 @@
                                                         <th width="10%">{{__('common.date')}}</th>
                                                         <th>{{__('common.order_id')}}</th>
                                                         <th>Shop Name</th>
-                                                        <th>{{__('common.email')}}</th>
                                                         <th>{{__('order.order_state')}}</th>
                                                         <th>{{__('common.total_amount')}}</th>
                                                         <th>{{__('order.order_status')}}</th>
@@ -394,7 +391,6 @@
                         { data: 'date', name: 'date' },
                         { data: 'order_number', name: 'order.order_number' },
                         { data: 'shop_name', name: 'shop_name' },
-                        { data: 'email', name: 'email' },
                         { data: 'order_state', name: 'order_state' },
                         { data: 'total_amount', name: 'order.grand_total' },
                         { data: 'order_status', name: 'order_status' },
@@ -505,7 +501,6 @@
                         { data: 'date', name: 'date' },
                         { data: 'order_number', name: 'order.order_number' },
                         { data: 'shop_name', name: 'shop_name' },
-                        { data: 'email', name: 'email' },
                         { data: 'order_state', name: 'order_state' },
                         { data: 'total_amount', name: 'order.grand_total' },
                         { data: 'order_status', name: 'order_status' },
@@ -610,7 +605,6 @@
                         { data: 'date', name: 'date' },
                         { data: 'order_number', name: 'order.order_number' },
                         { data: 'shop_name', name: 'shop_name' },
-                        { data: 'email', name: 'email' },
                         { data: 'order_state', name: 'order_state' },
                         { data: 'total_amount', name: 'order.grand_total' },
                         { data: 'order_status', name: 'order_status' },
@@ -721,7 +715,6 @@
                         { data: 'date', name: 'date' },
                         { data: 'order_number', name: 'order.order_number' },
                         { data: 'shop_name', name: 'shop_name' },
-                        { data: 'email', name: 'email' },
                         { data: 'order_state', name: 'order_state' },
                         { data: 'total_amount', name: 'order.grand_total' },
                         { data: 'order_status', name: 'order_status' },
@@ -825,7 +818,6 @@
                         { data: 'date', name: 'date' },
                         { data: 'order_number', name: 'order.order_number' },
                         { data: 'shop_name', name: 'shop_name' },
-                        { data: 'email', name: 'email' },
                         { data: 'order_state', name: 'order_state' },
                         { data: 'total_amount', name: 'order.grand_total' },
                         { data: 'order_status', name: 'order_status' },
@@ -930,7 +922,6 @@
                         { data: 'date', name: 'date' },
                         { data: 'order_number', name: 'order.order_number' },
                         { data: 'shop_name', name: 'shop_name' },
-                        { data: 'email', name: 'email' },
                         { data: 'order_state', name: 'order_state' },
                         { data: 'total_amount', name: 'order.grand_total' },
                         { data: 'order_status', name: 'order_status' },
@@ -1023,7 +1014,21 @@
         $(document).on('change', '#select_all_confirmed', function(){
             var checked = $(this).is(':checked');
             $('#orderConfimedTable').find('.bulk-select-confirmed').prop('checked', checked);
+            toggleRTOButton();
         });
+
+        $(document).on('change', '.bulk-select-confirmed', function(){
+            toggleRTOButton();
+        });
+
+        function toggleRTOButton() {
+            var checkedCount = $('.bulk-select-confirmed:checked').length;
+            if (checkedCount === 1) {
+                $('#rto_btn_confirmed').prop('disabled', false);
+            } else {
+                $('#rto_btn_confirmed').prop('disabled', true);
+            }
+        }
 
 
         // Bulk driver assignment
@@ -1060,6 +1065,58 @@
                     }
                     alert(msg);
                     $('#apply_bulk_driver_confirmed').prop('disabled', false);
+                }
+            });
+        });
+
+        // RTO confirmed click handler
+        $('#rto_btn_confirmed').on('click', function(e){
+            e.preventDefault();
+            var selected = [];
+            $('.bulk-select-confirmed:checked').each(function(){
+                selected.push($(this).data('package-id'));
+            });
+
+            if (selected.length !== 1) {
+                alert('Please select exactly one order to process RTO.');
+                return;
+            }
+
+            var packageId = selected[0];
+
+            if (!confirm('Are you sure you want to process RTO for this order? It will cancel the order and create a completed Return Request.')) {
+                return;
+            }
+
+            var csrfToken = $('meta[name="csrf-token"]').attr('content') || $('meta[name="_token"]').attr('content');
+            $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': csrfToken } });
+            $.ajax({
+                url: "{{ route('order_manage.rto_confirmed') }}",
+                method: 'POST',
+                data: { package_id: packageId },
+                beforeSend: function(){
+                    $('#rto_btn_confirmed').prop('disabled', true);
+                },
+                success: function(res){
+                    alert(res.message || 'RTO processed successfully');
+                    $('#rto_btn_confirmed').prop('disabled', true);
+                    $('.bulk-select-confirmed').prop('checked', false);
+                    $('#select_all_confirmed').prop('checked', false);
+                    $('#orderConfimedTable').DataTable().ajax.reload();
+                    if ($.fn.DataTable.isDataTable('#allOrderTable')) {
+                        $('#allOrderTable').DataTable().ajax.reload();
+                    }
+                    if ($.fn.DataTable.isDataTable('#orderCanceledTable')) {
+                        $('#orderCanceledTable').DataTable().ajax.reload();
+                    }
+                },
+                error: function(err){
+                    var msg = 'Operation failed';
+                    if(err.responseJSON && err.responseJSON.message) {
+                        msg = err.responseJSON.message;
+                    }
+                    alert(msg);
+                    toggleRTOButton();
                 }
             });
         });

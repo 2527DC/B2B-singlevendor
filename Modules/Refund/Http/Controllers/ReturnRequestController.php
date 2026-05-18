@@ -47,10 +47,13 @@ class ReturnRequestController extends Controller
                 return dateConvert($data->created_at);
             })
             ->addColumn('order_id', function ($data) {
-                return getNumberTranslate(optional($data->order)->order_number ?? 'N/A');
+                return getNumberTranslate(optional($data->order)->order_number ?? ('#' . $data->order_id));
             })
-            ->addColumn('email', function ($data) {
-                return optional($data->customer)->email ?? 'N/A';
+            ->addColumn('shop_name', function ($data) {
+                return optional($data->customer)->store_name ?? 'N/A';
+            })
+            ->addColumn('total_amount', function ($data) {
+                return $data->order ? single_price($data->order->grand_total) : 'N/A';
             })
             ->addColumn('driver_name', function ($data) {
                 return optional($data->driver)->name ?? 'N/A';

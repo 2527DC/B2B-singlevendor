@@ -1,11 +1,12 @@
 @php
     $statusColors = [
-        'Pending' => 'badge_4',       // Red/Orange for pending
-        'Processing' => 'badge_2',    // Blue for processing  
-        'Shipped' => 'badge_3',       // Purple for shipped
+        'Pending' => 'badge_4',       // Blue for pending
+        'Processing' => 'badge_2',    // Orange/yellow for processing  
+        'Shipped' => 'badge_3',       // Purple/red for shipped
         'Delivered' => 'badge_1',     // Green for delivered
-        'Cancelled' => 'badge_4',     // Red for cancelled
-        'Returned' => 'badge_4',      // Red for returned
+        'Cancelled' => 'badge_3',     // Red for cancelled
+        'Returned' => 'badge_3',      // Red for returned
+        'RTO' => 'badge_3',           // Red for RTO
     ];
     $colorClass = $statusColors[$order_package->DeliveryStateName] ?? 'badge_2';
 @endphp

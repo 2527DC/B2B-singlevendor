@@ -77,7 +77,7 @@ class ReturnRequestApiController extends Controller
             $returnRequest = ReturnRequest::create([
                 'order_id' => $request->order_id,
                 'package_id' => $request->package_id ?? ($package ? $package->id : null),
-                'customer_id' => $order->customer_id,
+                'customer_id' => $order->customer_id ?? \App\Models\User::where('role_id', 4)->first()?->id ?? 1,
                 'seller_id' => $seller_id,
                 'driver_id' => auth('sanctum')->id(), // Authenticated driver
                 'status' => 'picked_up',
