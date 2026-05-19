@@ -40,62 +40,100 @@ class SellerReportController extends Controller
             $table = $_GET['table'];
 
             if ($table == 'pending') {
-                $order = $this->sellerReportService->order()->where('is_confirmed', 0)->whereBetween('created_at', [$start_date, $end_date]);
+                $order_query = $this->sellerReportService->order()->where('is_confirmed', 0)->whereBetween('created_at', [$start_date, $end_date]);
             } elseif ($table == 'confirmed') {
-                $order = $this->sellerReportService->order()->where('is_confirmed', 1)->whereBetween('created_at', [$start_date, $end_date]);
+                $order_query = $this->sellerReportService->order()->where('is_confirmed', 1)->whereBetween('created_at', [$start_date, $end_date]);
             } elseif ($table == 'completed') {
-                $order = $this->sellerReportService->order()->where('is_completed', 1)->whereBetween('created_at', [$start_date, $end_date]);
+                $order_query = $this->sellerReportService->order()->where('is_completed', 1)->whereBetween('created_at', [$start_date, $end_date]);
             } elseif ($table == 'inhouse') {
-                $order = $this->sellerReportService->order()->where('order_type', 'inhouse_order')->whereBetween('created_at', [$start_date, $end_date]);
+                $order_query = $this->sellerReportService->order()->where('order_type', 'inhouse_order')->whereBetween('created_at', [$start_date, $end_date]);
             } elseif ($table == 'all') {
-                $order = $this->sellerReportService->order()->whereBetween('created_at', [$start_date, $end_date]);
+                $order_query = $this->sellerReportService->order()->whereBetween('created_at', [$start_date, $end_date]);
             } else {
-                $order = [];
+                $order_query = null;
             }
-            return DataTables::of($order)
+
+            if ($order_query) {
+                $orders = $order_query->get();
+            } else {
+                $orders = collect();
+            }
+
+            $rows = collect();
+            $seller_id = getParentSellerId();
+
+            foreach ($orders as $o) {
+                $packages = $o->packages->where('seller_id', $seller_id);
+                foreach ($packages as $package) {
+                    $existingInvoice = \Illuminate\Support\Facades\DB::table('invoices')
+                        ->where('order_package_id', $package->id)
+                        ->first();
+                    $invoice_number = $existingInvoice ? $existingInvoice->invoice_number : '';
+
+                    foreach ($package->products as $package_product) {
+                        $product_name = '';
+                        if ($package_product->type == 'gift_card') {
+                            $product_name = @$package_product->giftCard->name;
+                        } else {
+                            $product_name = @$package_product->seller_product_sku->sku->product->product_name;
+                        }
+
+                        $customer_gst = ($o->customer_id) ? @$o->customer->gst_number : '';
+                        $seller_name = (@$package->seller->SellerAccount->seller_shop_display_name) 
+                            ? @$package->seller->SellerAccount->seller_shop_display_name 
+                            : @$package->seller->first_name;
+
+                        $rows->push([
+                            'id' => $o->id,
+                            'order_number' => $o->order_number,
+                            'created_at' => $o->created_at,
+                            'customer_id' => $o->customer_id,
+                            
+                            // "Shop name to customer name" -> Shop Name becomes Customer Name column
+                            'shop_name' => ($o->customer_id) ? @$o->customer->store_name : '',
+                            
+                            // "customer name to Seller name" -> Customer Name becomes Seller Name column
+                            'customer_name' => $seller_name,
+
+                            'phone' => ($o->customer_id) ? @$o->address->shipping_phone : @$o->guest_info->shipping_phone,
+                            'address' => ($o->customer_id) ? @$o->address->shipping_address : @$o->guest_info->shipping_address,
+                            'pincode' => ($o->customer_id) ? @$o->address->shipping_postcode : @$o->guest_info->shipping_post_code,
+                            
+                            'product_name' => $product_name,
+                            'invoice_number' => $invoice_number,
+                            'customer_gst' => $customer_gst,
+                            'total_qty' => $package_product->qty,
+                            'total_amount' => single_price($package_product->price * $package_product->qty),
+                            
+                            'order_status' => $o->order_status,
+                            'is_paid' => $o->is_paid,
+                            'payment_status_text' => ($o->is_paid) ? 'Paid' : 'Pending',
+                            'order_obj' => $o,
+                        ]);
+                    }
+                }
+            }
+
+            return DataTables::of($rows)
                 ->addIndexColumn()
-                ->addColumn('date', function ($order) {
-                    return date(app('general_setting')->dateFormat->format, strtotime($order->created_at));
+                ->addColumn('date', function ($row) {
+                    return date(app('general_setting')->dateFormat->format, strtotime($row['created_at']));
                 })
-                ->addColumn('email', function ($order) {
-                    return ($order->customer_id) ? @$order->customer->email : @$order->guest_info->shipping_email;
+                ->addColumn('order_status', function ($row) {
+                    $order = $row['order_obj'];
+                    return view('ordermanage::order_manage.components._order_status_td', compact('order'))->render();
                 })
-                ->addColumn('shop_name', function ($order) {
-                    return ($order->customer_id) ? @$order->customer->store_name : '';
+                ->addColumn('is_paid', function ($row) {
+                    $order = $row['order_obj'];
+                    return view('ordermanage::order_manage.components._is_paid_td', compact('order'))->render();
                 })
-                ->addColumn('customer_name', function ($order) {
-                    return ($order->customer_id) ? @$order->address->shipping_name : @$order->guest_info->shipping_name;
-                })
-                ->addColumn('phone', function ($order) {
-                    return ($order->customer_id) ? @$order->address->shipping_phone : @$order->guest_info->shipping_phone;
-                })
-                ->addColumn('address', function ($order) {
-                    return ($order->customer_id) ? @$order->address->shipping_address : @$order->guest_info->shipping_address;
-                })
-                ->addColumn('pincode', function ($order) {
-                    return ($order->customer_id) ? @$order->address->shipping_postcode : @$order->guest_info->shipping_post_code;
-                })
-                ->addColumn('payment_status_text', function ($order) {
-                    return ($order->is_paid) ? 'Paid' : 'Pending';
-                })
-                ->addColumn('total_qty', function ($order) {
-                    return $order->packages->sum('number_of_product');
-                })
-                ->addColumn('total_amount', function ($order) {
-                    return single_price($order->grand_total);
-                })
-                ->addColumn('order_status', function ($order) {
-                    return view('ordermanage::order_manage.components._order_status_td', compact('order'));
-                })
-                ->addColumn('is_paid', function ($order) {
-                    return view('ordermanage::order_manage.components._is_paid_td', compact('order'));
-                })
-                ->rawColumns(['order_status', 'is_paid', 'action'])
+                ->rawColumns(['order_status', 'is_paid'])
                 ->make(true);
         } else {
             return [];
         }
     }
+
 
     public function top_customer()
     {

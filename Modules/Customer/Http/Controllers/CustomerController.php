@@ -48,7 +48,7 @@ class CustomerController extends Controller
         if (isset($_GET['table'])) {
             $table = $_GET['table'];
             
-            $query = $this->customerService->getAll()->with(['salesman', 'warehouse']);
+            $query = $this->customerService->getAll()->with(['salesman', 'warehouse', 'customerAddresses']);
             if (auth()->check() && auth()->user()->role->type == 'seller') {
                 $query->where('warehouse_id', auth()->id());
             }
@@ -91,6 +91,27 @@ class CustomerController extends Controller
                 })
                 ->addColumn('store_name', function ($customer) {
                     return $customer->store_name ? $customer->store_name : '-';
+                })
+                ->addColumn('postal_code', function ($customer) {
+                    $address = $customer->customerAddresses->where('is_shipping_default', 1)->first() ?? $customer->customerAddresses->first();
+                    return $address && $address->postal_code ? $address->postal_code : '-';
+                })
+                ->addColumn('address', function ($customer) {
+                    $address = $customer->customerAddresses->where('is_shipping_default', 1)->first() ?? $customer->customerAddresses->first();
+                    if ($address) {
+                        $addressParts = array_filter([
+                            $address->address,
+                            $address->city,
+                            $address->state,
+                            $address->country,
+                            $address->postal_code
+                        ]);
+                        return implode(', ', $addressParts);
+                    }
+                    return '-';
+                })
+                ->addColumn('gst_number', function ($customer) {
+                    return $customer->gst_number ? $customer->gst_number : '-';
                 })
                 ->addColumn('salesman_name', function ($customer) {
                     return $customer->salesman ? $customer->salesman->name : '-';

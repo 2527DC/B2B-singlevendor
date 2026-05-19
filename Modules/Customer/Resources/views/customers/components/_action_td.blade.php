@@ -3,6 +3,11 @@
             aria-expanded="false"> {{__('common.select')}}
     </button>
     <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenu2">
+        @if ($customer->coordinates && isset($customer->coordinates['latitude']) && isset($customer->coordinates['longitude']))
+            <a href="https://www.google.com/maps/search/?api=1&query={{ $customer->coordinates['latitude'] }},{{ $customer->coordinates['longitude'] }}" target="_blank" class="dropdown-item" type="button">
+                <i class="ti-map-alt mr-2"></i> {{__('common.show_location')}}
+            </a>
+        @endif
         @if (permissionCheck('customer.show_details'))
             <a href="{{route('customer.show_details',$customer->id)}}" class="dropdown-item" type="button">{{__('common.details')}}</a>
         @endif

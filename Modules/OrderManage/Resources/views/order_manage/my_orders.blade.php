@@ -399,7 +399,8 @@
 
                     ],
 
-                    bLengthChange: false,
+                    bLengthChange: true,
+                    lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
                     "bDestroy": true,
                     language: {
                         search: "<i class='ti-search'></i>",
@@ -409,7 +410,7 @@
                             previous: "<i class='ti-arrow-left'></i>"
                         }
                     },
-                    dom: 'Bfrtip',
+                    dom: 'Blfrtip',
                     buttons: [{
                             extend: 'copyHtml5',
                             text: '<i class="fa fa-files-o"></i>',
@@ -509,7 +510,8 @@
 
                     ],
 
-                    bLengthChange: false,
+                    bLengthChange: true,
+                    lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
                     "bDestroy": true,
                     language: {
                         search: "<i class='ti-search'></i>",
@@ -519,7 +521,7 @@
                             previous: "<i class='ti-arrow-left'></i>"
                         }
                     },
-                    dom: 'Bfrtip',
+                    dom: 'Blfrtip',
                     buttons: [{
                             extend: 'copyHtml5',
                             text: '<i class="fa fa-files-o"></i>',
@@ -613,7 +615,8 @@
 
                     ],
 
-                    bLengthChange: false,
+                    bLengthChange: true,
+                    lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
                     "bDestroy": true,
                     language: {
                         search: "<i class='ti-search'></i>",
@@ -623,7 +626,7 @@
                             previous: "<i class='ti-arrow-left'></i>"
                         }
                     },
-                    dom: 'Bfrtip',
+                    dom: 'Blfrtip',
                     buttons: [{
                             extend: 'copyHtml5',
                             text: '<i class="fa fa-files-o"></i>',
@@ -722,7 +725,8 @@
 
                     ],
 
-                    bLengthChange: false,
+                    bLengthChange: true,
+                    lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
                     "bDestroy": true,
                     language: {
                         search: "<i class='ti-search'></i>",
@@ -732,7 +736,7 @@
                             previous: "<i class='ti-arrow-left'></i>"
                         }
                     },
-                    dom: 'Bfrtip',
+                    dom: 'Blfrtip',
                     buttons: [{
                             extend: 'copyHtml5',
                             text: '<i class="fa fa-files-o"></i>',
@@ -826,7 +830,8 @@
 
                     ],
 
-                    bLengthChange: false,
+                    bLengthChange: true,
+                    lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
                     "bDestroy": true,
                     language: {
                         search: "<i class='ti-search'></i>",
@@ -836,7 +841,7 @@
                             previous: "<i class='ti-arrow-left'></i>"
                         }
                     },
-                    dom: 'Bfrtip',
+                    dom: 'Blfrtip',
                     buttons: [{
                             extend: 'copyHtml5',
                             text: '<i class="fa fa-files-o"></i>',
@@ -930,7 +935,8 @@
 
                     ],
 
-                    bLengthChange: false,
+                    bLengthChange: true,
+                    lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
                     "bDestroy": true,
                     language: {
                         search: "<i class='ti-search'></i>",
@@ -940,7 +946,7 @@
                             previous: "<i class='ti-arrow-left'></i>"
                         }
                     },
-                    dom: 'Bfrtip',
+                    dom: 'Blfrtip',
                     buttons: [{
                             extend: 'copyHtml5',
                             text: '<i class="fa fa-files-o"></i>',

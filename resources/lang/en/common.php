@@ -1,5 +1,6 @@
 <?php
 return [
+    'show_location'=> 'Show Location',
     'sl' => 'SL',
     'add' => 'Add',
     'ip' => 'IP',

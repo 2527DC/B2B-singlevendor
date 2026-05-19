@@ -96,13 +96,15 @@
                                             <th>{{__('common.sl')}}</th>
                                             <th width="10%">{{__('common.date')}}</th>
                                             <th>{{__('common.order_id')}}</th>
-                                            <th>Shop Name</th>
                                             <th>Customer Name</th>
+                                            <th>Seller Name</th>
                                             <th>Phone</th>
                                             <th>Address</th>
                                             <th>Pincode</th>
-                                            <th>{{__('common.email')}}</th>
-                                            <th>{{__('order.product_qty')}}</th>
+                                            <th>Product Name</th>
+                                            <th>Invoice Number</th>
+                                            <th>Customer GST Number</th>
+                                            <th>Product Qty</th>
                                             <th>{{__('common.total_amount')}}</th>
                                             <th>{{__('order.order_status')}}</th>
                                             <th>Payment Status</th>
@@ -133,13 +135,15 @@
                                             <th>{{__('common.sl')}}</th>
                                             <th width="10%">{{__('common.date')}}</th>
                                             <th>{{__('common.order_id')}}</th>
-                                            <th>Shop Name</th>
                                             <th>Customer Name</th>
+                                            <th>Seller Name</th>
                                             <th>Phone</th>
                                             <th>Address</th>
                                             <th>Pincode</th>
-                                            <th>{{__('common.email')}}</th>
-                                            <th>{{__('order.product_qty')}}</th>
+                                            <th>Product Name</th>
+                                            <th>Invoice Number</th>
+                                            <th>Customer GST Number</th>
+                                            <th>Product Qty</th>
                                             <th>{{__('common.total_amount')}}</th>
                                             <th>{{__('order.order_status')}}</th>
                                             <th>Payment Status</th>
@@ -170,13 +174,15 @@
                                             <th>{{__('common.sl')}}</th>
                                             <th width="10%">{{__('common.date')}}</th>
                                             <th>{{__('common.order_id')}}</th>
-                                            <th>Shop Name</th>
                                             <th>Customer Name</th>
+                                            <th>Seller Name</th>
                                             <th>Phone</th>
                                             <th>Address</th>
                                             <th>Pincode</th>
-                                            <th>{{__('common.email')}}</th>
-                                            <th>{{__('order.product_qty')}}</th>
+                                            <th>Product Name</th>
+                                            <th>Invoice Number</th>
+                                            <th>Customer GST Number</th>
+                                            <th>Product Qty</th>
                                             <th>{{__('common.total_amount')}}</th>
                                             <th>{{__('order.order_status')}}</th>
                                             <th>Payment Status</th>
@@ -207,13 +213,15 @@
                                             <th>{{__('common.sl')}}</th>
                                             <th width="10%">{{__('common.date')}}</th>
                                             <th>{{__('common.order_id')}}</th>
-                                            <th>Shop Name</th>
                                             <th>Customer Name</th>
+                                            <th>Seller Name</th>
                                             <th>Phone</th>
                                             <th>Address</th>
                                             <th>Pincode</th>
-                                            <th>{{__('common.email')}}</th>
-                                            <th>{{__('order.product_qty')}}</th>
+                                            <th>Product Name</th>
+                                            <th>Invoice Number</th>
+                                            <th>Customer GST Number</th>
+                                            <th>Product Qty</th>
                                             <th>{{__('common.total_amount')}}</th>
                                             <th>{{__('order.order_status')}}</th>
                                             <th>Payment Status</th>
@@ -245,13 +253,15 @@
                                             <th>{{__('common.sl')}}</th>
                                             <th width="10%">{{__('common.date')}}</th>
                                             <th>{{__('common.order_id')}}</th>
-                                            <th>Shop Name</th>
                                             <th>Customer Name</th>
+                                            <th>Seller Name</th>
                                             <th>Phone</th>
                                             <th>Address</th>
                                             <th>Pincode</th>
-                                            <th>{{__('common.email')}}</th>
-                                            <th>{{__('order.product_qty')}}</th>
+                                            <th>Product Name</th>
+                                            <th>Invoice Number</th>
+                                            <th>Customer GST Number</th>
+                                            <th>Product Qty</th>
                                             <th>{{__('common.total_amount')}}</th>
                                             <th>{{__('order.order_status')}}</th>
                                             <th>Payment Status</th>
@@ -328,8 +338,10 @@
                 { data: 'customer_name', name: 'customer_name', visible: false },
                 { data: 'phone', name: 'phone', visible: false },
                 { data: 'address', name: 'address', visible: false },
-                { data: 'pincode', name: 'pincode', visible: false },
-                { data: 'email', name: 'email' },
+                { data: 'pincode', name: 'pincode' },
+                { data: 'product_name', name: 'product_name' },
+                { data: 'invoice_number', name: 'invoice_number' },
+                { data: 'customer_gst', name: 'customer_gst' },
                 { data: 'total_qty', name: 'total_qty' },
                 { data: 'total_amount', name: 'total_amount' },
                 { data: 'order_status', name: 'order_status' },
@@ -337,7 +349,8 @@
                 { data: 'is_paid', name: 'is_paid' },
             ],
 
-            bLengthChange: false,
+            bLengthChange: true,
+            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
             "bDestroy": true,
             language: {
                 search: "<i class='ti-search'></i>",
@@ -347,7 +360,7 @@
                     previous: "<i class='ti-arrow-left'></i>"
                 }
             },
-            dom: 'Bfrtip',
+            dom: 'Blfrtip',
             buttons: [{
                     extend: 'copyHtml5',
                     text: '<i class="fa fa-files-o"></i>',
@@ -432,8 +445,10 @@
                 { data: 'customer_name', name: 'customer_name', visible: false },
                 { data: 'phone', name: 'phone', visible: false },
                 { data: 'address', name: 'address', visible: false },
-                { data: 'pincode', name: 'pincode', visible: false },
-                { data: 'email', name: 'email' },
+                { data: 'pincode', name: 'pincode' },
+                { data: 'product_name', name: 'product_name' },
+                { data: 'invoice_number', name: 'invoice_number' },
+                { data: 'customer_gst', name: 'customer_gst' },
                 { data: 'total_qty', name: 'total_qty' },
                 { data: 'total_amount', name: 'total_amount' },
                 { data: 'order_status', name: 'order_status' },
@@ -441,7 +456,8 @@
                 { data: 'is_paid', name: 'is_paid' },
             ],
 
-            bLengthChange: false,
+            bLengthChange: true,
+            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
             "bDestroy": true,
             language: {
                 search: "<i class='ti-search'></i>",
@@ -451,7 +467,7 @@
                     previous: "<i class='ti-arrow-left'></i>"
                 }
             },
-            dom: 'Bfrtip',
+            dom: 'Blfrtip',
             buttons: [{
                     extend: 'copyHtml5',
                     text: '<i class="fa fa-files-o"></i>',
@@ -535,8 +551,10 @@
             { data: 'customer_name', name: 'customer_name', visible: false },
             { data: 'phone', name: 'phone', visible: false },
             { data: 'address', name: 'address', visible: false },
-            { data: 'pincode', name: 'pincode', visible: false },
-            { data: 'email', name: 'email' },
+            { data: 'pincode', name: 'pincode' },
+            { data: 'product_name', name: 'product_name' },
+            { data: 'invoice_number', name: 'invoice_number' },
+            { data: 'customer_gst', name: 'customer_gst' },
             { data: 'total_qty', name: 'total_qty' },
             { data: 'total_amount', name: 'total_amount' },
             { data: 'order_status', name: 'order_status' },
@@ -544,7 +562,8 @@
             { data: 'is_paid', name: 'is_paid' },
         ],
 
-        bLengthChange: false,
+        bLengthChange: true,
+        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
         "bDestroy": true,
         language: {
             search: "<i class='ti-search'></i>",
@@ -554,7 +573,7 @@
                 previous: "<i class='ti-arrow-left'></i>"
             }
         },
-        dom: 'Bfrtip',
+        dom: 'Blfrtip',
         buttons: [{
                 extend: 'copyHtml5',
                 text: '<i class="fa fa-files-o"></i>',
@@ -638,8 +657,10 @@
             { data: 'customer_name', name: 'customer_name', visible: false },
             { data: 'phone', name: 'phone', visible: false },
             { data: 'address', name: 'address', visible: false },
-            { data: 'pincode', name: 'pincode', visible: false },
-            { data: 'email', name: 'email' },
+            { data: 'pincode', name: 'pincode' },
+            { data: 'product_name', name: 'product_name' },
+            { data: 'invoice_number', name: 'invoice_number' },
+            { data: 'customer_gst', name: 'customer_gst' },
             { data: 'total_qty', name: 'total_qty' },
             { data: 'total_amount', name: 'total_amount' },
             { data: 'order_status', name: 'order_status' },
@@ -647,7 +668,8 @@
             { data: 'is_paid', name: 'is_paid' },
         ],
 
-        bLengthChange: false,
+        bLengthChange: true,
+        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
         "bDestroy": true,
         language: {
             search: "<i class='ti-search'></i>",
@@ -657,7 +679,7 @@
                 previous: "<i class='ti-arrow-left'></i>"
             }
         },
-        dom: 'Bfrtip',
+        dom: 'Blfrtip',
         buttons: [{
                 extend: 'copyHtml5',
                 text: '<i class="fa fa-files-o"></i>',
@@ -741,8 +763,10 @@
             { data: 'customer_name', name: 'customer_name', visible: false },
             { data: 'phone', name: 'phone', visible: false },
             { data: 'address', name: 'address', visible: false },
-            { data: 'pincode', name: 'pincode', visible: false },
-            { data: 'email', name: 'email' },
+            { data: 'pincode', name: 'pincode' },
+            { data: 'product_name', name: 'product_name' },
+            { data: 'invoice_number', name: 'invoice_number' },
+            { data: 'customer_gst', name: 'customer_gst' },
             { data: 'total_qty', name: 'total_qty' },
             { data: 'total_amount', name: 'total_amount' },
             { data: 'order_status', name: 'order_status' },
@@ -750,7 +774,8 @@
             { data: 'is_paid', name: 'is_paid' },
         ],
 
-        bLengthChange: false,
+        bLengthChange: true,
+        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
         "bDestroy": true,
         language: {
             search: "<i class='ti-search'></i>",
@@ -760,7 +785,7 @@
                 previous: "<i class='ti-arrow-left'></i>"
             }
         },
-        dom: 'Bfrtip',
+        dom: 'Blfrtip',
         buttons: [{
                 extend: 'copyHtml5',
                 text: '<i class="fa fa-files-o"></i>',

@@ -174,7 +174,9 @@
                             { data: 'avatar', name: 'avatar' },
                             { data: 'name', name: 'first_name' },
                             { data: 'store_name', name: 'store_name' },
-                            { data: 'email', name: 'email' },
+                            { data: 'gst_number', name: 'gst_number' },
+                            { data: 'postal_code', name: 'postal_code', orderable: false, searchable: false },
+                            { data: 'address', name: 'address', orderable: false, searchable: false },
                             { data: 'phone', name: 'phone' },
                             { data: 'status', name: 'status' },
                             { data: 'wallet_balance', name: 'wallet_balance' },
@@ -184,7 +186,8 @@
                             { data: 'action', name: 'action' }
                         ],
 
-                        bLengthChange: false,
+                        bLengthChange: true,
+                        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
                         "bDestroy": true,
                         language: {
                             search: "<i class='ti-search'></i>",
@@ -194,7 +197,7 @@
                                 previous: "<i class='ti-arrow-left'></i>"
                             }
                         },
-                        dom: 'Bfrtip',
+                        dom: 'Blfrtip',
                         buttons: [{
                             extend: 'copyHtml5',
                             text: '<i class="fa fa-files-o"></i>',
@@ -283,7 +286,9 @@
                             { data: 'avatar', name: 'avatar' },
                             { data: 'name', name: 'first_name' },
                             { data: 'store_name', name: 'store_name' },
-                            { data: 'email', name: 'email' },
+                            { data: 'gst_number', name: 'gst_number' },
+                            { data: 'postal_code', name: 'postal_code', orderable: false, searchable: false },
+                            { data: 'address', name: 'address', orderable: false, searchable: false },
                             { data: 'phone', name: 'phone' },
                             { data: 'status', name: 'status' },
                             { data: 'wallet_balance', name: 'wallet_balance' },
@@ -294,7 +299,8 @@
 
                         ],
 
-                        bLengthChange: false,
+                        bLengthChange: true,
+                        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
                         "bDestroy": true,
                         language: {
                             search: "<i class='ti-search'></i>",
@@ -304,7 +310,7 @@
                                 previous: "<i class='ti-arrow-left'></i>"
                             }
                         },
-                        dom: 'Bfrtip',
+                        dom: 'Blfrtip',
                         buttons: [{
                             extend: 'copyHtml5',
                             text: '<i class="fa fa-files-o"></i>',
@@ -393,7 +399,9 @@
                             { data: 'avatar', name: 'avatar' },
                             { data: 'name', name: 'first_name' },
                             { data: 'store_name', name: 'store_name' },
-                            { data: 'email', name: 'email' },
+                            { data: 'gst_number', name: 'gst_number' },
+                            { data: 'postal_code', name: 'postal_code', orderable: false, searchable: false },
+                            { data: 'address', name: 'address', orderable: false, searchable: false },
                             { data: 'phone', name: 'phone' },
                             { data: 'status', name: 'status' },
                             { data: 'wallet_balance', name: 'wallet_balance' },
@@ -404,7 +412,8 @@
 
                         ],
 
-                        bLengthChange: false,
+                        bLengthChange: true,
+                        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
                         "bDestroy": true,
                         language: {
                             search: "<i class='ti-search'></i>",
@@ -414,7 +423,7 @@
                                 previous: "<i class='ti-arrow-left'></i>"
                             }
                         },
-                        dom: 'Bfrtip',
+                        dom: 'Blfrtip',
                         buttons: [{
                             extend: 'copyHtml5',
                             text: '<i class="fa fa-files-o"></i>',

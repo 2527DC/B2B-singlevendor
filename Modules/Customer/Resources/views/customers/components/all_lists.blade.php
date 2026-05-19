@@ -5,7 +5,9 @@
             <th>{{ __('common.avatar') }}</th>
             <th>{{ __('common.name') }}</th>
             <th>Store Name</th>
-            <th>{{ __('common.email') }}</th>
+            <th>GST Number</th>
+            <th>Pincode</th>
+            <th>Address</th>
             <th>{{ __('common.phone') }}</th>
             <th>{{ __('common.is_active') }}</th>
             <th>{{ __('common.wallet_balance') }}</th>

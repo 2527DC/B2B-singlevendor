@@ -49,6 +49,14 @@ class SellerReportRepository
         return Order::whereHas('packages', function ($q) {
             $seller_id = getParentSellerId();
             $q->where('seller_id', $seller_id);
-        })->with('packages', 'customer')->latest();
+        })->with([
+            'packages.products.seller_product_sku.sku.product',
+            'packages.products.giftCard',
+            'packages.seller.SellerAccount',
+            'customer',
+            'address',
+            'guest_info'
+        ])->latest();
     }
 }
+

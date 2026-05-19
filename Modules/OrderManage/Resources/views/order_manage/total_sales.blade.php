@@ -134,7 +134,6 @@
                                                         <th>{{__('common.order_id')}}</th>
                                                         <th>{{__('common.shop_name')}}</th>
                                                         <th>{{__('phone')}}</th>
-                                                        <th>{{__('common.email')}}</th>
                                                         <th>{{__('order.total_product_qty')}}</th>
                                                         <th>{{__('common.mrp')}}</th>
                                                         <th>{{__('common.taxable_value')}}</th>
@@ -159,6 +158,13 @@
                                             <h3 class="mb-0 mr-30 mb_xs_15px mb_sm_20px">{{__('order.pending_orders')}}</h3>
                                         </div>
                                     </div>
+
+                                    <div class="d-flex mb-3 align-items-center">
+                                        <div class="mr-2">
+                                            <button type="button" class="btn btn-primary" id="apply_bulk_confirm_pending" disabled>{{__('common.confirm') ?? 'Confirm Selected'}}</button>
+                                        </div>
+                                    </div>
+
                                     <div class="QA_section QA_section_heading_custom check_box_table">
                                         <div class="QA_table">
 
@@ -175,7 +181,6 @@
                                                             <th>{{__('common.order_id')}}</th>
                                                             <th>{{__('common.shop_name')}}</th>
                                                             <th>{{__('phone')}}</th>
-                                                            <th>{{__('common.email')}}</th>
                                                             <th>{{__('order.total_product_qty')}}</th>
                                                             <th>{{__('common.mrp')}}</th>
                                                             <th>{{__('common.taxable_value')}}</th>
@@ -239,7 +244,6 @@
                                                             <th>{{__('common.order_id')}}</th>
                                                             <th>{{__('common.shop_name')}}</th>
                                                             <th>{{__('phone')}}</th>
-                                                            <th>{{__('common.email')}}</th>
                                                             <th>{{__('order.total_product_qty')}}</th>
                                                             <th>{{__('common.mrp')}}</th>
                                                             <th>{{__('common.taxable_value')}}</th>
@@ -278,7 +282,6 @@
                                                             <th>{{__('common.order_id')}}</th>
                                                             <th>{{__('common.shop_name')}}</th>
                                                             <th>{{__('phone')}}</th>
-                                                            <th>{{__('common.email')}}</th>
                                                             <th>{{__('order.total_product_qty')}}</th>
                                                             <th>{{__('common.mrp')}}</th>
                                                             <th>{{__('common.taxable_value')}}</th>
@@ -318,7 +321,6 @@
                                                             <th>{{__('common.order_id')}}</th>
                                                             <th>{{__('common.shop_name')}}</th>
                                                             <th>{{__('phone')}}</th>
-                                                            <th>{{__('common.email')}}</th>
                                                             <th>{{__('order.total_product_qty')}}</th>
                                                             <th>{{__('common.mrp')}}</th>
                                                             <th>{{__('common.taxable_value')}}</th>
@@ -357,7 +359,6 @@
                                                             <th>{{__('common.order_id')}}</th>
                                                             <th>{{__('common.shop_name')}}</th>
                                                             <th>{{__('phone')}}</th>
-                                                            <th>{{__('common.email')}}</th>
                                                             <th>{{__('order.total_product_qty')}}</th>
                                                             <th>{{__('common.mrp')}}</th>
                                                             <th>{{__('common.taxable_value')}}</th>
@@ -396,7 +397,6 @@
                                                             <th>{{__('common.order_id')}}</th>
                                                             <th>{{__('common.shop_name')}}</th>
                                                             <th>{{__('phone')}}</th>
-                                                            <th>{{__('common.email')}}</th>
                                                             <th>{{__('order.total_product_qty')}}</th>
                                                             <th>{{__('common.mrp')}}</th>
                                                             <th>{{__('common.taxable_value')}}</th>
@@ -452,7 +452,6 @@
                         { data: 'order_number', name: 'order_number' },
                         { data: 'customer_name', name: 'customer_name' },
                         { data: 'customer_phone', name: 'customer_phone' },
-                        { data: 'email', name: 'customer.email' },
                         { data: 'total_qty', name: 'total_qty' },
                         { data: 'mrp_price', name: 'mrp_price' },
                         { data: 'taxable_value', name: 'taxable_value' },
@@ -578,7 +577,6 @@
                         { data: 'order_number', name: 'order_number' },
                         { data: 'customer_name', name: 'customer_name' },
                         { data: 'customer_phone', name: 'customer_phone' },
-                        { data: 'email', name: 'customer.email' },
                         { data: 'total_qty', name: 'total_qty' },
                         { data: 'mrp_price', name: 'mrp_price' },
                         { data: 'taxable_value', name: 'taxable_value' },
@@ -688,7 +686,6 @@
                         { data: 'order_number', name: 'order_number' },
                         { data: 'customer_name', name: 'customer_name' },
                         { data: 'customer_phone', name: 'customer_phone' },
-                        { data: 'email', name: 'customer.email' },
                         { data: 'total_qty', name: 'total_qty' },
                         { data: 'mrp_price', name: 'mrp_price' },
                         { data: 'taxable_value', name: 'taxable_value' },
@@ -818,7 +815,6 @@
                         { data: 'order_number', name: 'order_number' },
                         { data: 'customer_name', name: 'customer_name' },
                         { data: 'customer_phone', name: 'customer_phone' },
-                        { data: 'email', name: 'customer.email' },
                         { data: 'total_qty', name: 'total_qty' },
                         { data: 'mrp_price', name: 'mrp_price' },
                         { data: 'taxable_value', name: 'taxable_value' },
@@ -855,7 +851,6 @@
                         { data: 'order_number', name: 'order_number' },
                         { data: 'customer_name', name: 'customer_name' },
                         { data: 'customer_phone', name: 'customer_phone' },
-                        { data: 'email', name: 'customer.email' },
                         { data: 'total_qty', name: 'total_qty' },
                         { data: 'mrp_price', name: 'mrp_price' },
                         { data: 'taxable_value', name: 'taxable_value' },
@@ -965,7 +960,6 @@
                         { data: 'order_number', name: 'order_number' },
                         { data: 'customer_name', name: 'customer_name' },
                         { data: 'customer_phone', name: 'customer_phone' },
-                        { data: 'email', name: 'customer.email' },
                         { data: 'total_qty', name: 'total_qty' },
                         { data: 'mrp_price', name: 'mrp_price' },
                         { data: 'taxable_value', name: 'taxable_value' },
@@ -1075,7 +1069,6 @@
                         { data: 'order_number', name: 'order_number' },
                         { data: 'customer_name', name: 'customer_name' },
                         { data: 'customer_phone', name: 'customer_phone' },
-                        { data: 'email', name: 'customer.email' },
                         { data: 'total_qty', name: 'total_qty' },
                         { data: 'mrp_price', name: 'mrp_price' },
                         { data: 'taxable_value', name: 'taxable_value' },
@@ -1211,15 +1204,17 @@
             });
         });
 
-        // --- Bulk Invoice Download Logic ---
+        // --- Bulk Invoice Download and Bulk Confirm Logic ---
         $('#select_all_pending').on('click', function () {
             $('.bulk-select-pending').prop('checked', this.checked);
             updateBulkDownloadButton('pending');
+            toggleBulkConfirmButton();
         });
         // Note: #select_all_confirmed is already handled above for other checkboxes, so we just use the event delegate for changes
 
         $(document).on('change', '.bulk-select-pending', function () {
             updateBulkDownloadButton('pending');
+            toggleBulkConfirmButton();
             if (!this.checked) {
                 $('#select_all_pending').prop('checked', false);
             }
@@ -1234,6 +1229,56 @@
             let checkedCount = $('.bulk-select-' + type + ':checked').length;
             $('.bulk_download_invoices_btn[data-table-type="' + type + '"]').prop('disabled', checkedCount === 0);
         }
+
+        function toggleBulkConfirmButton() {
+            if ($('.bulk-select-pending:checked').length > 0) {
+                $('#apply_bulk_confirm_pending').prop('disabled', false);
+            } else {
+                $('#apply_bulk_confirm_pending').prop('disabled', true);
+            }
+        }
+
+        $('#apply_bulk_confirm_pending').on('click', function(){
+            var selected = [];
+            $('.bulk-select-pending:checked').each(function(){
+                var orderId = $(this).data('order-id');
+                if(orderId && selected.indexOf(orderId) === -1) {
+                    selected.push(orderId);
+                }
+            });
+            if(selected.length == 0){
+                alert('{{ __('order.select_at_least_one') }}');
+                return;
+            }
+
+            var csrfToken = $('meta[name="csrf-token"]').attr('content') || $('meta[name="_token"]').attr('content');
+            $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': csrfToken } });
+            $.ajax({
+                url: "{{ route('order_manage.bulk_confirm_pending') }}",
+                method: 'POST',
+                data: { order_ids: selected },
+                beforeSend: function(){
+                    $('#apply_bulk_confirm_pending').prop('disabled', true);
+                },
+                success: function(res){
+                    alert(res.message || '{{ __('common.updated_successfully') }}');
+                    $('#apply_bulk_confirm_pending').prop('disabled', true);
+                    $('#select_all_pending').prop('checked', false);
+                    $('#orderPendingTable').DataTable().ajax.reload();
+                    if ($.fn.DataTable.isDataTable('#confirmedTable')) {
+                        $('#confirmedTable').DataTable().ajax.reload();
+                    }
+                },
+                error: function(err){
+                    var msg = '{{ __('common.operation_failed') }}';
+                    if(err.responseJSON && err.responseJSON.message) {
+                        msg = err.responseJSON.message;
+                    }
+                    alert(msg);
+                    $('#apply_bulk_confirm_pending').prop('disabled', false);
+                }
+            });
+        });
 
         // Handle bulk invoice download click
         $(document).on('click', '.bulk_download_invoices_btn', function (e) {
