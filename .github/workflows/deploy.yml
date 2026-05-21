@@ -12,19 +12,21 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Deploy to Server (Upload Files)
+      - name: Create Deployment Archive
+        run: |
+          tar -czf deploy.tar.gz --exclude='.git' --exclude='.github' --exclude='node_modules' --exclude='vendor' .
+
+      - name: Deploy Archive to Server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.REMOTE_HOST }}
           username: ${{ secrets.REMOTE_USER }}
           password: ${{ secrets.SSH_PASSWORD }}
           port: 22
-          source: "./*"
+          source: "deploy.tar.gz"
           target: "/var/www/html/Production_Test"
-          rm: false
-          strip_components: 0
 
-      - name: Execute Remote Commands
+      - name: Extract Archive and Execute Remote Commands
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.REMOTE_HOST }}
@@ -33,6 +35,8 @@ jobs:
           port: 22
           script: |
             cd /var/www/html/Production_Test
+            tar -xzf deploy.tar.gz
+            rm deploy.tar.gz
             mkdir -p storage/framework/{sessions,views,cache}
             mkdir -p storage/temp/mpdf
             sudo chmod -R 777 storage bootstrap/cache
