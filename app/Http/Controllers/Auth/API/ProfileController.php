@@ -54,7 +54,9 @@ class ProfileController extends Controller
         $request->validate([
             'first_name' => 'nullable',
             'email' => 'nullable|unique:users,email,'.$request->user()->id,
-            'phone' => 'nullable|unique:users,phone,'.$request->user()->id
+            'phone' => 'nullable|unique:users,phone,'.$request->user()->id,
+            'gst_number' => 'nullable|string|max:255',
+            'store_name' => 'nullable|string|max:255'
         ]);
 
         $user=User::find($request->user()->id);
@@ -65,7 +67,9 @@ class ProfileController extends Controller
                 'email'      => $request->email,
                 'phone'      => $request->phone,
                 'date_of_birth' => $request->date_of_birth,
-                'description'  => $request->description
+                'description'  => $request->description,
+                'gst_number' => $request->gst_number,
+                'store_name' => $request->store_name
              ];
 
             $user->update($data);
