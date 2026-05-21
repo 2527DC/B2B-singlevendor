@@ -121,10 +121,13 @@ class OrderCancelReasonController extends Controller
                         'is_cancelled' => 1,
                         'cancel_reason_id' => $request->reason
                     ]);
+                    $orderManageRepo = new \Modules\OrderManage\Repositories\OrderManageRepository();
                     foreach($data->packages as $pkg){
                         $pkg->update([
                             'is_cancelled' => 1
                         ]);
+                        $pkg->load(['products', 'products.seller_product_sku', 'products.seller_product_sku.product', 'seller', 'seller.role']);
+                        $orderManageRepo->restoreStock($pkg);
                     }
                     LogActivity::successLog('Purchase order cancel successful for '.$request->user()->first_name);
                     return response()->json([

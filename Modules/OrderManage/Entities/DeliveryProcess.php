@@ -20,11 +20,11 @@ class DeliveryProcess extends Model
 
     }
     public function getTranslateNameAttribute(){
-        return $this->attributes['name'];
-    }
-    public function getTranslateDescriptionAttribute(){
-        return $this->attributes['description'];
-    }
+        return isset($this->attributes['name']) ? $this->attributes['name'] : null;
+     }
+     public function getTranslateDescriptionAttribute(){
+        return isset($this->attributes['description']) ? $this->attributes['description'] : null;
+     }
     public function email_templates()
     {
         return $this->morphMany(EmailTemplate::class, 'relatable');

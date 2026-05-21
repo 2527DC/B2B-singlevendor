@@ -94,8 +94,11 @@ class ReturnRequestApiController extends Controller
                 'order_status' => 'cancelled' // Assuming 'cancelled' status slug exists
             ]);
 
+            $orderManageRepo = new \Modules\OrderManage\Repositories\OrderManageRepository();
             foreach ($order->packages as $pkg) {
                 $pkg->update(['is_cancelled' => 1]);
+                $pkg->load(['products', 'products.seller_product_sku', 'products.seller_product_sku.product', 'seller', 'seller.role']);
+                $orderManageRepo->restoreStock($pkg);
             }
 
             return response()->json([

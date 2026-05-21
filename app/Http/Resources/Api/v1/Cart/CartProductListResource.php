@@ -62,7 +62,7 @@ class CartProductListResource extends JsonResource
                     "product_name" => $prdctPrdct->product_name,
                     "product_type" => $prdctPrdct->product_type,
                     "variant_sku_prefix" => $prdctPrdct->variant_sku_prefix,
-                    "unit_type_id" => $prdctPrdct->unit_type_id,
+                    "unit_type_id" => ($prdctPrdct->unit_type && $prdctPrdct->unit_type->id) ? $prdctPrdct->unit_type->name : $prdctPrdct->unit_type_id,
                     "brand_id" => $prdctPrdct->brand_id,
                     "thumbnail_image_source" => $prdctPrdct->thumbnail_image_source,
                     "media_ids" => $prdctPrdct->media_ids,

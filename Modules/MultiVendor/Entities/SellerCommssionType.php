@@ -30,9 +30,9 @@ class SellerCommssionType extends Model
         });
     }
     public function getTranslateNameAttribute(){
-        return $this->attributes['name'];
+        return isset($this->attributes['name']) ? $this->attributes['name'] : null;
     }
     public function getTranslateDescriptonAttribute(){
-        return $this->attributes['description'];
+        return isset($this->attributes['description']) ? $this->attributes['description'] : null;
     }
 }

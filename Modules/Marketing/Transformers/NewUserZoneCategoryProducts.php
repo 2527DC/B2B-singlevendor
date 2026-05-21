@@ -65,7 +65,7 @@ class NewUserZoneCategoryProducts extends JsonResource
             "product_name" =>  $this->product->product_name,
             "product_type" =>  $this->product->product_type,
             "variant_sku_prefix" =>  $this->product->variant_sku_prefix,
-            "unit_type_id" =>  $this->product->unit_type_id,
+            "unit_type_id" =>  ($this->product->unit_type && $this->product->unit_type->id) ? $this->product->unit_type->name : $this->product->unit_type_id,
             "brand_id" =>  $this->product->brand_id,
             "thumbnail_image_source" =>  $this->product->thumbnail_image_source,
             "media_ids" =>  $this->product->media_ids,

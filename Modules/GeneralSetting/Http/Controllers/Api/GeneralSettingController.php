@@ -60,6 +60,13 @@ class GeneralSettingController extends Controller
      * }
      */
     public function index(){
+        \Illuminate\Support\Facades\Log::info("GeneralSettingController@index Request", [
+            'url' => request()->fullUrl(),
+            'method' => request()->method(),
+            'inputs' => request()->all(),
+            'headers' => request()->headers->all(),
+        ]);
+
         $settings = GeneralSetting::select('site_title', 'company_name','country_name', 'zip_code','address','phone','email','currency_symbol','currency_symbol_position','logo','favicon','currency_code','copyright_text','language_code','country_id','state_id','city_id')->first();
         $currencyRepo = new CurrencyRepository();
         $currencies = $currencyRepo->getActiveAll();
@@ -112,7 +119,7 @@ class GeneralSettingController extends Controller
             // 'Tabby' => isModuleActive('Tabby'),
         ];
 
-        return response()->json([
+        $responseData = [
             'settings' => $settings,
             'currencies' => $currencies,
             'languages' => $languages,
@@ -122,7 +129,13 @@ class GeneralSettingController extends Controller
             'free_shipping' => $free_shipping,
             'modules' => $modules,
             'msg' => trans('app.Success')
+        ];
+
+        \Illuminate\Support\Facades\Log::info("GeneralSettingController@index Response", [
+            'response' => $responseData,
         ]);
+
+        return response()->json($responseData);
     }
 
     /**

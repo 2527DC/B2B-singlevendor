@@ -612,11 +612,14 @@ class OrderManageController extends Controller
             ]);
 
             // 2. Mark all packages of this order as cancelled
+            $orderManageRepo = new \Modules\OrderManage\Repositories\OrderManageRepository();
             foreach ($order->packages as $pkg) {
                 $pkg->update([
                     'is_cancelled' => 1,
                     'delivery_status' => 0 // 0 is cancelled / inactive
                 ]);
+                $pkg->load(['products', 'products.seller_product_sku', 'products.seller_product_sku.product', 'seller', 'seller.role']);
+                $orderManageRepo->restoreStock($pkg);
             }
 
             // 3. Process Wallet Refund if paid via wallet

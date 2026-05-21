@@ -93,7 +93,7 @@ class RecommendedProductListResource extends JsonResource
                 "product_name" => $pdct->product_name,
                 "product_type" => $pdct->product_type,
                 "variant_sku_prefix" => $pdct->variant_sku_prefix,
-                "unit_type_id" => $pdct->unit_type_id,
+                "unit_type_id" => ($pdct->unit_type && $pdct->unit_type->id) ? $pdct->unit_type->name : $pdct->unit_type_id,
                 "brand_id" => $pdct->brand_id,
                 "thumbnail_image_source" => $pdct->thumbnail_image_source,
                 "media_ids" => $pdct->media_ids,

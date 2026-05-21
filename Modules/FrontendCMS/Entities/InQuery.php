@@ -19,7 +19,7 @@ class InQuery extends Model
         $this->appends = ['translateName'];
     }
     public function getTranslateNameAttribute(){
-        return $this->attributes['name'];
+        return isset($this->attributes['name']) ? $this->attributes['name'] : null;
       }
 
 }

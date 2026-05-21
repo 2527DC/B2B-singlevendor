@@ -149,7 +149,7 @@ class FlashDealResource extends JsonResource
                            "product_name" => $last_product->product_name,
                            "product_type" => $last_product->product_type,
                            "variant_sku_prefix" => $last_product->variant_sku_prefix,
-                           "unit_type_id" => $last_product->unit_type_id,
+                           "unit_type_id" => ($last_product->unit_type && $last_product->unit_type->id) ? $last_product->unit_type->name : $last_product->unit_type_id,
                            "brand_id" => $last_product->brand_id,
                            "thumbnail_image_source" => $last_product->thumbnail_image_source,
                            "media_ids" => $last_product->media_ids,

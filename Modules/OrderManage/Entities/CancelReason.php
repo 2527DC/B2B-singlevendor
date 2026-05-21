@@ -22,9 +22,9 @@ class CancelReason extends Model
         }
     }
     public function getTranslateNameAttribute(){
-        return $this->attributes['name'];
+        return isset($this->attributes['name']) ? $this->attributes['name'] : null;
     }
     public function getTranslateDescriptionAttribute(){
-        return $this->attributes['description'];
+        return isset($this->attributes['description']) ? $this->attributes['description'] : null;
     }
 }

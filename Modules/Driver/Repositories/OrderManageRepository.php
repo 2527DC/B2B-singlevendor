@@ -125,6 +125,7 @@ class OrderManageRepository
                 $pkg->update([
                     'is_cancelled' => 1
                 ]);
+                $this->restoreStock($pkg);
             }
         }
         
@@ -387,6 +388,44 @@ class OrderManageRepository
         }
     }
 
+    public function restoreStock($orderpackage)
+    {
+        foreach ($orderpackage->products as $key => $package_product) {
+            if($package_product->type == 'product'){
+                $stock = $package_product->seller_product_sku->product_stock;
+                if ($package_product->seller_product_sku->product->stock_manage == 1) {
+                    $package_product->seller_product_sku->update([
+                        'product_stock' => $stock + $package_product->qty,
+                    ]);
+                    if(@$package_product->package->seller->role->type == 'superadmin'){
+                        $package_product->seller_product_sku->sku->update([
+                            'product_stock' => $stock + $package_product->qty
+                        ]);
+                    }
+                }
+
+                if ($package_product->seller_product_sku->product) {
+                    $sellerProduct = $package_product->seller_product_sku->product;
+                    $sellerProduct->update([
+                        'total_sale' => max(0, $sellerProduct->total_sale - $package_product->qty)
+                    ]);
+                    if ($sellerProduct->product && ($sellerProduct->product->category_id != null || $sellerProduct->product->category_id != 0)) {
+                        $category = $sellerProduct->product->category;
+                        if ($category) {
+                            $category->update(['total_sale' => max(0, $category->total_sale - $package_product->qty)]);
+                        }
+                    }
+                    if ($sellerProduct->product && ($sellerProduct->product->brand_id != null || $sellerProduct->product->brand_id != 0)) {
+                        $brand = $sellerProduct->product->brand;
+                        if ($brand) {
+                            $brand->update(['total_sale' => max(0, $brand->total_sale - $package_product->qty)]);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     public function sendDigitalFileAccess($data)
     {
         $exists = DigitalFileDownload::where('package_id', $data['package_id'])->where('product_sku_id', $data['product_sku_id'])->where('seller_product_sku_id', $data['seller_product_sku_id'])->first();
@@ -454,7 +493,6 @@ class OrderManageRepository
                 $package->update([
                     'delivery_status' => 2
                 ]);
-                $this->updateStock($package);
             }
             return 'done';
         }else{

@@ -19,9 +19,9 @@ class Benifit extends Model
 
     }
     public function getTranslateNameAttribute(){
-        return $this->attributes['title'];
+        return isset($this->attributes['title']) ? $this->attributes['title'] : null;
     }
     public function getTranslateDescriptionAttribute(){
-        return $this->attributes['description'];
+        return isset($this->attributes['description']) ? $this->attributes['description'] : null;
     }
 }

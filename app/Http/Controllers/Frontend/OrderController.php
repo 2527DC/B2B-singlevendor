@@ -467,10 +467,13 @@ class OrderController extends Controller
                 $data->is_cancelled = 1;
                 $data->cancel_reason_id = $request->reason;
                 $data->save();
+                $orderManageRepo = new \Modules\OrderManage\Repositories\OrderManageRepository();
                 foreach($data->packages as $pkg){
                     $pkg->update([
                         'is_cancelled' => 1
                     ]);
+                    $pkg->load(['products', 'products.seller_product_sku', 'products.seller_product_sku.product', 'seller', 'seller.role']);
+                    $orderManageRepo->restoreStock($pkg);
                 }
                 if(isModuleActive('Affiliate') && $data->affiliatePayments->count() > 0){
                     foreach($data->affiliatePayments as $key => $aff_payment){
@@ -502,24 +505,15 @@ class OrderController extends Controller
 
         try {
             $data = $this->orderService->orderPackageFindByID($request->order_id);
-            $orderProductDetail = OrderProductDetail::where('package_id',$data->id)->get();
 
             if ($data->order->is_cancelled == 0) {
                 $data->is_cancelled = 1;
                 $data->cancel_reason_id = $request->reason;
                 $data->save();
 
-
-                foreach($orderProductDetail as $detail){
-                    $sellerProductSku = SellerProductSKU::findOrFail($detail->product_sku_id);
-                    $sellerProductSku->product_stock = $sellerProductSku->product_stock + $detail->qty;
-                    if ($sellerProductSku->product) {
-                        $sellerProduct = SellerProduct::findOrFail($sellerProductSku->product->id);
-                        $sellerProduct->total_sale = $sellerProductSku->product->total_sale - $detail->qty;
-                        $sellerProduct->save();
-                    }
-                    $sellerProductSku->save();
-                }
+                $orderManageRepo = new \Modules\OrderManage\Repositories\OrderManageRepository();
+                $data->load(['products', 'products.seller_product_sku', 'products.seller_product_sku.product', 'seller', 'seller.role']);
+                $orderManageRepo->restoreStock($data);
 
                 if(!isModuleActive('MultiVendor') || @$data->order->packages->count() < 2){
                     $data->order->update([
@@ -561,6 +555,10 @@ class OrderController extends Controller
                 $data->is_cancelled = 1;
                 $data->cancel_reason_id = $request->reason;
                 $data->save();
+
+                $orderManageRepo = new \Modules\OrderManage\Repositories\OrderManageRepository();
+                $data->load(['products', 'products.seller_product_sku', 'products.seller_product_sku.product', 'seller', 'seller.role']);
+                $orderManageRepo->restoreStock($data);
 
                 if(!isModuleActive('MultiVendor') || @$data->order->packages->count() < 2){
                     $data->order->update([

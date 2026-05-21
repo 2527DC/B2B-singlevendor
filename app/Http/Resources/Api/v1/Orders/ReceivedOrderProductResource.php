@@ -101,7 +101,7 @@ class ReceivedOrderProductResource  extends JsonResource{
                        "product_name" => $pro->product->product_name,
                        "product_type" => $pro->product->product_type,
                        "variant_sku_prefix" => $pro->product->variant_sku_prefix,
-                       "unit_type_id" =>$pro->product->unit_type_id,
+                        "unit_type_id" => ($pro->product->unit_type && $pro->product->unit_type->id) ? $pro->product->unit_type->name : $pro->product->unit_type_id,
                        "brand_id" => $pro->product->brand_id,
                        "thumbnail_image_source" => $pro->product->thumbnail_image_source,
                        "media_ids" => $pro->product->media_ids,

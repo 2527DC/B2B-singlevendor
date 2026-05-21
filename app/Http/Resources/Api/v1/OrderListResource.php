@@ -61,7 +61,7 @@ class OrderListResource extends JsonResource
                                         "product_name" => $pkgPdctSlrPdctSkuPdctPdct->product_name,
                                         "product_type" => $pkgPdctSlrPdctSkuPdctPdct->product_type,
                                         "variant_sku_prefix" => $pkgPdctSlrPdctSkuPdctPdct->variant_sku_prefix,
-                                        "unit_type_id" => $pkgPdctSlrPdctSkuPdctPdct->unit_type_id,
+                                        "unit_type_id" => ($pkgPdctSlrPdctSkuPdctPdct->unit_type && $pkgPdctSlrPdctSkuPdctPdct->unit_type->id) ? $pkgPdctSlrPdctSkuPdctPdct->unit_type->name : $pkgPdctSlrPdctSkuPdctPdct->unit_type_id,
                                         "brand_id" => $pkgPdctSlrPdctSkuPdctPdct->brand_id,
                                         "thumbnail_image_source" => $pkgPdctSlrPdctSkuPdctPdct->thumbnail_image_source,
                                         "media_ids" => $pkgPdctSlrPdctSkuPdctPdct->media_ids,

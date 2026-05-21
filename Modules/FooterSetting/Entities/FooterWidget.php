@@ -42,6 +42,6 @@ class FooterWidget extends Model
         return $this->belongsTo(DynamicPage::class,'page', 'id');
     }
     public function getTranslateNameAttribute(){
-        return $this->attributes['name'];
+        return isset($this->attributes['name']) ? $this->attributes['name'] : null;
     }
 }

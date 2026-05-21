@@ -23,7 +23,7 @@ class ProductResource extends JsonResource
             "product_name" => $this->product_name,
             "product_type" => $this->product_type,
             "variant_sku_prefix" => $this->variant_sku_prefix,
-            "unit_type_id" => $this->unit_type_id,
+            "unit_type_id" => ($this->unit_type && $this->unit_type->id) ? $this->unit_type->name : $this->unit_type_id,
             "brand_id" => $this->brand_id,
             "thumbnail_image_source" => $this->thumbnail_image_source,
             "media_ids" => $this->media_ids,

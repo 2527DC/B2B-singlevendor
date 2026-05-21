@@ -49,7 +49,7 @@ class AllProductsResource extends JsonResource
                 "product_name" => $pdctsPdct->product_name,
                 "product_type" => $pdctsPdct->product_type,
                 "variant_sku_prefix" => $pdctsPdct->variant_sku_prefix,
-                "unit_type_id" => $pdctsPdct->unit_type_id,
+                "unit_type_id" => ($pdctsPdct->unit_type && $pdctsPdct->unit_type->id) ? $pdctsPdct->unit_type->name : $pdctsPdct->unit_type_id,
                 "brand_id" => $pdctsPdct->brand_id,
                 "thumbnail_image_source" => $pdctsPdct->thumbnail_image_source,
                 "media_ids" => $pdctsPdct->media_ids,

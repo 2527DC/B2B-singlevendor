@@ -52,6 +52,6 @@ class UnitType extends Model
         return \Modules\Product\Database\factories\UnitFactory::new();
     }
     public function getTranslateNameAttribute(){
-        return $this->attributes['name'];
+        return isset($this->attributes['name']) ? $this->attributes['name'] : null;
       }
 }

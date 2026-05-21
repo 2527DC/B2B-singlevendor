@@ -41,7 +41,7 @@ class WishListResource extends JsonResource
                     "product_name" => (string)$prdctP->product_name,
                     "product_type" => (int)$prdctP->product_type,
                     "variant_sku_prefix" => (string)$prdctP->variant_sku_prefix,
-                    "unit_type_id" => (int)$prdctP->unit_type_id,
+                    "unit_type_id" => ($prdctP->unit_type && $prdctP->unit_type->id) ? $prdctP->unit_type->name : (int)$prdctP->unit_type_id,
                     "brand_id" => (int)$prdctP->brand_id,
                     "thumbnail_image_source" => (string)$prdctP->thumbnail_image_source,
                     "media_ids" => (string)$prdctP->media_ids,

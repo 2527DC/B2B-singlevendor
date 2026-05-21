@@ -162,7 +162,7 @@ class NewUserZoneResource extends JsonResource
                             "product_name" => $allProductsProductProduct->product_name,
                             "product_type" => $allProductsProductProduct->product_type,
                             "variant_sku_prefix" => $allProductsProductProduct->variant_sku_prefix,
-                            "unit_type_id" => $allProductsProductProduct->unit_type_id,
+                            "unit_type_id" => ($allProductsProductProduct->unit_type && $allProductsProductProduct->unit_type->id) ? $allProductsProductProduct->unit_type->name : $allProductsProductProduct->unit_type_id,
                             "brand_id" => $allProductsProductProduct->brand_id,
                             "thumbnail_image_source" => $allProductsProductProduct->thumbnail_image_source,
                             "media_ids" => $allProductsProductProduct->media_ids,

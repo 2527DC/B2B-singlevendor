@@ -436,6 +436,10 @@ class OrderRepository
                 $syncController = new OrderSyncWithCarrierController();
                 $syncController->OrderSyncWithCarrier($package);
                 //end order sync with carrier
+
+                $orderManageRepo = new OrderManageRepository();
+                $package->load(['products', 'products.seller_product_sku', 'products.seller_product_sku.product', 'seller', 'seller.role']);
+                $orderManageRepo->updateStock($package);
             }
         }
         //for single vendor
@@ -548,6 +552,10 @@ class OrderRepository
             $syncController = new OrderSyncWithCarrierController();
             $syncController->OrderSyncWithCarrier($package);
             //end order sync with carrier
+
+            $orderManageRepo = new OrderManageRepository();
+            $package->load(['products', 'products.seller_product_sku', 'products.seller_product_sku.product', 'seller', 'seller.role']);
+            $orderManageRepo->updateStock($package);
         }
 
 
@@ -1036,6 +1044,9 @@ class OrderRepository
              }
             //end order sync with carrier
 
+            $orderManageRepo = new OrderManageRepository();
+            $package->load(['products', 'products.seller_product_sku', 'products.seller_product_sku.product', 'seller', 'seller.role']);
+            $orderManageRepo->updateStock($package);
         }
         if ($user != null) {
             $carts = Cart::where('user_id', $user->id)->where('is_select', 1)->get();
@@ -1392,8 +1403,9 @@ class OrderRepository
 
             }
 
-
-
+            $orderManageRepo = new OrderManageRepository();
+            $package->load(['products', 'products.seller_product_sku', 'products.seller_product_sku.product', 'seller', 'seller.role']);
+            $orderManageRepo->updateStock($package);
         }
         if ($user != null) {
             $carts = Cart::where('user_id', $user->id)->where('is_select', 1)->get();
