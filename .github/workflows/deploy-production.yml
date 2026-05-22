@@ -41,14 +41,11 @@ jobs:
           mv /tmp/deploy.tar.gz .
 
       - name: Deploy Archive to Server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.REMOTE_HOST }}
-          username: ${{ secrets.REMOTE_USER }}
-          password: ${{ secrets.SSH_PASSWORD }}
-          port: 22
-          source: "deploy.tar.gz"
-          target: "/var/www/DhatriProduction"
+        env:
+          SSHPASS: ${{ secrets.SSH_PASSWORD }}
+        run: |
+          sudo apt-get update && sudo apt-get install -y sshpass
+          sshpass -e scp -o StrictHostKeyChecking=no -P 22 deploy.tar.gz ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }}:/var/www/DhatriProduction/
 
       - name: Extract Archive and Execute Remote Commands
         uses: appleboy/ssh-action@v1.0.3
