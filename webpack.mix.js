@@ -52,12 +52,9 @@ mix.js([
     'public/backend/vendors/lazyload/lazyload.js'
 ], 'public/frontend/amazy/compile_js/app.js')
 
-.sass('resources/sass/frontend/amazy/app.scss', 'public/frontend/amazy/compile_css/app.css').options({
+    .sass('resources/sass/frontend/amazy/app.scss', 'public/frontend/amazy/compile_css/app.css').options({
         processCssUrls: false
     })
     .sass('resources/sass/frontend/amazy/rtl_app.scss', 'public/frontend/amazy/compile_css/rtl_app.css').options({
-        processCssUrls: false
-    })
-    .sass('Modules/SEOOverAll/Resources/assets/sass/app.scss', 'Modules/SEOOverAll/Resources/assets/sass/style.css').options({
         processCssUrls: false
     });
