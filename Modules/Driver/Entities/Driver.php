@@ -20,6 +20,7 @@ class Driver extends Authenticatable
         'otp_expires_at',
         'vehicle_number',
         'seller_id',
+        'warehouse_id',
     ];
 
     protected $hidden = [
@@ -35,5 +36,10 @@ class Driver extends Authenticatable
     public function seller()
     {
         return $this->belongsTo(\App\Models\User::class, 'seller_id');
+    }
+
+    public function warehouse()
+    {
+        return $this->belongsTo(\Modules\Seller\Entities\SellerWarehouseAddress::class, 'warehouse_id');
     }
 }

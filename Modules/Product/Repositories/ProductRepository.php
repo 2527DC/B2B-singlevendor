@@ -275,8 +275,8 @@ class ProductRepository
             $product_sku->selling_price = $data['selling_price'];
             $stock = 0;
 
-            if (isset($data['stock_manage']) && $data['stock_manage'] == 1) {
-                $stock = $data['single_stock'];
+            if (isset($data['stock_manage']) && $data['stock_manage'] == 1 && isset($data['warehouse_stocks'])) {
+                $stock = array_sum($data['warehouse_stocks']);
             }
 
             $product_sku->additional_shipping = $data['additional_shipping'];
@@ -284,6 +284,22 @@ class ProductRepository
             $product_sku->product_stock = $stock;
             $product_sku->in_app_purchase = $in_app_purchase_code;
             $product_sku->save();
+
+            // Save split warehouse stock
+            if (isset($data['stock_manage']) && $data['stock_manage'] == 1 && isset($data['warehouse_stocks'])) {
+                foreach ($data['warehouse_stocks'] as $warehouse_id => $qty) {
+                    \DB::table('warehouse_product_stocks')->updateOrInsert(
+                        [
+                            'seller_product_sku_id' => $product_sku->id,
+                            'warehouse_id' => $warehouse_id
+                        ],
+                        [
+                            'stock' => intval($qty) ?? 0,
+                            'updated_at' => now(),
+                        ]
+                    );
+                }
+            }
 
 
             if ($data['is_physical'] == 0 && isset($data['file_source'])) {
@@ -444,7 +460,17 @@ class ProductRepository
                 ]);
 
                 $total_stock = 0;
-                if (isset($data['warehouse_stock']) && is_array($data['warehouse_stock'])) {
+                if (isset($data['warehouse_stocks']) && is_array($data['warehouse_stocks'])) {
+                    foreach ($data['warehouse_stocks'] as $warehouse_id => $qty) {
+                        $stock_amount = intval($qty);
+                        $total_stock += $stock_amount;
+
+                        \Illuminate\Support\Facades\DB::table('warehouse_product_stocks')->updateOrInsert(
+                            ['warehouse_id' => $warehouse_id, 'seller_product_sku_id' => $sellerProductSKU->id],
+                            ['stock' => $stock_amount, 'is_active' => 1, 'updated_at' => now(), 'created_at' => now()]
+                        );
+                    }
+                } elseif (isset($data['warehouse_stock']) && is_array($data['warehouse_stock'])) {
                     foreach ($data['warehouse_stock'] as $warehouse_id => $sku_stocks) {
                         $stock_amount = is_array($sku_stocks) ? ($sku_stocks[$key] ?? 0) : $sku_stocks;
                         $stock_amount = intval($stock_amount);
@@ -631,11 +657,64 @@ class ProductRepository
             $product_sku->breadth = isset($data['breadth'])?$data['breadth']:0;
             $product_sku->height = isset($data['height'])?$data['height']:0;
             $product_sku->selling_price = $data['selling_price'];
-            $product_sku->product_stock = isset($data['single_stock'])?$data['single_stock']:0;
+            $stock = 0;
+            if (isset($data['stock_manage']) && $data['stock_manage'] == 1) {
+                if (isset($data['warehouse_stocks'])) {
+                    $stock = array_sum($data['warehouse_stocks']);
+                } else {
+                    $stock = isset($data['single_stock']) ? $data['single_stock'] : 0;
+                }
+            }
+            $product_sku->product_stock = $stock;
             $product_sku->additional_shipping = isset($data['additional_shipping']) ? $data['additional_shipping'] : 0;
             $product_sku->status = $data['status'];
             $product_sku->in_app_purchase = $in_app_purchase_code;
             $product_sku->save();
+
+            // Sync B2B warehouse stocks for Single Product
+            if (isset($data['stock_manage']) && $data['stock_manage'] == 1 && isset($data['warehouse_stocks'])) {
+                \DB::table('warehouse_product_stocks')->where('seller_product_sku_id', $product_sku->id)->delete();
+                if (!isModuleActive('MultiVendor')) {
+                    $front_sku = $product->sellerProducts->where('user_id', 1)->first()->skus->first();
+                    if ($front_sku) {
+                        \DB::table('warehouse_product_stocks')->where('seller_product_sku_id', $front_sku->id)->delete();
+                    }
+                }
+
+                foreach ($data['warehouse_stocks'] as $warehouse_id => $qty) {
+                    \DB::table('warehouse_product_stocks')->updateOrInsert(
+                        [
+                            'seller_product_sku_id' => $product_sku->id,
+                            'warehouse_id' => $warehouse_id
+                        ],
+                        [
+                            'stock' => intval($qty) ?? 0,
+                            'is_active' => 1,
+                            'updated_at' => now(),
+                            'created_at' => now()
+                        ]
+                    );
+
+                    if (!isModuleActive('MultiVendor')) {
+                        $front_sku = $product->sellerProducts->where('user_id', 1)->first()->skus->first();
+                        if ($front_sku) {
+                            \DB::table('warehouse_product_stocks')->updateOrInsert(
+                                [
+                                    'seller_product_sku_id' => $front_sku->id,
+                                    'warehouse_id' => $warehouse_id
+                                ],
+                                [
+                                    'stock' => intval($qty) ?? 0,
+                                    'is_active' => 1,
+                                    'updated_at' => now(),
+                                    'created_at' => now()
+                                ]
+                            );
+                        }
+                    }
+                }
+            }
+
             if (isModuleActive('WholeSale') && isset($data['wholesale_min_qty_0']) ){
                 //add/update Whole-sale price
                 $sellerProductSKU = SellerProductSKU::where('product_sku_id', $product_sku->id)->first();
@@ -675,7 +754,7 @@ class ProductRepository
                 if($front_sku){
                     $front_sku->update([
                         'selling_price' => $data['selling_price'],
-                        'product_stock' => isset($data['single_stock'])?$data['single_stock']:0
+                        'product_stock' => $stock
                     ]);
                     $front_sku->product->update([
                         'min_sell_price' => $data['selling_price'],
@@ -763,19 +842,60 @@ class ProductRepository
                                 $product_sku->variant_image = $variant_image;
                             }
                         }
-                        $product_sku->status = $data['status'];
                         $stock = 0;
-                        if (!isModuleActive('MultiVendor')) {
-                            if ($data['stock_manage'] == 1) {
-                                if ($data['product_type'] == 1) {
-                                    $stock = isset($data['single_stock'])?$data['single_stock']:0;
-                                } else {
-                                    $stock = isset($data['sku_stock'])?$data['sku_stock'][$key]:0;
+                        if (isset($data['stock_manage']) && $data['stock_manage'] == 1) {
+                            if (isset($data['warehouse_stock']) && is_array($data['warehouse_stock'])) {
+                                foreach ($data['warehouse_stock'] as $warehouse_id => $sku_stocks) {
+                                    $stock_amount = 0;
+                                    if (is_array($sku_stocks)) {
+                                        if (isset($sku_stocks[$product_sku->id])) {
+                                            $stock_amount = $sku_stocks[$product_sku->id];
+                                        } elseif (isset($sku_stocks[$key])) {
+                                            $stock_amount = $sku_stocks[$key];
+                                        }
+                                    } else {
+                                        $stock_amount = $sku_stocks;
+                                    }
+                                    $stock += intval($stock_amount);
                                 }
+                            } else {
+                                $stock = isset($data['sku_stock']) ? $data['sku_stock'][$key] : 0;
                             }
                         }
                         $product_sku->product_stock = $stock;
                         $product_sku->save();
+
+                        // Sync B2B warehouse stocks for this SKU
+                        if (isset($data['stock_manage']) && $data['stock_manage'] == 1 && isset($data['warehouse_stock']) && is_array($data['warehouse_stock'])) {
+                            \DB::table('warehouse_product_stocks')->where('seller_product_sku_id', $product_sku->id)->delete();
+                            foreach ($data['warehouse_stock'] as $warehouse_id => $sku_stocks) {
+                                $stock_amount = 0;
+                                if (is_array($sku_stocks)) {
+                                    if (isset($sku_stocks[$product_sku->id])) {
+                                        $stock_amount = $sku_stocks[$product_sku->id];
+                                    } elseif (isset($sku_stocks[$key])) {
+                                        $stock_amount = $sku_stocks[$key];
+                                    }
+                                } else {
+                                    $stock_amount = $sku_stocks;
+                                }
+                                $stock_amount = intval($stock_amount);
+
+                                \DB::table('warehouse_product_stocks')->updateOrInsert(
+                                    [
+                                        'seller_product_sku_id' => $product_sku->id,
+                                        'warehouse_id' => $warehouse_id
+                                    ],
+                                    [
+                                        'stock' => $stock_amount,
+                                        'is_active' => 1,
+                                        'updated_at' => now(),
+                                        'created_at' => now()
+                                    ]
+                                );
+                            }
+                        }
+
                         if (isset($data['variant_image_' . $image_increment])) {
                             UsedMedia::create([
                                 'media_id' => $media_img->id,
@@ -787,7 +907,7 @@ class ProductRepository
                         if(!isModuleActive("MultiVendor")){
                             $sellerProduct = $product->sellerProducts->where('user_id', 1)->first();
                             if($sellerProduct){
-                                SellerProductSKU::create([
+                                $sellerProductSKU = SellerProductSKU::create([
                                     'product_id' => $sellerProduct->id,
                                     'product_sku_id' => $product_sku->id,
                                     'product_stock' => $product_sku->product_stock,
@@ -795,6 +915,37 @@ class ProductRepository
                                     'status' => 1,
                                     'user_id' => 1
                                 ]);
+
+                                // Sync B2B warehouse stocks for Seller SKU
+                                if (isset($data['stock_manage']) && $data['stock_manage'] == 1 && isset($data['warehouse_stock']) && is_array($data['warehouse_stock'])) {
+                                    \DB::table('warehouse_product_stocks')->where('seller_product_sku_id', $sellerProductSKU->id)->delete();
+                                    foreach ($data['warehouse_stock'] as $warehouse_id => $sku_stocks) {
+                                        $stock_amount = 0;
+                                        if (is_array($sku_stocks)) {
+                                            if (isset($sku_stocks[$product_sku->id])) {
+                                                $stock_amount = $sku_stocks[$product_sku->id];
+                                            } elseif (isset($sku_stocks[$key])) {
+                                                $stock_amount = $sku_stocks[$key];
+                                            }
+                                        } else {
+                                            $stock_amount = $sku_stocks;
+                                        }
+                                        $stock_amount = intval($stock_amount);
+
+                                        \DB::table('warehouse_product_stocks')->updateOrInsert(
+                                            [
+                                                'seller_product_sku_id' => $sellerProductSKU->id,
+                                                'warehouse_id' => $warehouse_id
+                                            ],
+                                            [
+                                                'stock' => $stock_amount,
+                                                'is_active' => 1,
+                                                'updated_at' => now(),
+                                                'created_at' => now()
+                                            ]
+                                        );
+                                    }
+                                }
                             }
                         }
                         if ($data['is_physical'] == 0 && !empty($data['digital_file']) && isset($data['digital_file'][$key])) {
@@ -854,21 +1005,94 @@ class ProductRepository
                         }
                         $sku_exist->status = $data['status'];
                         $stock = 0;
-                        if (!isModuleActive('MultiVendor')) {
-                            if ($data['stock_manage'] == 1) {
-                                if ($data['product_type'] == 1) {
-                                    $stock = isset($data['single_stock'])?$data['single_stock']:0;
-                                } else {
-                                    $stock = isset($data['sku_stock'])? $data['sku_stock'][$key]:0;
+                        if (isset($data['stock_manage']) && $data['stock_manage'] == 1) {
+                            if (isset($data['warehouse_stock']) && is_array($data['warehouse_stock'])) {
+                                foreach ($data['warehouse_stock'] as $warehouse_id => $sku_stocks) {
+                                    $stock_amount = 0;
+                                    if (is_array($sku_stocks)) {
+                                        if (isset($sku_stocks[$sku_exist->id])) {
+                                            $stock_amount = $sku_stocks[$sku_exist->id];
+                                        } elseif (isset($sku_stocks[$key])) {
+                                            $stock_amount = $sku_stocks[$key];
+                                        }
+                                    } else {
+                                        $stock_amount = $sku_stocks;
+                                    }
+                                    $stock += intval($stock_amount);
                                 }
+                            } else {
+                                $stock = isset($data['sku_stock']) ? $data['sku_stock'][$key] : 0;
                             }
                         }
                         $sku_exist->product_stock = $stock;
                         $sku_exist->save();
+
+                        // Sync B2B warehouse stocks for this SKU
+                        if (isset($data['stock_manage']) && $data['stock_manage'] == 1 && isset($data['warehouse_stock']) && is_array($data['warehouse_stock'])) {
+                            \DB::table('warehouse_product_stocks')->where('seller_product_sku_id', $sku_exist->id)->delete();
+                            foreach ($data['warehouse_stock'] as $warehouse_id => $sku_stocks) {
+                                $stock_amount = 0;
+                                if (is_array($sku_stocks)) {
+                                    if (isset($sku_stocks[$sku_exist->id])) {
+                                        $stock_amount = $sku_stocks[$sku_exist->id];
+                                    } elseif (isset($sku_stocks[$key])) {
+                                        $stock_amount = $sku_stocks[$key];
+                                    }
+                                } else {
+                                    $stock_amount = $sku_stocks;
+                                }
+                                $stock_amount = intval($stock_amount);
+
+                                \DB::table('warehouse_product_stocks')->updateOrInsert(
+                                    [
+                                        'seller_product_sku_id' => $sku_exist->id,
+                                        'warehouse_id' => $warehouse_id
+                                    ],
+                                    [
+                                        'stock' => $stock_amount,
+                                        'is_active' => 1,
+                                        'updated_at' => now(),
+                                        'created_at' => now()
+                                    ]
+                                );
+                            }
+                        }
+
                         if (!isModuleActive('MultiVendor')) {
                             $front_sku = $product->sellerProducts->where('user_id', 1)->first()->skus->where('product_sku_id', $sku_exist->id)->first();
                             //add/update Whole-sale price
                             $sellerProductSKU = SellerProductSKU::where('product_sku_id', $sku_exist->id)->first();
+
+                            // Sync B2B warehouse stocks for Seller SKU
+                            if ($sellerProductSKU && isset($data['stock_manage']) && $data['stock_manage'] == 1 && isset($data['warehouse_stock']) && is_array($data['warehouse_stock'])) {
+                                \DB::table('warehouse_product_stocks')->where('seller_product_sku_id', $sellerProductSKU->id)->delete();
+                                foreach ($data['warehouse_stock'] as $warehouse_id => $sku_stocks) {
+                                    $stock_amount = 0;
+                                    if (is_array($sku_stocks)) {
+                                        if (isset($sku_stocks[$sku_exist->id])) {
+                                            $stock_amount = $sku_stocks[$sku_exist->id];
+                                        } elseif (isset($sku_stocks[$key])) {
+                                            $stock_amount = $sku_stocks[$key];
+                                        }
+                                    } else {
+                                        $stock_amount = $sku_stocks;
+                                    }
+                                    $stock_amount = intval($stock_amount);
+
+                                    \DB::table('warehouse_product_stocks')->updateOrInsert(
+                                        [
+                                            'seller_product_sku_id' => $sellerProductSKU->id,
+                                            'warehouse_id' => $warehouse_id
+                                        ],
+                                        [
+                                            'stock' => $stock_amount,
+                                            'is_active' => 1,
+                                            'updated_at' => now(),
+                                            'created_at' => now()
+                                        ]
+                                    );
+                                }
+                            }
                             if (isModuleActive('WholeSale') && isset($data['wholesale_min_qty_v_'.$key])){
                                 $allOldWholesalePrice = $sellerProductSKU->wholeSalePrices;
                                 $wholeSaleMinQty = $data['wholesale_min_qty_v_'.$key];
@@ -1005,19 +1229,60 @@ class ProductRepository
                             }
                         }
                     }
-                    $product_sku->status = $data['status'];
                     $stock = 0;
-                    if (!isModuleActive('MultiVendor')) {
-                        if ($data['stock_manage'] == 1) {
-                            if ($data['product_type'] == 1) {
-                                $stock = isset($data['single_stock'])?$data['single_stock']:0;
-                            } else {
-                                $stock = isset($data['sku_stock'])?$data['sku_stock'][$key]:0;
+                    if (isset($data['stock_manage']) && $data['stock_manage'] == 1) {
+                        if (isset($data['warehouse_stock']) && is_array($data['warehouse_stock'])) {
+                            foreach ($data['warehouse_stock'] as $warehouse_id => $sku_stocks) {
+                                  $stock_amount = 0;
+                                  if (is_array($sku_stocks)) {
+                                      if (isset($sku_stocks[$product_sku->id])) {
+                                          $stock_amount = $sku_stocks[$product_sku->id];
+                                      } elseif (isset($sku_stocks[$key])) {
+                                          $stock_amount = $sku_stocks[$key];
+                                      }
+                                  } else {
+                                      $stock_amount = $sku_stocks;
+                                  }
+                                  $stock += intval($stock_amount);
                             }
+                        } else {
+                            $stock = isset($data['sku_stock']) ? $data['sku_stock'][$key] : 0;
                         }
                     }
                     $product_sku->product_stock = $stock;
                     $product_sku->save();
+
+                    // Sync B2B warehouse stocks for this SKU
+                    if (isset($data['stock_manage']) && $data['stock_manage'] == 1 && isset($data['warehouse_stock']) && is_array($data['warehouse_stock'])) {
+                        \DB::table('warehouse_product_stocks')->where('seller_product_sku_id', $product_sku->id)->delete();
+                        foreach ($data['warehouse_stock'] as $warehouse_id => $sku_stocks) {
+                            $stock_amount = 0;
+                            if (is_array($sku_stocks)) {
+                                if (isset($sku_stocks[$product_sku->id])) {
+                                    $stock_amount = $sku_stocks[$product_sku->id];
+                                } elseif (isset($sku_stocks[$key])) {
+                                    $stock_amount = $sku_stocks[$key];
+                                }
+                            } else {
+                                $stock_amount = $sku_stocks;
+                            }
+                            $stock_amount = intval($stock_amount);
+
+                            \DB::table('warehouse_product_stocks')->updateOrInsert(
+                                [
+                                    'seller_product_sku_id' => $product_sku->id,
+                                    'warehouse_id' => $warehouse_id
+                                ],
+                                [
+                                    'stock' => $stock_amount,
+                                    'is_active' => 1,
+                                    'updated_at' => now(),
+                                    'created_at' => now()
+                                ]
+                            );
+                        }
+                    }
+
                     if (isset($data['variant_image_' . $image_increment])) {
                         UsedMedia::create([
                             'media_id' => $media_img->id,
@@ -1035,6 +1300,37 @@ class ProductRepository
                             'status' => 1,
                             'user_id' => 1
                         ]);
+
+                        // Sync B2B warehouse stocks for Seller SKU
+                        if (isset($data['stock_manage']) && $data['stock_manage'] == 1 && isset($data['warehouse_stock']) && is_array($data['warehouse_stock'])) {
+                            \DB::table('warehouse_product_stocks')->where('seller_product_sku_id', $sellerProductSKU->id)->delete();
+                            foreach ($data['warehouse_stock'] as $warehouse_id => $sku_stocks) {
+                                $stock_amount = 0;
+                                if (is_array($sku_stocks)) {
+                                    if (isset($sku_stocks[$product_sku->id])) {
+                                        $stock_amount = $sku_stocks[$product_sku->id];
+                                    } elseif (isset($sku_stocks[$key])) {
+                                        $stock_amount = $sku_stocks[$key];
+                                    }
+                                } else {
+                                    $stock_amount = $sku_stocks;
+                                }
+                                $stock_amount = intval($stock_amount);
+
+                                \DB::table('warehouse_product_stocks')->updateOrInsert(
+                                    [
+                                        'seller_product_sku_id' => $sellerProductSKU->id,
+                                        'warehouse_id' => $warehouse_id
+                                    ],
+                                    [
+                                        'stock' => $stock_amount,
+                                        'is_active' => 1,
+                                        'updated_at' => now(),
+                                        'created_at' => now()
+                                    ]
+                                );
+                            }
+                        }
                         //add Whole-sale price
                         if (isModuleActive('WholeSale') && isset($data['wholesale_min_qty_v_'.$key])){
                             $wholeSaleMinQty = $data['wholesale_min_qty_v_'.$key];
@@ -1395,13 +1691,31 @@ class ProductRepository
         $get_columns = array_diff($all_columns, $exclude_columns);
         $product = Product::query()->select($get_columns);
 
+        $warehouse_id = request()->get('warehouse_id');
+
         if ($table == 'alert') {
-            return $product->where('stock_manage', 1)->whereHas('skus', function ($query) {
+            return $product->where('stock_manage', 1)->whereHas('skus', function ($query) use ($warehouse_id) {
+                if ($warehouse_id) {
+                    $query->leftJoin('warehouse_product_stocks', function($join) use ($warehouse_id) {
+                        $join->on('warehouse_product_stocks.seller_product_sku_id', '=', 'product_sku.id')
+                             ->where('warehouse_product_stocks.warehouse_id', '=', $warehouse_id);
+                    });
+                    return $query->select(DB::raw('COALESCE(SUM(warehouse_product_stocks.stock), 0) as sum_colum'))
+                                 ->having('sum_colum', '<=', 10);
+                }
                 return $query->select(DB::raw('SUM(product_stock) as sum_colum'))->having('sum_colum', '<=', 10);
             });
         }
         if ($table == 'stockout') {
-            return $product->where('stock_manage', 1)->whereHas('skus', function ($query) {
+            return $product->where('stock_manage', 1)->whereHas('skus', function ($query) use ($warehouse_id) {
+                if ($warehouse_id) {
+                    $query->leftJoin('warehouse_product_stocks', function($join) use ($warehouse_id) {
+                        $join->on('warehouse_product_stocks.seller_product_sku_id', '=', 'product_sku.id')
+                             ->where('warehouse_product_stocks.warehouse_id', '=', $warehouse_id);
+                    });
+                    return $query->select(DB::raw('COALESCE(SUM(warehouse_product_stocks.stock), 0) as sum_colum'))
+                                 ->having('sum_colum', '<', 1);
+                }
                 return $query->select(DB::raw('SUM(product_stock) as sum_colum'))->having('sum_colum', '<', 1);
             });
         }

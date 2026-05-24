@@ -34,7 +34,7 @@
                                             <th scope="col">{{ __('common.name') }}</th>
                                             <th scope="col">{{ __('Phone') }}</th>
                                             <th scope="col">{{ __('Vehicle No') }}</th>
-                                            <th scope="col">{{ __('Assigned Seller') }}</th>
+                                            <th scope="col">{{ __('Assigned Warehouse') }}</th>
                                             <th scope="col">{{ __('Status') }}</th>
                                             <th scope="col">{{ __('Action') }}</th>
                                         </tr>
@@ -46,7 +46,7 @@
                                             <td>{{ is_array($driver->name) ? implode(', ', $driver->name) : $driver->name }}</td>
                                             <td>{{ is_array($driver->phone) ? implode(', ', $driver->phone) : $driver->phone }}</td>
                                             <td>{{ is_array($driver->vehicle_number) ? implode(', ', $driver->vehicle_number) : $driver->vehicle_number }}</td>
-                                            <td>{{ $driver->seller ? (is_array($driver->seller->first_name) ? implode(', ', $driver->seller->first_name) : $driver->seller->first_name) : '' }}</td>
+                                            <td>{{ $driver->warehouse ? $driver->warehouse->warehouse_name : '' }}</td>
                                             <td>
                                                 @php
                                                     $isActive = isset($driver->is_active) && (int)$driver->is_active === 1;
@@ -70,7 +70,7 @@
                                                             data-driver-name="{{ is_array($driver->name) ? implode(', ', $driver->name) : $driver->name }}"
                                                             data-driver-phone="{{ is_array($driver->phone) ? implode(', ', $driver->phone) : $driver->phone }}"
                                                             data-driver-vehicle-number="{{ is_array($driver->vehicle_number) ? implode(', ', $driver->vehicle_number) : $driver->vehicle_number }}"
-                                                            data-driver-seller-id="{{ $driver->seller_id }}"
+                                                            data-driver-warehouse-id="{{ $driver->warehouse_id }}"
                                                             data-driver-is-active="{{ isset($driver->is_active) ? (int)$driver->is_active : 1 }}"
                                                             >{{__('Edit')}}</a>
                                                         
@@ -132,11 +132,11 @@
                             </div>
                             <div class="col-xl-12">
                                 <div class="primary_input mb-25">
-                                    <label class="primary_input_label" for="seller_id">{{ __('Assign Seller') }}</label>
-                                    <select name="seller_id" class="form-control mb-25" id="create_seller_id">
-                                        <option value="">{{ __('Select Seller') }}</option>
-                                        @foreach($sellers as $seller)
-                                            <option value="{{ $seller->id }}">{{ is_array($seller->first_name) ? implode(' ', (array)$seller->first_name) : $seller->first_name }} {{ is_array($seller->last_name) ? implode(' ', (array)$seller->last_name) : $seller->last_name }} ({{ is_array($seller->email) ? implode(' ', (array)$seller->email) : $seller->email }})</option>
+                                    <label class="primary_input_label" for="warehouse_id">{{ __('Assign Warehouse') }}</label>
+                                    <select name="warehouse_id" class="form-control mb-25" id="create_warehouse_id">
+                                        <option value="">{{ __('Select Warehouse') }}</option>
+                                        @foreach($warehouses as $warehouse)
+                                            <option value="{{ $warehouse->id }}">{{ $warehouse->warehouse_name }}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -206,11 +206,11 @@
                             </div>
                             <div class="col-xl-12">
                                 <div class="primary_input mb-25">
-                                    <label class="primary_input_label" for="edit_seller_id">{{ __('Assign Seller') }}</label>
-                                    <select name="seller_id" class="form-control mb-25" id="edit_seller_id">
-                                        <option value="">{{ __('Select Seller') }}</option>
-                                        @foreach($sellers as $seller)
-                                            <option value="{{ $seller->id }}">{{ is_array($seller->first_name) ? implode(' ', (array)$seller->first_name) : $seller->first_name }} {{ is_array($seller->last_name) ? implode(' ', (array)$seller->last_name) : $seller->last_name }} ({{ is_array($seller->email) ? implode(' ', (array)$seller->email) : $seller->email }})</option>
+                                    <label class="primary_input_label" for="edit_warehouse_id">{{ __('Assign Warehouse') }}</label>
+                                    <select name="warehouse_id" class="form-control mb-25" id="edit_warehouse_id">
+                                        <option value="">{{ __('Select Warehouse') }}</option>
+                                        @foreach($warehouses as $warehouse)
+                                            <option value="{{ $warehouse->id }}">{{ $warehouse->warehouse_name }}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -295,7 +295,7 @@
                 let driverName = $(this).data('driver-name');
                 let driverPhone = $(this).data('driver-phone');
                 let driverVehicleNumber = $(this).data('driver-vehicle-number');
-                let driverSellerId = $(this).data('driver-seller-id');
+                let driverWarehouseId = $(this).data('driver-warehouse-id');
                 let isActive = $(this).data('driver-is-active');
 
                 $('#editDriverModal').modal('show');
@@ -303,7 +303,7 @@
                 $('#edit_name').val(driverName);
                 $('#edit_phone').val(driverPhone);
                 $('#edit_vehicle_number').val(driverVehicleNumber);
-                $('#edit_seller_id').val(driverSellerId);
+                $('#edit_warehouse_id').val(driverWarehouseId);
                 
                 if (isActive == 1) {
                     $('#edit_is_active').prop('checked', true);

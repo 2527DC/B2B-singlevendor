@@ -14,6 +14,9 @@
             <a class="dropdown-item edit_brand" href="@if($type == 'superadmin' || $type == 'admin' || $type == "staff"){{ route('product.clone', $products->id) }} @else {{ route('seller.my-product.clone', $products->id) }} @endif">{{__('common.clone')}}</a>
         @endif
         @if (permissionCheck('product.stock.update'))
+                <a class="dropdown-item common-warehouse" href="javascript:void(0);" data-id="{{$products->id}}">{{ __('common.warehouse') }}</a>
+        @endif
+        @if (permissionCheck('product.stock.update'))
             <a class="dropdown-item manage_stock" href="javascript:void(0);" data-id="{{$products->id}}" data-type="{{$products->product_type}}" data-name="{{$products->product_name}}">{{__('product.manage_stock')}}</a>
         @endif
         @if (permissionCheck('product.edit'))

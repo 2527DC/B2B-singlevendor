@@ -44,7 +44,13 @@ class ProductController extends Controller
 
     public function index()
     {
-        return view('product::products.index');
+        $is_admin = auth()->user()->role->type != 'seller';
+        if ($is_admin) {
+            $warehouses = \Modules\Seller\Entities\SellerWarehouseAddress::all();
+        } else {
+            $warehouses = \Modules\Seller\Entities\SellerWarehouseAddress::where('user_id', auth()->id())->get();
+        }
+        return view('product::products.index', compact('warehouses'));
     }
 
     public function bulk_product_upload_page()
@@ -140,8 +146,8 @@ class ProductController extends Controller
                             ->editColumn('email',function($products){
                                 return $products->email;
                             })
-                            ->addColumn('reason',function($products){
-                                return !empty($products->reason) ? $products->reason->name:'';
+                            ->editColumn('reason', function($products){
+                                return !empty($products->reason) ? $products->reason->name : '';
                             })
                             ->addColumn('action',function($products){
                                 return view('product::products.components._report_action')->with(['reason' => $products]);
@@ -272,6 +278,7 @@ class ProductController extends Controller
             $goldPriceRepo = new GoldPriceRepository();
             $data['gold_prices'] = $goldPriceRepo->getAll();
         }
+        $data['warehouses'] = \Modules\Seller\Entities\SellerWarehouseAddress::all();
         return view('product::products.create', $data);
     }
 
@@ -282,7 +289,46 @@ class ProductController extends Controller
     
         try {
             // Create product
-            $this->productService->create($request->except("_token"));
+            $product = $this->productService->create($request->except("_token"));
+            // Sync B2B warehouse stocks for Single Product if stock management is enabled
+            if (isset($request->stock_manage) && $request->stock_manage == 1 && $request->has('warehouse_stocks')) {
+                $productSku = $product->skus->first();
+                // Delete existing warehouse stock entries for this SKU
+                DB::table('warehouse_product_stocks')->where('seller_product_sku_id', $productSku->id)->delete();
+                // Insert new warehouse stock records
+                foreach ($request->warehouse_stocks as $warehouse_id => $qty) {
+                    DB::table('warehouse_product_stocks')->updateOrInsert(
+                        [
+                            'seller_product_sku_id' => $productSku->id,
+                            'warehouse_id' => $warehouse_id,
+                        ],
+                        [
+                            'stock' => intval($qty) ?? 0,
+                            'is_active' => 1,
+                            'updated_at' => now(),
+                            'created_at' => now(),
+                        ]
+                    );
+                    // Sync front-end SKU if not MultiVendor
+                    if (!isModuleActive('MultiVendor')) {
+                        $frontSku = $product->sellerProducts->where('user_id', 1)->first()?->skus->first();
+                        if ($frontSku) {
+                            DB::table('warehouse_product_stocks')->updateOrInsert(
+                                [
+                                    'seller_product_sku_id' => $frontSku->id,
+                                    'warehouse_id' => $warehouse_id,
+                                ],
+                                [
+                                    'stock' => intval($qty) ?? 0,
+                                    'is_active' => 1,
+                                    'updated_at' => now(),
+                                    'created_at' => now(),
+                                ]
+                            );
+                        }
+                    }
+                }
+            }
     
             if (auth()->user()->role_id != 1) {
                 $notificationSetting = DB::table('notification_settings')
@@ -376,6 +422,7 @@ class ProductController extends Controller
                 $goldPriceRepo = new GoldPriceRepository();
                 $data['gold_prices'] = $goldPriceRepo->getAll();
             }
+            $data['warehouses'] = \Modules\Seller\Entities\SellerWarehouseAddress::all();
             return view('product::products.edit', $data);
         } catch (\Exception $e) {
             LogActivity::errorLog($e->getMessage());
@@ -405,6 +452,7 @@ class ProductController extends Controller
                 $goldPriceRepo = new GoldPriceRepository();
                 $data['gold_prices'] = $goldPriceRepo->getAll();
             }
+            $data['warehouses'] = \Modules\Seller\Entities\SellerWarehouseAddress::all();
             return view('product::products.clone', $data);
         } catch (\Exception $e) {
             LogActivity::errorLog($e->getMessage());
@@ -678,7 +726,78 @@ class ProductController extends Controller
         }
     }
 
+    public function toggleWarehouseStockActive(Request $request)
+    {
+        $request->validate([
+            'product_sku_id' => 'required|integer',
+            'warehouse_id' => 'required|integer',
+            'is_active' => 'required|boolean',
+        ]);
+
+        try {
+            DB::table('warehouse_product_stocks')
+                ->where('seller_product_sku_id', $request->product_sku_id)
+                ->where('warehouse_id', $request->warehouse_id)
+                ->update(['is_active' => $request->is_active]);
+            LogActivity::successLog('Warehouse stock active status updated.');
+            return response()->json(['status' => true, 'message' => 'Updated successfully']);
+        } catch (\Exception $e) {
+            LogActivity::errorLog($e->getMessage());
+            return response()->json(['status' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    public function getProductWarehouses(Request $request)
+    {
+        $request->validate(['product_id' => 'required|integer']);
+        try {
+            $product = \DB::table('seller_products')->where('id', $request->product_id)->first();
+            if (!$product) {
+                return response()->json(['status' => false, 'message' => 'Product not found'], 404);
+            }
+
+            // Get first SKU id for this product (table: product_sku, FK: product_id)
+            $skuId = \DB::table('product_sku')
+                ->where('product_id', $request->product_id)
+                ->value('id');
+
+            if (!$skuId) {
+                return response()->json([
+                    'status'       => true,
+                    'product_name' => $product->product_name ?? 'Product',
+                    'sku_id'       => null,
+                    'warehouses'   => [],
+                ]);
+            }
+
+            // Join warehouse_product_stocks with seller_warehouse_addresses
+            $warehouses = \DB::table('warehouse_product_stocks as wps')
+                ->join('seller_warehouse_addresses as w', 'w.id', '=', 'wps.warehouse_id')
+                ->where('wps.seller_product_sku_id', $skuId)
+                ->select(
+                    'w.id as warehouse_id',
+                    'w.warehouse_name',
+                    'wps.stock',
+                    'wps.is_active',
+                    'wps.seller_product_sku_id'
+                )
+                ->get();
+
+            return response()->json([
+                'status'       => true,
+                'product_name' => $product->product_name ?? 'Product',
+                'sku_id'       => $skuId,
+                'warehouses'   => $warehouses,
+            ]);
+        } catch (\Exception $e) {
+            LogActivity::errorLog($e->getMessage());
+            return response()->json(['status' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
+
     public function updateSkuStatusByID(Request $request)
+
     {
         try {
             $product_sku = $this->productService->findProductSkuById($request->id);
@@ -873,20 +992,28 @@ class ProductController extends Controller
             } else {
                 // Single-vendor: Retrieve the original Product map
                 $product = clone $this->productService->findById($request->product_id);
-                $skus = $product->skus->map(function($sku) use ($product) {
+                $warehouse_id = $request->warehouse_id;
+
+                $skus = $product->skus->map(function($sku) use ($product, $warehouse_id) {
                     $variation = '';
                     if ($product->product_type == 2) {
                         $variations = $sku->product_variations->map(function($var) {
-                            return $var->attribute->name . ': ' . $var->attribute_value->name;
+                            return ($var->attribute->name ?? '') . ': ' . ($var->attribute_value->name ?? '');
                         });
                         $variation = $variations->implode(', ');
                     }
+                    
+                    $query = \DB::table('warehouse_product_stocks')->where('seller_product_sku_id', $sku->id);
+                    if ($warehouse_id) {
+                        $query->where('warehouse_id', $warehouse_id);
+                    }
+                    $current_stock = $query->sum('stock');
                     
                     return [
                         'id' => $sku->id,
                         'sku' => $sku->sku,
                         'variation' => $variation,
-                        'current_stock' => $sku->product_stock ?? 0,
+                        'current_stock' => $current_stock,
                         'selling_price' => $sku->selling_price,
                     ];
                 });
@@ -951,7 +1078,7 @@ class ProductController extends Controller
                     break;
             }
             
-            // Update Warehouse Stock
+            // Update Warehouse Stock for base SKU
             \DB::table('warehouse_product_stocks')->updateOrInsert(
                 [
                     'seller_product_sku_id' => $sku->id,
@@ -959,11 +1086,49 @@ class ProductController extends Controller
                 ],
                 [
                     'stock' => $newStock,
+                    'is_active' => 1,
                     'updated_at' => now(),
-                    // created_at needs a raw DB or check if exists, but updateOrInsert handles it partially.
-                    // For safety:
+                    'created_at' => now()
                 ]
             );
+
+            // Re-calculate total stock for base SKU
+            $totalBaseStock = \DB::table('warehouse_product_stocks')
+                ->where('seller_product_sku_id', $sku->id)
+                ->where('is_active', 1)
+                ->sum('stock');
+
+            $sku->update([
+                'product_stock' => $totalBaseStock
+            ]);
+
+            // If Single-Vendor, also update the shadow SellerProductSKU stock mapping and total stock
+            if (!isModuleActive('MultiVendor')) {
+                $sellerProductSKU = \Modules\Seller\Entities\SellerProductSKU::where('product_sku_id', $sku->id)->first();
+                if ($sellerProductSKU) {
+                    \DB::table('warehouse_product_stocks')->updateOrInsert(
+                        [
+                            'seller_product_sku_id' => $sellerProductSKU->id,
+                            'warehouse_id' => $request->warehouse_id
+                        ],
+                        [
+                            'stock' => $newStock,
+                            'is_active' => 1,
+                            'updated_at' => now(),
+                            'created_at' => now()
+                        ]
+                    );
+
+                    $totalSellerStock = \DB::table('warehouse_product_stocks')
+                        ->where('seller_product_sku_id', $sellerProductSKU->id)
+                        ->where('is_active', 1)
+                        ->sum('stock');
+
+                    $sellerProductSKU->update([
+                        'product_stock' => $totalSellerStock
+                    ]);
+                }
+            }
             
             // Create stock history record
             \Modules\Product\Entities\StockHistory::create([
@@ -1022,10 +1187,17 @@ class ProductController extends Controller
                     ];
                 });
             
+            $warehouse_id = $request->warehouse_id;
+            $query = \DB::table('warehouse_product_stocks')->where('seller_product_sku_id', $sku->id);
+            if ($warehouse_id) {
+                $query->where('warehouse_id', $warehouse_id);
+            }
+            $current_stock = $query->sum('stock');
+            
             return response()->json([
                 'success' => true,
                 'sku' => $sku->sku,
-                'current_stock' => $sku->product_stock ?? 0,
+                'current_stock' => $current_stock,
                 'product_name' => $sku->product->product_name,
                 'history' => $history
             ]);

@@ -1,3 +1,15 @@
+@php
+    $warehouses = \Modules\Seller\Entities\SellerWarehouseAddress::all();
+    $selected_warehouse_ids = [];
+    if (isset($product)) {
+        $selected_warehouse_ids = \DB::table('warehouse_product_stocks')
+            ->whereIn('seller_product_sku_id', $product->skus->pluck('id')->toArray())
+            ->where('is_active', 1)
+            ->pluck('warehouse_id')
+            ->unique()
+            ->toArray();
+    }
+@endphp
 @if(count($combinations[0]) > 0)
     <table class="table table-bordered sku_table">
         <thead>
@@ -91,9 +103,29 @@
                         @endif
                     </td>
                     <td class="text-center pt-20 stock_td d-none">
-                        <input class="primary_input_field mt-30" type="number" name="sku_stock[]"
+                        <input class="primary_input_field mt-30 d-none" type="number" name="sku_stock[]"
                                value="{{ ($query_1) ? @$query_1->product_stock : "0" }}" min="0" step="0"
-                               class="form-control" required>
+                               class="form-control">
+                        
+                        <div class="warehouse-sku-stock-container mt-2">
+                            @foreach($warehouses as $warehouse)
+                                @php
+                                    $stock_val = 0;
+                                    if ($query_1) {
+                                        $wh_stock = \DB::table('warehouse_product_stocks')
+                                            ->where('seller_product_sku_id', $query_1->id)
+                                            ->where('warehouse_id', $warehouse->id)
+                                            ->where('is_active', 1)
+                                            ->first();
+                                        $stock_val = $wh_stock ? $wh_stock->stock : 0;
+                                    }
+                                @endphp
+                                <div class="warehouse-sku-stock-item mb-1 d-flex align-items-center wh_stock_item_{{ $warehouse->id }} {{ in_array($warehouse->id, $selected_warehouse_ids) ? '' : 'd-none' }}">
+                                    <small class="mr-1" style="font-size:10px; width:70px; display:inline-block; overflow:hidden; text-overflow:ellipsis;">{{ $warehouse->warehouse_name }}:</small>
+                                    <input type="number" class="primary_input_field warehouse-stock-input-existing-variant" name="warehouse_stock[{{ $warehouse->id }}][{{ $ttt }}]" value="{{ $stock_val }}" min="0" style="padding: 4px; height: auto; width: 60px;" {{ in_array($warehouse->id, $selected_warehouse_ids) ? 'required' : '' }}>
+                                </div>
+                            @endforeach
+                        </div>
                     </td>
                     <td class="pt-25">
                         <input class="primary_input_field mt-20" type="text" name="sku[]"

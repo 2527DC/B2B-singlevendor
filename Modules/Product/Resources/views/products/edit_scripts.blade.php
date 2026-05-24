@@ -5,6 +5,18 @@
         "use strict";
         var gold_module_check = "{{isModuleActive('GoldPrice')}}";
         $(document).ready(function() {
+                // Initialize warehouse stock UI on page load if stock management is enabled
+                if ($('#stock_manage').val() == '1') {
+                    $('#warehouse_select_div_existing').removeClass('d-none');
+                    $('#stock_manage_div').addClass('col-lg-6').removeClass('col-lg-12');
+                    var isVariant = $('#product_type').val() == 2;
+                    if (isVariant) {
+                        $('.stock_td').removeClass('d-none');
+                        syncExistingVariantWarehouseStocks();
+                    } else {
+                        syncExistingSingleWarehouseStocks();
+                    }
+                }
             if("{{$errors->has('sku.*')}}"){
                 toastr.error('SKU must be unique.','Error');
             }
@@ -44,26 +56,198 @@
             });
 
             $(document).on('change', '#stock_manage', function(){
-                if($('#product_type').val() == 1){
-                    if($(this).val() == 1){
-                        $('#single_stock_div').removeClass('d-none');
-                        $('#stock_manage_div').addClass('col-lg-6');
-                        $('#stock_manage_div').removeClass('col-lg-12');
+                let isVariant = $('#product_type').val() == 2;
+                if($(this).val() == 1){
+                    $('#warehouse_select_div_existing').removeClass('d-none');
+                    $('#stock_manage_div').addClass('col-lg-6').removeClass('col-lg-12');
+                    if(isVariant){
+                        $('.stock_td').removeClass('d-none');
+                        syncExistingVariantWarehouseStocks();
                     }else{
-                        $('#single_stock_div').addClass('d-none');
-                        $('#stock_manage_div').addClass('col-lg-12');
-                        $('#stock_manage_div').removeClass('col-lg-6');
+                        syncExistingSingleWarehouseStocks();
                     }
                 }else{
+                    $('#warehouse_select_div_existing').addClass('d-none');
+                    $('#warehouse_stocks_container_existing').addClass('d-none');
                     $('#single_stock_div').addClass('d-none');
-                    if($(this).val() == 1){
-                        $('.stock_td').removeClass('d-none');
-                    }else{
+                    $('#stock_manage_div').addClass('col-lg-12').removeClass('col-lg-6');
+                    if(isVariant){
                         $('.stock_td').addClass('d-none');
+                        syncExistingVariantWarehouseStocks();
+                    }else{
+                        syncExistingSingleWarehouseStocks();
                     }
                 }
-
             });
+
+            // Trigger sync on warehouse select dropdown changes
+            $(document).on('change', '#warehouse_ids_existing', function() {
+                let isVariant = $('#product_type').val() == 2;
+                if (isVariant) {
+                    syncExistingVariantWarehouseStocks();
+                } else {
+                    syncExistingSingleWarehouseStocks();
+                }
+            });
+
+            // "Same for all" bulk stock population logic
+            $(document).on('click', '#apply_to_all_stocks_existing', function() {
+                var val = $('#bulk_stock_input_existing').val();
+                if (val !== '') {
+                    $('.warehouse-stock-input-existing').val(val);
+                    $('.warehouse-stock-input-existing-variant').val(val);
+                }
+            });
+
+            // Dynamic sync helpers for warehouse selection
+            function getSelectedWarehouses(selectId) {
+                var selected = [];
+                var vals = $(selectId).val();
+                if (vals) {
+                    if (!Array.isArray(vals)) {
+                        vals = [vals];
+                    }
+                    vals.forEach(function(val) {
+                        var opt = $(selectId + ' option[value="' + val + '"]');
+                        if (opt.length > 0) {
+                            selected.push({
+                                id: val,
+                                name: opt.text().replace(' (Default)', '').trim()
+                            });
+                        }
+                    });
+                }
+                return selected;
+            }
+
+            function syncExistingSingleWarehouseStocks() {
+                var stock_manage = $('#stock_manage').val();
+                var warehouses = getSelectedWarehouses('#warehouse_ids_existing');
+                var isVariant = $('#product_type').val() == 2;
+
+                if (stock_manage == 1 && !isVariant) {
+                    if (warehouses.length > 0) {
+                        $('#warehouse_stocks_container_existing').removeClass('d-none');
+                        $('#single_stock_div').addClass('d-none');
+                        $('#single_stock').removeAttr('required');
+
+                        // Build table rows, but keep old values if they exist!
+                        var existingValues = {};
+                        $('.warehouse-stock-input-existing').each(function() {
+                            var match = $(this).attr('name').match(/warehouse_stocks\[(\d+)\]/);
+                            if (match) {
+                                existingValues[match[1]] = $(this).val();
+                            }
+                        });
+
+                        var html = '';
+                        warehouses.forEach(function(wh) {
+                            var val = existingValues[wh.id] !== undefined ? existingValues[wh.id] : 0;
+                            html += `<tr class="wh_stock_row_${wh.id}">
+                                <td>${wh.name}</td>
+                                <td>
+                                    <input type="number" class="primary_input_field warehouse-stock-input-existing" name="warehouse_stocks[${wh.id}]" value="${val}" min="0" required style="padding: 6px 10px; height: auto;">
+                                </td>
+                            </tr>`;
+                        });
+                        $('#warehouse_stocks_list_existing').html(html);
+                    } else {
+                        $('#warehouse_stocks_container_existing').addClass('d-none');
+                        $('#warehouse_stocks_list_existing').empty();
+                        $('#single_stock_div').removeClass('d-none');
+                        $('#single_stock').attr('required', 'required');
+                    }
+                } else {
+                    $('#warehouse_stocks_container_existing').addClass('d-none');
+                    $('#warehouse_stocks_list_existing').empty();
+                    $('#single_stock_div').addClass('d-none');
+                    $('#single_stock').removeAttr('required');
+                }
+            }
+
+            function syncVariantWarehouseTable(tableSelector, selectSelector, isEdit) {
+                var table = $(tableSelector);
+                if (table.length === 0) return;
+
+                var stock_manage = $('#stock_manage').val();
+                var warehouses = getSelectedWarehouses(selectSelector);
+                var isVariant = table.find('tbody tr.variant').length > 0;
+
+                // Clean up any dynamic columns first to revert to default state
+                table.find('thead tr .dynamic-wh-header').remove();
+                table.find('tbody tr.variant .dynamic-wh-cell').remove();
+
+                if (stock_manage == 1 && isVariant && warehouses.length > 0) {
+                    // Hide default stock header column
+                    table.find('thead tr td.stock_td').addClass('d-none');
+                    table.find('thead tr th.stock_td').addClass('d-none');
+
+                    // Add header column for each selected warehouse
+                    var stockHeader = table.find('thead tr td.stock_td, thead tr th.stock_td');
+                    warehouses.forEach(function(wh) {
+                        var th = `<th class="dynamic-wh-header text-center" style="vertical-align: middle; width: 12%;"><label class="control-label">${wh.name}</label></th>`;
+                        stockHeader.after(th);
+                    });
+
+                    // Update rows
+                    table.find('tbody tr.variant').each(function(rowIndex) {
+                        var row = $(this);
+                        var stockTd = row.find('td.stock_td');
+                        stockTd.addClass('d-none');
+
+                        // Find or create container for de-selected or fallback inputs
+                        var container = stockTd.find('.warehouse-sku-stock-container');
+                        if (container.length === 0) {
+                            container = $('<div class="warehouse-sku-stock-container d-none"></div>');
+                            stockTd.append(container);
+                        }
+
+                        // Move any existing dynamic inputs back to the container first
+                        row.find('.dynamic-wh-cell input').each(function() {
+                            container.append($(this));
+                        });
+
+                        // For each selected warehouse, add a table cell with the input
+                        var prevCell = stockTd;
+                        warehouses.forEach(function(wh) {
+                            // Look for existing input in container
+                            var input = container.find(`input[name^="warehouse_stock[${wh.id}]"]`);
+                            if (input.length === 0) {
+                                // Create new input
+                                var inputClass = isEdit ? 'warehouse-stock-input-existing-variant' : 'warehouse-stock-input-new-variant';
+                                input = $(`<input type="number" class="primary_input_field ${inputClass}" name="warehouse_stock[${wh.id}][${rowIndex}]" value="0" min="0" required style="padding: 6px 10px; height: auto;">`);
+                            } else {
+                                input.attr('required', 'required').removeClass('d-none');
+                            }
+
+                            var td = $('<td class="dynamic-wh-cell text-center" style="vertical-align: middle;"></td>').append(input);
+                            prevCell.after(td);
+                            prevCell = td;
+                        });
+
+                        // Mark remaining inputs in container as not required
+                        container.find('input').removeAttr('required');
+                    });
+                } else {
+                    // Revert to default single stock column
+                    if (stock_manage == 1) {
+                        table.find('thead tr td.stock_td, thead tr th.stock_td').removeClass('d-none');
+                        table.find('tbody tr.variant').each(function() {
+                            var row = $(this);
+                            row.find('td.stock_td').removeClass('d-none');
+                            row.find('input[name="sku_stock[]"]').removeClass('d-none').attr('required', 'required');
+                            row.find('.warehouse-sku-stock-container').addClass('d-none');
+                        });
+                    } else {
+                        table.find('thead tr td.stock_td, thead tr th.stock_td').addClass('d-none');
+                        table.find('tbody tr.variant td.stock_td').addClass('d-none');
+                    }
+                }
+            }
+
+            function syncExistingVariantWarehouseStocks() {
+                syncVariantWarehouseTable('.sku_table', '#warehouse_ids_existing', true);
+            }
 
             $(document).on('change',"#pdf",function(){
                 getFileName($(this).val(),'#pdf_place');
@@ -871,6 +1055,7 @@
                     }
                     if($('#stock_manage').val() == 1){
                         $('.stock_td').removeClass('d-none');
+                        syncExistingVariantWarehouseStocks();
                     }else{
                         $('.stock_td').addClass('d-none');
                     }
@@ -895,13 +1080,17 @@
                 $("#selling_price").removeAttr("disabled");
                 $('.variant_sku_prefix').addClass('d-none');
                 if($('#stock_manage').val() == 1){
-                    $('#single_stock_div').removeClass('d-none');
-                    $('#stock_manage_div').addClass('col-lg-6');
-                    $('#stock_manage_div').removeClass('col-lg-12');
+                    $('#warehouse_select_div_existing').removeClass('d-none');
+                    $('#stock_manage_div').addClass('col-lg-6').removeClass('col-lg-12');
+                    setTimeout(function() {
+                        syncExistingSingleWarehouseStocks();
+                    }, 300);
                 }else{
-                    $('#single_stock_div').addClass('d-none');
-                    $('#stock_manage_div').removeClass('col-lg-6');
-                    $('#stock_manage_div').addClass('col-lg-12');
+                    $('#warehouse_select_div_existing').addClass('d-none');
+                    $('#stock_manage_div').removeClass('col-lg-6').addClass('col-lg-12');
+                    setTimeout(function() {
+                        syncExistingSingleWarehouseStocks();
+                    }, 300);
                 }
             } else {
                 $('.attribute_div').show();
@@ -914,9 +1103,17 @@
                 $("#purchase_price").attr('disabled', true);
                 $("#selling_price").attr('disabled', true);
                 $('#single_stock_div').addClass('d-none');
-                $('#stock_manage_div').removeClass('col-lg-6');
-                $('#stock_manage_div').addClass('col-lg-12');
+                if($('#stock_manage').val() == 1){
+                    $('#warehouse_select_div_existing').removeClass('d-none');
+                    $('#stock_manage_div').addClass('col-lg-6').removeClass('col-lg-12');
+                } else {
+                    $('#warehouse_select_div_existing').addClass('d-none');
+                    $('#stock_manage_div').removeClass('col-lg-6').addClass('col-lg-12');
+                }
                 $('.variant_sku_prefix').removeClass('d-none');
+                setTimeout(function() {
+                    syncExistingVariantWarehouseStocks();
+                }, 300);
             }
         }
         function getActiveFieldShipping() {
@@ -1345,5 +1542,9 @@
             $('.pagination-container .page-link[aria-label="Next »"]').html("<i class='fa fa-angle-right'></i>");
         });
     })(jQuery);
-    </script>
+    
+        
+
+   
+        </script>
 @endpush

@@ -414,43 +414,61 @@
                                         </div>
                                     </div>
 
-                                    @if(isset($_GET['add_type']) && $_GET['add_type'] == 'in-house' && auth()->user()->role->type != 'seller')
-                                        <div class="col-lg-12" id="stock_manage_div">
-                                            <div class="primary_input mb-25">
-                                                <label class="primary_input_label" for="stock_manage">{{__('product.stock_manage') }}</label>
-                                                <select class="primary_select mb-25" name="stock_manage" id="stock_manage">
-                                                    <option value="1" @if(old('stock_manage') & old('stock_manage') == '1') selected @endif>{{ __('common.yes') }}</option>
-                                                    <option value="0" @if(old('stock_manage') & old('stock_manage') == '0') selected @endif>{{ __('common.no') }}</option>
-                                                </select>
-                                            </div>
+                                    <div class="col-lg-12" id="stock_manage_div">
+                                        <div class="primary_input mb-25">
+                                            <label class="primary_input_label" for="stock_manage">{{__('product.stock_manage') }}</label>
+                                            <select class="primary_select mb-25" name="stock_manage" id="stock_manage">
+                                                <option value="1" @if(old('stock_manage') & old('stock_manage') == '1') selected @endif>{{ __('common.yes') }}</option>
+                                                <option value="0" @if(old('stock_manage') & old('stock_manage') == '0') selected @endif>{{ __('common.no') }}</option>
+                                            </select>
                                         </div>
-                                        <div class="col-lg-6 d-none" id="single_stock_div">
-                                            <div class="primary_input mb-15">
-                                                <label class="primary_input_label" for="single_stock"> {{__('product.product_stock') }}</label>
-                                                <input class="primary_input_field" name="single_stock" id="single_stock" type="number" min="0" step="0" value="{{old('single_stock')?old('single_stock'):0}}">
-                                                <span class="text-danger">{{ $errors->first('single_stock') }}</span>
-                                            </div>
+                                    </div>
+                                    <div class="col-lg-6 d-none" id="single_stock_div">
+                                        <div class="primary_input mb-15">
+                                            <label class="primary_input_label" for="single_stock"> {{ __('product.product_stock') }}</label>
+                                            <input class="primary_input_field" name="single_stock" id="single_stock" type="number" min="0" step="0" value="{{old('single_stock')?old('single_stock'):0}}">
+                                            <span class="text-danger" id="error_single_stock">{{ $errors->first('single_stock') }}</span>
                                         </div>
-                                    @endif
+                                    </div>
 
-                                    @if(auth()->user()->role->type == 'seller')
-                                        <div class="col-lg-12" id="stock_manage_div">
-                                            <div class="primary_input mb-25">
-                                                <label class="primary_input_label" for="stock_manage">{{__('product.stock_manage') }}</label>
-                                                <select class="primary_select mb-25" name="stock_manage" id="stock_manage">
-                                                    <option value="1" @if(old('stock_manage') & old('stock_manage') == '1') selected @endif>{{ __('common.yes') }}</option>
-                                                    <option value="0" @if(old('stock_manage') & old('stock_manage') == '0') selected @endif>{{ __('common.no') }}</option>
-                                                </select>
+                                    <div class="col-lg-6 d-none" id="warehouse_select_div">
+                                        <div class="primary_input mb-25">
+                                            <label class="primary_input_label" for="warehouse_ids">Select Warehouses</label>
+                                            <select class="primary_select mb-25" name="warehouse_ids[]" id="warehouse_ids" multiple>
+                                                @foreach($warehouses as $warehouse)
+                                                    <option value="{{ $warehouse->id }}" {{ $warehouse->is_default ? 'selected' : '' }}>{{ $warehouse->warehouse_name }} @if($warehouse->is_default) (Default) @endif</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-lg-12 d-none" id="warehouse_stocks_container">
+                                        <div class="white_box_30px mb_30 p-4 border rounded" style="background: #f8f9fa;">
+                                            <h4 class="mb-3">{{ __('product.warehouse_stock_management') ?? 'Warehouse Stock Management' }}</h4>
+                                            
+                                            <div class="row align-items-center mb-3">
+                                                <div class="col-md-4">
+                                                    <input type="number" class="primary_input_field" id="bulk_stock_input" placeholder="Stock value for all" min="0" step="1" style="padding: 8px 10px; height: auto;">
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <button type="button" class="primary-btn fix-gr-bg" id="apply_to_all_stocks" style="height: 38px; line-height: 38px; padding: 0 15px;">Same for all</button>
+                                                </div>
+                                            </div>
+
+                                            <div class="table-responsive">
+                                                <table class="table table-bordered">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Warehouse</th>
+                                                            <th>Stock</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="warehouse_stocks_list">
+                                                    </tbody>
+                                                </table>
                                             </div>
                                         </div>
-                                        <div class="col-lg-6 d-none" id="single_stock_div">
-                                            <div class="primary_input mb-15">
-                                                <label class="primary_input_label" for="single_stock"> {{__('product.product_stock') }}</label>
-                                                <input class="primary_input_field" name="single_stock" id="single_stock" type="number" min="0" step="0" value="{{old('single_stock')?old('single_stock'):0}}">
-                                                <span class="text-danger">{{ $errors->first('single_stock') }}</span>
-                                            </div>
-                                        </div>
-                                    @endif
+                                    </div>
 
                                     <div class="col-lg-6 mrp_div">
                                         <div class="primary_input mb-15">

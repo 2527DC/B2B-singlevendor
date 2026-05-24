@@ -87,6 +87,11 @@ $(document).ready(function() {
     // Load product history
     function loadProductHistory(productId, fromDate = null, toDate = null) {
         let url = "{{ route('product.history.get') }}?product_id=" + productId;
+        // Append selected warehouse filter if any
+        let warehouseId = $('#warehouse_filter').val();
+        if (warehouseId) {
+            url += "&warehouse_id=" + warehouseId;  
+        }
         
         if (fromDate) {
             url += "&from_date=" + fromDate;

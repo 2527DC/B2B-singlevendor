@@ -146,7 +146,10 @@ Route::post('/seller-filter-product-by-type',[SellerController::class,'filterInd
 Route::get('/seller-filter-product-page-by-type',[SellerController::class,'fetchFilterPagenateDataByType'])->name('frontend.seller.product_filter_page_by_type');
 Route::get('/seller-filter-sort-product-by-type',[SellerController::class,'sortFilterIndexByType'])->name('frontend.seller.sort_product_filter_by_type');
 Route::get('/product/{seller}/{slug?}',[ProductController::class,'show'])->name('frontend.item.show');
-Route::post('/product/report',[ProductController::class,'submitReport'])->name('frontend.submit.report');
+        Route::post('product/warehouse-stock/toggle', [\Modules\Product\Http\Controllers\ProductController::class, 'toggleWarehouseStockActive'])->name('product.warehouse_stock.toggle');
+        Route::post('product/warehouse-stock/list', [\Modules\Product\Http\Controllers\ProductController::class, 'getProductWarehouses'])->name('product.warehouse_stock.list');
+
+
 Route::post('/item-details-for-get-modal',[ProductController::class,'show_in_modal'])->name('frontend.item.show_in_modal');
 Route::post('/admin-item-details-for-get-modal',[ProductController::class,'admin_show_in_modal'])->name('admin.item.show_in_modal')->middleware(['auth']);
 Route::get('/item/reviews/get-data',[ProductController::class,'getReviewByPage'])->name('frontend.product.reviews.get-data');

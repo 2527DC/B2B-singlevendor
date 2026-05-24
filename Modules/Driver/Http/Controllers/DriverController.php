@@ -12,11 +12,11 @@ class DriverController extends Controller
 {
     public function index()
     {
-        // Get real drivers from database instead of static data
-        $drivers = Driver::with('seller')->get();
-        $sellers = \App\Models\User::activeSeller()->get();
+        // Get real drivers from database with their warehouse relation
+        $drivers = Driver::with('warehouse')->get();
+        $warehouses = \Modules\Seller\Entities\SellerWarehouseAddress::all();
         
-        return view('driver::index', compact('drivers', 'sellers'));
+        return view('driver::index', compact('drivers', 'warehouses'));
     }
 
     public function store(Request $request)
@@ -34,7 +34,7 @@ class DriverController extends Controller
             'phone' => $request->phone,
             'password' => Hash::make($request->password),
             'is_active' => $request->has('is_active') ? 1 : 0,
-            'seller_id' => $request->seller_id,
+            'warehouse_id' => $request->warehouse_id,
             'vehicle_number' => $request->vehicle_number,
         ]);
 
@@ -62,7 +62,7 @@ class DriverController extends Controller
             'name' => $request->name,
             'phone' => $request->phone,
             'is_active' => $request->has('is_active') ? 1 : 0,
-            'seller_id' => $request->seller_id,
+            'warehouse_id' => $request->warehouse_id,
             'vehicle_number' => $request->vehicle_number,
         ]);
 

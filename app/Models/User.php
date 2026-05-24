@@ -419,26 +419,30 @@ class User extends Authenticatable
     }
 
     public function scopeActiveSeller($query){
-        $query = $query->where('is_active', 1)->whereHas('role', function($q1){
-            return $q1->where('type','seller');
-        });
-        $query->whereHas('SellerAccount', function ($q1) {
-            return $q1->where('holiday_mode', 0)->orWhere('holiday_date', '!=', date('Y-m-d'))->orWhere(function ($q2) {
-                return $q2->where('holiday_date_start', '>', date('Y-m-d'))->where('holiday_date_end', '<', date('Y-m-d'))
-                    ->orWhere('holiday_date_start', '>', date('Y-m-d'))->orWhere('holiday_date_end', '<', date('Y-m-d'));
+        if (isModuleActive('MultiVendor')) {
+            $query = $query->where('is_active', 1)->whereHas('role', function($q1){
+                return $q1->where('type','seller');
             });
-        })->whereHas('SellerSubscriptions', function ($q5) {
-            return $q5->where('expiry_date', '>', date('Y-m-d'))->whereHas('user.SellerAccount', function ($q6) {
-                return $q6->where('seller_commission_id', 3);
+            $query->whereHas('SellerAccount', function ($q1) {
+                return $q1->where('holiday_mode', 0)->orWhere('holiday_date', '!=', date('Y-m-d'))->orWhere(function ($q2) {
+                    return $q2->where('holiday_date_start', '>', date('Y-m-d'))->where('holiday_date_end', '<', date('Y-m-d'))
+                        ->orWhere('holiday_date_start', '>', date('Y-m-d'))->orWhere('holiday_date_end', '<', date('Y-m-d'));
+                });
+            })->whereHas('SellerSubscriptions', function ($q5) {
+                return $q5->where('expiry_date', '>', date('Y-m-d'))->whereHas('user.SellerAccount', function ($q6) {
+                    return $q6->where('seller_commission_id', 3);
+                });
+            })->orWhereHas('SellerAccount',function($q7){
+                return $q7->where('seller_commission_id','!=',3)
+                ->where('holiday_mode', 0)->orWhere('holiday_date', '!=', date('Y-m-d'))->orWhere(function ($q2) {
+                    return $q2->where('holiday_date_start', '>', date('Y-m-d'))->where('holiday_date_end', '<', date('Y-m-d'))
+                        ->orWhere('holiday_date_start', '>', date('Y-m-d'))->orWhere('holiday_date_end', '<', date('Y-m-d'));
+                });
             });
-        })->orWhereHas('SellerAccount',function($q7){
-            return $q7->where('seller_commission_id','!=',3)
-            ->where('holiday_mode', 0)->orWhere('holiday_date', '!=', date('Y-m-d'))->orWhere(function ($q2) {
-                return $q2->where('holiday_date_start', '>', date('Y-m-d'))->where('holiday_date_end', '<', date('Y-m-d'))
-                    ->orWhere('holiday_date_start', '>', date('Y-m-d'))->orWhere('holiday_date_end', '<', date('Y-m-d'));
-            });
-        });
-        return $query;
+            return $query;
+        } else {
+            return $query->where('id', 1)->where('is_active', 1);
+        }
     }
 
 

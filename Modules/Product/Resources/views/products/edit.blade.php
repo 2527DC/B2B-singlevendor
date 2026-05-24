@@ -459,6 +459,12 @@ $LanguageList = getLanguageList();
                                         @if(!isModuleActive('MultiVendor'))
                                             @php
                                                 $frontend_product = $product->sellerProducts->where('user_id', 1)->first();
+                                                $selected_warehouse_ids = \DB::table('warehouse_product_stocks')
+                                                    ->whereIn('seller_product_sku_id', $product->skus->pluck('id')->toArray())
+                                                    ->where('is_active', 1)
+                                                    ->pluck('warehouse_id')
+                                                    ->unique()
+                                                    ->toArray();
                                             @endphp
                                             <div class="col-lg-12" id="stock_manage_div">
                                                 <div class="primary_input mb-25">
@@ -478,6 +484,67 @@ $LanguageList = getLanguageList();
                                                         type="number" min="0" step="0"
                                                         value="{{old('single_stock')?old('single_stock'):@$frontend_product->skus[0]->product_stock}}">
                                                     <span class="text-danger">{{ $errors->first('single_stock') }}</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-lg-6 d-none" id="warehouse_select_div_existing">
+                                                <div class="primary_input mb-25">
+                                                    <label class="primary_input_label" for="warehouse_ids_existing">Select Warehouses</label>
+                                                    <select class="primary_select mb-25" name="warehouse_ids[]" id="warehouse_ids_existing" multiple>
+                                                        @foreach($warehouses as $warehouse)
+                                                            <option value="{{ $warehouse->id }}" {{ in_array($warehouse->id, $selected_warehouse_ids) ? 'selected' : '' }}>{{ $warehouse->warehouse_name }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            
+                                                
+                                                    <h4 class="mb-3">{{ __('product.warehouse_stock_management') ?? 'Warehouse Stock Management' }}</h4>
+                                                    
+                                                    <div class="row align-items-center mb-3">
+                                                        <div class="col-md-4">
+                                                            <input type="number" class="primary_input_field" id="bulk_stock_input_existing" placeholder="Stock value for all" min="0" step="1" style="padding: 8px 10px; height: auto;">
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <button type="button" class="primary-btn fix-gr-bg" id="apply_to_all_stocks_existing" style="height: 38px; line-height: 38px; padding: 0 15px;">Same for all</button>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="table-responsive">
+                                                        <table class="table table-bordered">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>{{ __('product.warehouse') }}</th>
+                                                                    <th>{{ __('product.stock') }}</th>
+                                                                    
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody id="warehouse_stocks_list_existing">
+                                                                @foreach($warehouses as $warehouse)
+                                                                    @if(in_array($warehouse->id, $selected_warehouse_ids))
+                                                                        @php
+                                                                            $wh_stock = \DB::table('warehouse_product_stocks')
+                                                                                ->whereIn('seller_product_sku_id', $product->skus->pluck('id')->toArray())
+                                                                                ->where('warehouse_id', $warehouse->id)
+                                                                                ->where('is_active', 1)
+                                                                                ->first();
+                                                                            $stock_val = $wh_stock ? $wh_stock->stock : 0;
+                                                                        @endphp
+                <tr class="wh_stock_row_{{ $warehouse->id }}">
+                    <td>{{ $warehouse->warehouse_name }}</td>
+                    <td>
+                        <input type="number" class="primary_input_field warehouse-stock-input-existing" name="warehouse_stocks[{{ $warehouse->id }}]" value="{{ $stock_val }}" min="0" required style="padding: 6px 10px; height: auto;">
+                    </td>
+                    
+                        <input type="checkbox" class="warehouse-active-toggle" data-product-sku-id="{{ $product->skus->first()->id ?? 0 }}" data-warehouse-id="{{ $warehouse->id }}" {{ ($wh_stock && $wh_stock->is_active) ? 'checked' : '' }} />
+                    </td>
+                </tr>
+                                                                    @endif
+                                                                @endforeach
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
                                                 </div>
                                             </div>
 

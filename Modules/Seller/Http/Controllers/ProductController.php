@@ -130,7 +130,6 @@ class ProductController extends Controller
         }
         return view('seller::products.components.create', $data);
     }
-    }
     public function store(Request $request){
         $request->validate([
             'product_name' => ['required',Rule::unique('seller_products', 'product_name')->where(function($query){

@@ -60,7 +60,23 @@
                 </div>
                 <div class="col-xl-12">
                     <div class="white_box_30px mb_30">
-                        <div class="tab-content">
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="warehouse_filter">Select Warehouse</label>
+                                <select class="primary_select mb-15" id="warehouse_filter">
+                                    <option value="" disabled @if(!$warehouses->contains('is_default', 1)) selected @endif>Select a Warehouse</option>
+                                    @foreach($warehouses as $warehouse)
+                                        <option value="{{ $warehouse->id }}" {{ $warehouse->is_default ? 'selected' : '' }}>{{ $warehouse->warehouse_name }} @if($warehouse->is_default) (Default) @endif</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div id="no_warehouse_msg" class="text-center mt-5 mb-5" style="display: none;">
+                            <h4 class="text-danger">{{ __('common.please_select_a_warehouse_to_list_the_products') ?? 'Please select a warehouse to list the products.' }}</h4>
+                        </div>
+
+                        <div class="tab-content" id="product_tab_content">
                             @if (permissionCheck('product.get-data'))
                                 <div role="tabpanel" class="tab-pane fade active show" id="order_processing_data">
                                     <div class="box_header common_table_header ">
@@ -594,7 +610,10 @@
                 serverSide: true,
                 "stateSave": true,
                 "ajax": ( {
-                    url: "{{route('product.get-data')}}"
+                    url: "{{route('product.get-data')}}",
+                    data: function(d) {
+                        d.warehouse_id = $('#warehouse_filter').val();
+                    }
                 }),
                 "initComplete":function(json){
                 },
@@ -694,7 +713,11 @@
                 serverSide: true,
                 "stateSave": true,
                 "ajax": ( {
-                    url: "{{route('product.get-data')}}"+'?table=drafted'
+                    url: "{{route('product.get-data')}}",
+                    data: function(d) {
+                        d.table = 'drafted';
+                        d.warehouse_id = $('#warehouse_filter').val();
+                    }
                 }),
                 "initComplete":function(json){
                 },
@@ -794,7 +817,11 @@
                 serverSide: true,
                 "stateSave": true,
                 "ajax": ( {
-                    url: "{{route('product.get-data')}}"+'?table=disable'
+                    url: "{{route('product.get-data')}}",
+                    data: function(d) {
+                        d.table = 'disable';
+                        d.warehouse_id = $('#warehouse_filter').val();
+                    }
                 }),
                 "initComplete":function(json){
                 },
@@ -894,7 +921,11 @@
                 serverSide: true,
                 "stateSave": true,
                 "ajax": ( {
-                    url: "{{route('product.get-data')}}"+'?table=alert'
+                    url: "{{route('product.get-data')}}",
+                    data: function(d) {
+                        d.table = 'alert';
+                        d.warehouse_id = $('#warehouse_filter').val();
+                    }
                 }),
                 "initComplete":function(json){
                 },
@@ -995,7 +1026,11 @@
                 serverSide: true,
                 "stateSave": true,
                 "ajax": ( {
-                    url: "{{route('product.get-data')}}"+'?table=stockout'
+                    url: "{{route('product.get-data')}}",
+                    data: function(d) {
+                        d.table = 'stockout';
+                        d.warehouse_id = $('#warehouse_filter').val();
+                    }
                 }),
                 "initComplete":function(json){
                 },
@@ -1480,6 +1515,34 @@
             $('#manageStockModal').modal('show');
         });
 
+        // ===== WAREHOUSE FILTERING =====
+        function checkWarehouseSelection() {
+            var val = $('#warehouse_filter').val();
+            if (val == '' || val == null) {
+                $('#product_tab_content').hide();
+                $('#no_warehouse_msg').show();
+            } else {
+                $('#product_tab_content').show();
+                $('#no_warehouse_msg').hide();
+            }
+        }
+
+        // Check on load
+        checkWarehouseSelection();
+
+        $(document).on('change', '#warehouse_filter', function() {
+            checkWarehouseSelection();
+            var val = $('#warehouse_filter').val();
+            if (val != '' && val != null) {
+                $('#mainProductTable').DataTable().ajax.reload(null, false);
+                $('#drafted_product_table').DataTable().ajax.reload(null, false);
+                $('#disabledProductTable').DataTable().ajax.reload(null, false);
+                $('#alertProductTable').DataTable().ajax.reload(null, false);
+                $('#stockoutProductTable').DataTable().ajax.reload(null, false);
+            }
+        });
+        // ===== END WAREHOUSE FILTERING =====
+
         function loadProductSkus(productId) {
             $('#pre-loader').removeClass('d-none');
             $.ajax({
@@ -1487,7 +1550,8 @@
                 type: "POST",
                 data: {
                     _token: "{{ csrf_token() }}",
-                    product_id: productId
+                    product_id: productId,
+                    warehouse_id: $('#warehouse_filter').val()
                 },
                 success: function(response) {
                     $('#pre-loader').addClass('d-none');
@@ -1625,7 +1689,8 @@
                     sku_id: skuId,
                     stock_type: stockType,
                     quantity: quantity,
-                    note: note
+                    note: note,
+                    warehouse_id: $('#warehouse_filter').val()
                 },
                 success: function(response) {
                     $('#pre-loader').addClass('d-none');
@@ -1656,8 +1721,163 @@
             });
         }
         // ===== END MANAGE STOCK FUNCTIONALITY =====
+
+        // ===== COMMON WAREHOUSE MODAL =====
+        $(document).on('click', '.common-warehouse', function () {
+            var productId = $(this).data('id');
+            $('#commonWarehouseModal').data('product-id', productId);
+            $('#wh-modal-body').html('<tr><td colspan="3" class="text-center"><i class="fa fa-spinner fa-spin"></i> Loading...</td></tr>');
+            $('#commonWarehouseModal').modal('show');
+
+            $.ajax({
+                url: '{{ route("product.warehouse_stock.list") }}',
+                type: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    product_id: productId
+                },
+                success: function (res) {
+                    if (!res.status) {
+                        $('#wh-modal-body').html('<tr><td colspan="3" class="text-center text-danger">' + (res.message || 'Error loading warehouses') + '</td></tr>');
+                        return;
+                    }
+                    $('#commonWarehouseModalLabel').text('Warehouses — ' + res.product_name);
+                    if (!res.warehouses || res.warehouses.length === 0) {
+                        $('#wh-modal-body').html('<tr><td colspan="3" class="text-center">No warehouse stocks found for this product.</td></tr>');
+                        return;
+                    }
+                    var html = '';
+                    $.each(res.warehouses, function (i, wh) {
+                        var checked = wh.is_active == 1 ? 'checked' : '';
+                        html += '<tr>';
+                        html += '<td>' + wh.warehouse_name + '</td>';
+                        html += '<td>' + (wh.stock ?? 0) + '</td>';
+                        html += '<td class="text-center">';
+                        html += '<label class="wh-toggle-label">';
+                        html += '<input type="checkbox" class="wh-active-toggle" ' + checked + ' data-sku-id="' + wh.seller_product_sku_id + '" data-warehouse-id="' + wh.warehouse_id + '">';
+                        html += '<span class="wh-toggle-slider"></span>';
+                        html += '</label>';
+                        html += '</td>';
+                        html += '</tr>';
+                    });
+                    $('#wh-modal-body').html(html);
+                },
+                error: function () {
+                    $('#wh-modal-body').html('<tr><td colspan="3" class="text-center text-danger">Failed to load warehouses.</td></tr>');
+                }
+            });
+        });
+
+        $(document).on('change', '.wh-active-toggle', function () {
+            var $cb       = $(this);
+            var skuId     = $cb.data('sku-id');
+            var warehouseId = $cb.data('warehouse-id');
+            var isActive  = $cb.is(':checked') ? 1 : 0;
+
+            $.ajax({
+                url: '{{ route("product.warehouse_stock.toggle") }}',
+                type: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    product_sku_id: skuId,
+                    warehouse_id:   warehouseId,
+                    is_active:      isActive
+                },
+                success: function (res) {
+                    if (res.status) {
+                        toastr.success(res.message || 'Warehouse status updated.');
+                    } else {
+                        toastr.error(res.message || 'Update failed.');
+                        $cb.prop('checked', !$cb.is(':checked'));
+                    }
+                },
+                error: function () {
+                    toastr.error('{{ __("common.error_message") }}');
+                    $cb.prop('checked', !$cb.is(':checked'));
+                }
+            });
+        });
+        // ===== END COMMON WAREHOUSE MODAL =====
+
     });
     })(jQuery);
 </script>
+
+{{-- Common Warehouse Modal --}}
+<div class="modal fade" id="commonWarehouseModal" tabindex="-1" role="dialog" aria-labelledby="commonWarehouseModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content" style="border-radius:16px; overflow:hidden; background: rgba(255,255,255,0.97); backdrop-filter: blur(12px); box-shadow: 0 20px 60px rgba(0,0,0,0.18);">
+            <div class="modal-header" style="background: linear-gradient(135deg,#4f46e5 0%,#7c3aed 100%); padding: 20px 28px; border-bottom: none;">
+                <h5 class="modal-title" id="commonWarehouseModalLabel" style="color:#fff; font-weight:700; font-size:1.1rem; letter-spacing:.3px;">
+                    <i class="fas fa-warehouse mr-2"></i>Warehouse Stock Status
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color:#fff; opacity:.9; font-size:1.4rem;">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="padding: 24px 28px;">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0" style="border-radius:10px; overflow:hidden;">
+                        <thead>
+                            <tr style="background: #f0f0ff;">
+                                <th style="font-weight:600; color:#374151; border:none; padding:12px 16px;">Warehouse</th>
+                                <th style="font-weight:600; color:#374151; border:none; padding:12px 16px;">Stock</th>
+                                <th style="font-weight:600; color:#374151; border:none; padding:12px 16px; text-align:center;">Active</th>
+                            </tr>
+                        </thead>
+                        <tbody id="wh-modal-body">
+                            <tr><td colspan="3" class="text-center"><i class="fa fa-spinner fa-spin"></i> Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer" style="border-top:1px solid #f0f0f0; padding: 16px 28px;">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" style="border-radius:8px; padding:8px 22px;">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.wh-toggle-label {
+    position: relative;
+    display: inline-block;
+    width: 48px;
+    height: 26px;
+    margin: 0;
+}
+.wh-toggle-label input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+}
+.wh-toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #cbd5e1;
+    border-radius: 26px;
+    transition: .3s;
+}
+.wh-toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    border-radius: 50%;
+    transition: .3s;
+    box-shadow: 0 2px 4px rgba(0,0,0,.2);
+}
+.wh-toggle-label input:checked + .wh-toggle-slider {
+    background-color: #4f46e5;
+}
+.wh-toggle-label input:checked + .wh-toggle-slider:before {
+    transform: translateX(22px);
+}
+</style>
 @endpush
 
