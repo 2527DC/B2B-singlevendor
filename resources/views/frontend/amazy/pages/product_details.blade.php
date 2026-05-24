@@ -1103,7 +1103,6 @@
                                             <p class="font_14 f_w_400 m-0">{{__('amazy.Seller Score')}}</p>
                                         </div>
                                         <div class="single_info_seller d-flex align-items-center gap_15">
-                                            <h4 class="font_14 f_w_500 m-0" id="follow_seller_count">
                                                 {{getNumberTranslate($product->seller->countFollow())}}
                                             </h4>
                                             <p class="font_14 f_w_400 m-0">{{__('amazy.Followers')}}</p>
@@ -1112,9 +1111,6 @@
                                     <div class="Information_box_right">
                                         @if(auth()->check() && auth()->id() != $product->seller->id)
                                             @if(auth()->check() && !auth()->user()->follow($product->seller->id))
-                                                <button type="btn" id="follow_seller_btn"
-                                                    class="amaz_primary_btn style3 text-uppercase">{{__('common.follow')}}</button>
-                                            @elseif(auth()->check() && auth()->user()->follow($product->seller->id))
                                                 <button type="btn"
                                                     class="amaz_primary_btn style3 text-uppercase">{{__('amazy.Followed')}}</button>
                                             @endif

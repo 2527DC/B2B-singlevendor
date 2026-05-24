@@ -423,8 +423,8 @@
                                                         </div>
                                                         <ul class="wh-option-list" id="warehouseOptionList">
                                                             @forelse($warehouses as $wh)
-                                                                <li class="wh-option {{ old('warehouse_id') == $wh->user_id ? 'selected' : '' }}"
-                                                                    data-id="{{ $wh->user_id }}"
+                                                                <li class="wh-option {{ old('warehouse_id') == $wh->id ? 'selected' : '' }}"
+                                                                    data-id="{{ $wh->id }}"
                                                                     data-name="{{ $wh->warehouse_name }}"
                                                                     data-addr="{{ $wh->warehouse_address }}">
                                                                     <span class="wh-opt-name">{{ $wh->warehouse_name }}</span>

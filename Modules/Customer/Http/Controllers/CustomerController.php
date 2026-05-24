@@ -22,7 +22,7 @@ use Modules\UserActivityLog\Traits\LogActivity;
 use Yajra\DataTables\Facades\DataTables;
 use Modules\UserActivityLog\Entities\LogActivity as LogActivityModel;
 use Illuminate\Database\QueryException;
-use Modules\MultiVendor\Entities\SellerWarehouseAddress;
+use Modules\Seller\Entities\SellerWarehouseAddress;
 class CustomerController extends Controller
 {
     use ImageStore;
@@ -38,7 +38,7 @@ class CustomerController extends Controller
     {
         $query = $this->customerService->getAll();
         if (auth()->check() && auth()->user()->role->type == 'seller') {
-            $query->where('warehouse_id', auth()->id());
+            $query->where('seller_id', auth()->id());
         }
         $data['customers'] = $query;
         return view('customer::customers.index', $data);
@@ -50,7 +50,7 @@ class CustomerController extends Controller
             
             $query = $this->customerService->getAll()->with(['salesman', 'warehouse', 'customerAddresses']);
             if (auth()->check() && auth()->user()->role->type == 'seller') {
-                $query->where('warehouse_id', auth()->id());
+                $query->where('seller_id', auth()->id());
             }
 
             if ($table == 'active_customer') {
@@ -61,6 +61,18 @@ class CustomerController extends Controller
                 $customer = $query->whereNotIn('is_active', ['2']);
             }
             return DataTables::of($customer)
+                ->filterColumn('phone', function($query, $keyword) {
+                    $query->where(function($q) use ($keyword) {
+                        $q->where('users.phone', 'like', "%{$keyword}%")
+                          ->orWhere('users.username', 'like', "%{$keyword}%");
+                    });
+                })
+                ->filterColumn('store_name', function($query, $keyword) {
+                    $query->where('users.store_name', 'like', "%{$keyword}%");
+                })
+                ->filterColumn('gst_number', function($query, $keyword) {
+                    $query->where('users.gst_number', 'like', "%{$keyword}%");
+                })
                 ->addIndexColumn()
                 ->addColumn('avatar', function ($customer) {
                     return view('customer::customers.components._avatar_td', compact('customer'));
@@ -167,9 +179,20 @@ class CustomerController extends Controller
             return back();
         }
     }
+
     public function create()
     {
-        $warehouses = SellerWarehouseAddress::select('id', 'user_id', 'warehouse_name', 'warehouse_address', 'warehouse_phone')->get();
+        $seller_id = null;
+        if (auth()->check() && auth()->user()->role->type == 'seller') {
+            $seller_id = auth()->id();
+        }
+        
+        $query = SellerWarehouseAddress::select('id', 'user_id', 'warehouse_name', 'warehouse_address', 'warehouse_phone');
+        if ($seller_id) {
+            $query->where('user_id', $seller_id);
+        }
+        $warehouses = $query->get();
+        
         return view('customer::customers.create', compact('warehouses'));
     }
 
@@ -192,7 +215,7 @@ class CustomerController extends Controller
             'password' => 'required|confirmed|min:8',
             'referral_code' => ['sometimes', 'nullable', Rule::exists('referral_codes', 'referral_code')->where('status', 1)],
             'status' => 'required',
-            'warehouse_id' => 'required',
+            'warehouse_id' => 'required|exists:seller_warehouse_addresses,id',
             'gst_number' => 'nullable|string|max:255'
         ]);
 
@@ -246,7 +269,22 @@ class CustomerController extends Controller
     public function edit($id)
     {
         $customer = $this->customerService->find($id);
-        $warehouses = SellerWarehouseAddress::select('id', 'user_id', 'warehouse_name', 'warehouse_address', 'warehouse_phone')->get();
+        
+        $seller_id = null;
+        if (auth()->check()) {
+            if (auth()->user()->role->type == 'seller') {
+                $seller_id = auth()->id();
+            } else {
+                $seller_id = $customer->warehouse ? $customer->warehouse->user_id : null;
+            }
+        }
+        
+        $query = SellerWarehouseAddress::select('id', 'user_id', 'warehouse_name', 'warehouse_address', 'warehouse_phone');
+        if ($seller_id) {
+            $query->where('user_id', $seller_id);
+        }
+        $warehouses = $query->get();
+        
         return view('customer::customers.edit', compact('customer', 'warehouses'));
     }
 
@@ -261,7 +299,7 @@ class CustomerController extends Controller
             'document' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
             'password' => 'sometimes|nullable|confirmed|min:8',
             'status' => 'required',
-            'warehouse_id' => 'required',
+            'warehouse_id' => 'required|exists:seller_warehouse_addresses,id',
             'gst_number' => 'nullable|string|max:255'
         ]);
         try {
@@ -317,6 +355,7 @@ class CustomerController extends Controller
             return back();
         }
     }
+    
     public function show($id)
     {
 
@@ -499,20 +538,7 @@ class CustomerController extends Controller
             $customer = CustomerAddress::findOrFail($request->address_id);
             $old_data = CustomerAddress::findOrFail($request->address_id);
             $customer->update($data);
-            // CustomerAddress::where('id',$request->address_id)->update([
-            //     "customer_id" => $old_data->customer_id,
-            //     "name" => $old_data->name,
-            //     "email" => $old_data->email,
-            //     "phone" => $old_data->phone,
-            //     "address" => $old_data->address,
-            //     "city" => $old_data->city,
-            //     "state" => $old_data->state,
-            //     "country" => $old_data->country,
-            //     "postal_code" => $old_data->postal_code,
-            //     "is_shipping_default" => $old_data->is_shipping_default,
-            //     "is_billing_default" => $old_data->is_billing_default,
-            //     "is_updated" => 1,
-            // ]);
+
 
             LogActivity::successLog('update address');
             return $this->loadTableData();

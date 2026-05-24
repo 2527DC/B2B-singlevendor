@@ -13,8 +13,6 @@ use Modules\Seller\Entities\SellerProduct;
 use Modules\Seller\Entities\SellerProductSKU;
 use Modules\FrontendCMS\Entities\HomePageSection;
 use Modules\GeneralSetting\Entities\EmailTemplateType;
-use Modules\MultiVendor\Entities\SellerBankAccount;
-use Modules\MultiVendor\Entities\SellerBusinessInformation;
 use App\Traits\ImageStore;
 use Modules\GeneralSetting\Entities\NotificationSetting;
 use Modules\GST\Entities\GstTax;
@@ -206,6 +204,22 @@ class ProductRepository {
                 'status' => 1,
                 'user_id' => $seller_id
             ]);
+
+            $total_stock = 0;
+            if (isset($data['warehouse_stock']) && is_array($data['warehouse_stock'])) {
+                foreach ($data['warehouse_stock'] as $warehouse_id => $stock_val) {
+                    $stock_amount = is_array($stock_val) ? ($stock_val[$product->skus->first()->id] ?? 0) : $stock_val;
+                    $stock_amount = intval($stock_amount);
+                    $total_stock += $stock_amount;
+                    
+                    DB::table('warehouse_product_stocks')->updateOrInsert(
+                        ['warehouse_id' => $warehouse_id, 'seller_product_sku_id' => $sellerProductSKU->id],
+                        ['stock' => $stock_amount, 'is_active' => 1, 'updated_at' => now(), 'created_at' => now()]
+                    );
+                }
+                $sellerProductSKU->update(['product_stock' => $total_stock]);
+            }
+
             //add Whole-sale price
             if (isModuleActive('WholeSale')){
                 $wholeSaleMinQty = isset($data['wholesale_min_qty_0']) ? $data['wholesale_min_qty_0'] : [];
@@ -237,6 +251,25 @@ class ProductRepository {
                     'status' => 1,
                     'user_id' => $seller_id
                 ]);
+
+                $total_stock = 0;
+                if (isset($data['warehouse_stock']) && is_array($data['warehouse_stock'])) {
+                    foreach ($data['warehouse_stock'] as $warehouse_id => $sku_stocks) {
+                        if (is_array($sku_stocks)) {
+                            $sku_id = $data['product_skus'][$key];
+                            $stock_amount = isset($sku_stocks[$sku_id]) ? $sku_stocks[$sku_id] : (isset($sku_stocks[$key]) ? $sku_stocks[$key] : 0);
+                            $stock_amount = intval($stock_amount);
+                            $total_stock += $stock_amount;
+
+                            DB::table('warehouse_product_stocks')->updateOrInsert(
+                                ['warehouse_id' => $warehouse_id, 'seller_product_sku_id' => $sellerProductSKU->id],
+                                ['stock' => $stock_amount, 'is_active' => 1, 'updated_at' => now(), 'created_at' => now()]
+                            );
+                        }
+                    }
+                    $sellerProductSKU->update(['product_stock' => $total_stock]);
+                }
+
                 //add Whole-sale price
                 if (isModuleActive('WholeSale')){
                     $wholeSaleMinQty = isset($data['wholesale_min_qty_v_'.$key]) ? $data['wholesale_min_qty_v_'.$key] : [];
@@ -348,8 +381,35 @@ class ProductRepository {
         }
 
         if($product->product->product_type == 1){
-            $product->skus->first()->update([
-                'product_stock' => ($product->stock_manage == 1) ? (isset($data['product_stock']) ? $data['product_stock'] : 0) : 0,
+            $sellerProductSKU = $product->skus->first();
+            $total_stock = 0;
+            $warehouse_ids = isset($data['warehouse_ids']) ? $data['warehouse_ids'] : [];
+
+            // Deactivate any warehouse stock record not in the selected list
+            DB::table('warehouse_product_stocks')
+                ->where('seller_product_sku_id', $sellerProductSKU->id)
+                ->whereNotIn('warehouse_id', $warehouse_ids)
+                ->update(['is_active' => 0, 'stock' => 0, 'updated_at' => now()]);
+
+            if (isset($data['warehouse_stock']) && is_array($data['warehouse_stock'])) {
+                foreach ($data['warehouse_stock'] as $warehouse_id => $stock_val) {
+                    if (in_array($warehouse_id, $warehouse_ids)) {
+                        $stock_amount = is_array($stock_val) ? ($stock_val[$sellerProductSKU->id] ?? 0) : $stock_val;
+                        $stock_amount = intval($stock_amount);
+                        $total_stock += $stock_amount;
+                        
+                        DB::table('warehouse_product_stocks')->updateOrInsert(
+                            ['warehouse_id' => $warehouse_id, 'seller_product_sku_id' => $sellerProductSKU->id],
+                            ['stock' => $stock_amount, 'is_active' => 1, 'updated_at' => now(), 'created_at' => now()]
+                        );
+                    }
+                }
+            } else {
+                $total_stock = ($product->stock_manage == 1) ? (isset($data['product_stock']) ? $data['product_stock'] : 0) : 0;
+            }
+
+            $sellerProductSKU->update([
+                'product_stock' => $total_stock,
                 'selling_price' => $data['selling_price'],
                 'mrp' => isset($data['mrp']) ? $data['mrp'] : null,
             ]);
@@ -360,7 +420,7 @@ class ProductRepository {
 
             if($product->seller->role->type == 'superadmin'){
                 $product->product->skus->first()->update([
-                    'product_stock' => ($product->stock_manage == 1) ? (isset($data['product_stock']) ? $data['product_stock'] : 0) : 0
+                    'product_stock' => $total_stock
                 ]);
             }
 
@@ -408,24 +468,53 @@ class ProductRepository {
             foreach($data['product_skus'] as $key => $item){
                 $variant = SellerProductSKU::where('product_sku_id',$item)->where('user_id', auth()->user()->id)->first();
                 if(isset($variant)){
-                    $variant->update([
-                        'product_stock' => ($product->stock_manage == 1) ? $data['stock'][$key]??0 : 0,
-                        'selling_price' => $data['selling_price_sku'][$key],
-                        'mrp' => isset($data['mrp_sku'][$key]) ? $data['mrp_sku'][$key] : null,
-                        'status' => isset($data['status_'.$item])?1:0
-                    ]);
+                    $sellerProductSKU = $variant;
                 }
                 else{
-                    SellerProductSKU::create([
+                    $sellerProductSKU = SellerProductSKU::create([
                         'product_id' => $product->id,
                         'product_sku_id' => $data['product_skus'][$key],
-                        'product_stock' => ($product->stock_manage == 1) ? $data['stock'][$key]??0 : 0,
+                        'product_stock' => 0,
                         'selling_price' => $data['selling_price_sku'][$key],
                         'mrp' => isset($data['mrp_sku'][$key]) ? $data['mrp_sku'][$key] : null,
                         'status' => isset($data['status_'.$item])?1:0,
                         'user_id' => getParentSellerId()
                     ]);
                 }
+
+                $total_stock = 0;
+                $warehouse_ids = isset($data['warehouse_ids']) ? $data['warehouse_ids'] : [];
+
+                // Deactivate any warehouse stock record not in the selected list
+                DB::table('warehouse_product_stocks')
+                    ->where('seller_product_sku_id', $sellerProductSKU->id)
+                    ->whereNotIn('warehouse_id', $warehouse_ids)
+                    ->update(['is_active' => 0, 'stock' => 0, 'updated_at' => now()]);
+
+                if (isset($data['warehouse_stock']) && is_array($data['warehouse_stock'])) {
+                    foreach ($data['warehouse_stock'] as $warehouse_id => $sku_stocks) {
+                        if (is_array($sku_stocks) && in_array($warehouse_id, $warehouse_ids)) {
+                            $stock_amount = isset($sku_stocks[$sellerProductSKU->id]) ? $sku_stocks[$sellerProductSKU->id] : (isset($sku_stocks[$key]) ? $sku_stocks[$key] : 0);
+                            $stock_amount = intval($stock_amount);
+                            $total_stock += $stock_amount;
+
+                            DB::table('warehouse_product_stocks')->updateOrInsert(
+                                ['warehouse_id' => $warehouse_id, 'seller_product_sku_id' => $sellerProductSKU->id],
+                                ['stock' => $stock_amount, 'is_active' => 1, 'updated_at' => now(), 'created_at' => now()]
+                            );
+                        }
+                    }
+                } else {
+                    $total_stock = ($product->stock_manage == 1) ? $data['stock'][$key]??0 : 0;
+                }
+
+                $sellerProductSKU->update([
+                    'product_stock' => $total_stock,
+                    'selling_price' => $data['selling_price_sku'][$key],
+                    'mrp' => isset($data['mrp_sku'][$key]) ? $data['mrp_sku'][$key] : null,
+                    'status' => isset($data['status_'.$item])?1:0
+                ]);
+
                 $min_sell_price = $product->skus->min('selling_price');
                 $max_sell_price = $product->skus->max('selling_price');
                 $product->update([
@@ -435,7 +524,7 @@ class ProductRepository {
 
                 if($product->seller->role->type == 'superadmin'){
                     ProductSku::find($item)->update([
-                        'product_stock' => ($product->stock_manage == 1) ? $data['stock'][$key]??0 : 0
+                        'product_stock' => $total_stock
                     ]);
                 }
 
@@ -521,13 +610,11 @@ class ProductRepository {
     }
 
     public function getSellerBusinessInfo(){
-        $seller_id = getParentSellerId();
-        return SellerBusinessInformation::with('country', 'state', 'city')->where('user_id', $seller_id)->first();
+        return null;
     }
 
     public function getSellerBankInfo(){
-        $seller_id = getParentSellerId();
-        return SellerBankAccount::where('user_id', $seller_id)->first();
+        return null;
     }
 
     public function get_seller_product_sku_wise_price($data){

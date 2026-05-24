@@ -3,11 +3,13 @@
     (function($){
         "use strict";
         $(document).ready(function(){
-            productDatatable();
-            mainProductList();
-            alertProductDatatable();
-            stockOutProductDatatable();
-            disableProductDatatable();
+            if ($('#warehouse_filter').val() != '') {
+                productDatatable();
+                mainProductList();
+                alertProductDatatable();
+                stockOutProductDatatable();
+                disableProductDatatable();
+            }
         $(document).on('submit', '#item_delete_form', function(event) {
             event.preventDefault();
             $('#pre-loader').removeClass('d-none');
@@ -144,7 +146,7 @@
                     serverSide: true,
                     stateSave: true,
                     "ajax": ( {
-                        url: "{{route('seller.product.get-data')}}"
+                        url: "{{route('seller.product.get-data')}}" + '?warehouse_id=' + $('#warehouse_filter').val()
                     }),
                     "initComplete":function(json){
                     },
@@ -243,7 +245,7 @@
                     serverSide: true,
                     stateSave: true,
                     "ajax": ( {
-                        url: url
+                        url: url + '&warehouse_id=' + $('#warehouse_filter').val()
                     }),
                     "initComplete":function(json){
                     },
@@ -344,7 +346,7 @@
                     serverSide: true,
                     stateSave: true,
                     "ajax": ( {
-                        url: url
+                        url: url + '&warehouse_id=' + $('#warehouse_filter').val()
                     }),
                     "initComplete":function(json){
                     },
@@ -443,7 +445,7 @@
                     serverSide: true,
                     stateSave: true,
                     "ajax": ( {
-                        url: url
+                        url: url + '&warehouse_id=' + $('#warehouse_filter').val()
                     }),
                     "initComplete":function(json){
                     },
@@ -540,7 +542,7 @@
                     serverSide: true,
                     stateSave: true,
                     "ajax": ( {
-                        url: "{{route('product.get-data')}}"
+                        url: "{{route('product.get-data')}}" + '?warehouse_id=' + $('#warehouse_filter').val()
                     }),
                     "initComplete":function(json){
                     },
@@ -643,6 +645,33 @@
                 stockOutProductDatatable();
                 disableProductDatatable();
             }
+
+            function checkWarehouseSelection() {
+                var val = $('#warehouse_filter').val();
+                if (val == '' || val == null) {
+                    $('#product_tab_content').hide();
+                    $('#no_warehouse_msg').show();
+                } else {
+                    $('#product_tab_content').show();
+                    $('#no_warehouse_msg').hide();
+                }
+            }
+
+            // Check on load
+            checkWarehouseSelection();
+
+            $(document).on('change', '#warehouse_filter', function() {
+                checkWarehouseSelection();
+                var val = $('#warehouse_filter').val();
+                if (val != '' && val != null) {
+                    productDatatable();
+                    mainProductList();
+                    alertProductDatatable();
+                    stockOutProductDatatable();
+                    disableProductDatatable();
+                }
+            });
+
             function update_active_status(el){
                 if(el.checked){
                     var status = 1;
@@ -714,7 +743,8 @@
                     type: "POST",
                     data: {
                         _token: "{{ csrf_token() }}",
-                        product_id: productId
+                        product_id: productId,
+                        warehouse_id: $('#warehouse_filter').val()
                     },
                     success: function(response) {
                         $('#pre-loader').addClass('d-none');
@@ -811,7 +841,8 @@
                         sku_id: skuId,
                         stock_type: stockType,
                         quantity: quantity,
-                        note: note
+                        note: note,
+                        warehouse_id: $('#warehouse_filter').val()
                     },
                     success: function(response) {
                         $('#pre-loader').addClass('d-none');
@@ -851,7 +882,7 @@
             });
 
             function loadProductHistory(productId, fromDate, toDate) {
-                let url = "{{ route('product.history.get') }}?product_id=" + productId;
+                let url = "{{ route('product.history.get') }}?product_id=" + productId + "&warehouse_id=" + $('#warehouse_filter').val();
                 if (fromDate) url += '&from_date=' + fromDate;
                 if (toDate) url += '&to_date=' + toDate;
                 $.ajax({
@@ -912,6 +943,70 @@
                 loadProductHistory(currentHistoryProductId);
             });
             // ===== END MANAGE HISTORY FUNCTIONALITY =====
+            // ===== MANAGE WAREHOUSES FUNCTIONALITY =====
+            $(document).on('click', '.assign_warehouses', function(e) {
+                e.preventDefault();
+                let product_id = $(this).data('id');
+                let product_name = $(this).data('name');
+                $('#mw_product_name').text(product_name);
+                $('#mw_table_body').html('<tr><td colspan="2" class="text-center"><i class="fa fa-spinner fa-spin"></i> Loading...</td></tr>');
+                $('#manage_warehouses_modal').modal('show');
+
+                $.ajax({
+                    url: '{{ route("seller.product.warehouses.status") }}',
+                    type: 'GET',
+                    data: { product_id: product_id },
+                    success: function(response) {
+                        let html = '';
+                        if (response.length > 0) {
+                            response.forEach(function(item) {
+                                let checked = item.is_active == 1 ? 'checked' : '';
+                                html += '<tr>';
+                                html += '<td>' + item.name + '</td>';
+                                html += '<td>';
+                                html += '<label class="switch_toggle">';
+                                html += '<input type="checkbox" class="mw_status_toggle" data-product="' + product_id + '" data-warehouse="' + item.id + '" ' + checked + '>';
+                                html += '<span class="slider round"></span>';
+                                html += '</label>';
+                                html += '</td>';
+                                html += '</tr>';
+                            });
+                        } else {
+                            html = '<tr><td colspan="2" class="text-center text-danger">{{ __("common.no_warehouse_found") }}</td></tr>';
+                        }
+                        $('#mw_table_body').html(html);
+                    },
+                    error: function() {
+                        $('#mw_table_body').html('<tr><td colspan="2" class="text-center text-danger">Error loading warehouses</td></tr>');
+                    }
+                });
+            });
+
+            $(document).on('change', '.mw_status_toggle', function() {
+                let is_active = $(this).is(':checked') ? 1 : 0;
+                let product_id = $(this).data('product');
+                let warehouse_id = $(this).data('warehouse');
+                
+                $.ajax({
+                    url: '{{ route("seller.product.warehouses.update_status") }}',
+                    type: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        product_id: product_id,
+                        warehouse_id: warehouse_id,
+                        is_active: is_active
+                    },
+                    success: function(response) {
+                        toastr.success('{{ __("common.updated_successfully") }}', '{{ __("common.success") }}');
+                    },
+                    error: function() {
+                        toastr.error('{{ __("common.error_message") }}', '{{ __("common.error") }}');
+                        // revert toggle
+                        $(this).prop('checked', !is_active);
+                    }
+                });
+            });
+            // ===== END MANAGE WAREHOUSES FUNCTIONALITY =====
 
         });
     })(jQuery);

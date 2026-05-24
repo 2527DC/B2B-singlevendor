@@ -558,38 +558,71 @@ class OrderManageRepository
 
     public function updateStock($orderpackage)
     {
+        $warehouseId = null;
+        if ($orderpackage->order && $orderpackage->order->customer) {
+            $warehouseId = $orderpackage->order->customer->warehouse_id;
+        }
+
         foreach ($orderpackage->products as $key => $package_product) {
             if($package_product->type == 'product'){
-                $stock = $package_product->seller_product_sku->product_stock;
-                if ($package_product->seller_product_sku->product->stock_manage == 1) {
-                    $package_product->seller_product_sku->update([
-                        'product_stock' => $stock - $package_product->qty,
-                    ]);
-                    if(@$package_product->package->seller->role->type == 'superadmin'){
-                        $package_product->seller_product_sku->sku->update([
-                            'product_stock' => $stock - $package_product->qty
-                        ]);
+                if ($warehouseId) {
+                    $whStock = \Illuminate\Support\Facades\DB::table('warehouse_product_stocks')
+                        ->where('warehouse_id', $warehouseId)
+                        ->where('seller_product_sku_id', $package_product->product_sku_id)
+                        ->first();
+                    if ($whStock) {
+                        \Illuminate\Support\Facades\DB::table('warehouse_product_stocks')
+                            ->where('id', $whStock->id)
+                            ->update([
+                                'stock' => max(0, $whStock->stock - $package_product->qty)
+                            ]);
+                    } else {
+                        \Illuminate\Support\Facades\DB::table('warehouse_product_stocks')
+                            ->insert([
+                                'warehouse_id' => $warehouseId,
+                                'seller_product_sku_id' => $package_product->product_sku_id,
+                                'stock' => -$package_product->qty,
+                                'created_at' => now(),
+                                'updated_at' => now()
+                            ]);
                     }
                 }
+
+                // Only use warehouse_product_stocks for tracking now, do not touch SKU table stock
+                // if ($package_product->seller_product_sku->product->stock_manage == 1) {
+                //     ...
+                // }
             }
         }
     }
 
     public function restoreStock($orderpackage)
     {
+        $warehouseId = null;
+        if ($orderpackage->order && $orderpackage->order->customer) {
+            $warehouseId = $orderpackage->order->customer->warehouse_id;
+        }
+
         foreach ($orderpackage->products as $key => $package_product) {
             if($package_product->type == 'product'){
-                $stock = $package_product->seller_product_sku->product_stock;
-                if ($package_product->seller_product_sku->product->stock_manage == 1) {
-                    $package_product->seller_product_sku->update([
-                        'product_stock' => $stock + $package_product->qty,
-                    ]);
-                    if(@$package_product->package->seller->role->type == 'superadmin'){
-                        $package_product->seller_product_sku->sku->update([
-                            'product_stock' => $stock + $package_product->qty
-                        ]);
+                if ($warehouseId) {
+                    $whStock = \Illuminate\Support\Facades\DB::table('warehouse_product_stocks')
+                        ->where('warehouse_id', $warehouseId)
+                        ->where('seller_product_sku_id', $package_product->product_sku_id)
+                        ->first();
+                    if ($whStock) {
+                        \Illuminate\Support\Facades\DB::table('warehouse_product_stocks')
+                            ->where('id', $whStock->id)
+                            ->update([
+                                'stock' => $whStock->stock + $package_product->qty
+                            ]);
                     }
                 }
+
+                // Only use warehouse_product_stocks for tracking now, do not touch SKU table stock
+                // if ($package_product->seller_product_sku->product->stock_manage == 1) {
+                //     ...
+                // }
 
                 if ($package_product->seller_product_sku->product) {
                     $sellerProduct = $package_product->seller_product_sku->product;

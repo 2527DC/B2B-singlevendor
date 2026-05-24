@@ -40,6 +40,10 @@ Route::middleware(['auth','seller'])->prefix('seller')->as('seller.')->group(fun
     Route::post('/product/variant','ProductController@variant')->name('product.variant');
     Route::post('/product/variant/edit','ProductController@variantEdit')->name('product.variant-edit');
     Route::post('/product/variant/delete','ProductController@variantDelete')->name('product.variant.delete')->middleware('prohibited_demo_mode');
+    
+    // Warehouse specific statuses for product
+    Route::get('/product/warehouses/status', 'ProductController@getWarehousesStatus')->name('product.warehouses.status');
+    Route::post('/product/warehouses/update-status', 'ProductController@updateWarehouseStatus')->name('product.warehouses.update_status')->middleware('prohibited_demo_mode');
     //my product
     Route::get('/products/create','ProductController@create')->name('product.create')->middleware(['permission']);
     Route::get('/product/{id}/edit','ProductController@myProductEdit')->name('my-product.edit');
@@ -56,6 +60,15 @@ Route::middleware(['auth','seller'])->prefix('seller')->as('seller.')->group(fun
     Route::delete('/salesmen/{id}', 'SalesmanController@destroy')->name('salesmen.destroy');
     Route::get('/salesmen-download-excel', 'SalesmanController@downloadExcel')->name('salesmen.download_excel');
     Route::post('/salesmen-upload-excel', 'SalesmanController@uploadExcel')->name('salesmen.upload_excel');
+
+    // Warehouses
+    Route::get('/warehouses', 'WarehouseController@index')->name('warehouses.index')->middleware('permission');
+    Route::get('/warehouses/create', 'WarehouseController@create')->name('warehouses.create');
+    Route::post('/warehouses/store', 'WarehouseController@store')->name('warehouses.store')->middleware(['prohibited_demo_mode']);
+    Route::get('/warehouses/{id}/edit', 'WarehouseController@edit')->name('warehouses.edit');
+    Route::post('/warehouses/{id}/update', 'WarehouseController@update')->name('warehouses.update')->middleware(['prohibited_demo_mode']);
+    Route::post('/warehouses/{id}/set-default', 'WarehouseController@setDefault')->name('warehouses.set_default')->middleware(['prohibited_demo_mode']);
+    Route::post('/warehouses/{id}/delete', 'WarehouseController@destroy')->name('warehouses.destroy')->middleware(['prohibited_demo_mode']);
 });
 Route::prefix('seller')->as('seller.')->group(function() {
     Route::get('/profile/get-state',[CountryController::class, 'get_states'])->name('profile.get-state');
@@ -71,3 +84,15 @@ Route::middleware(['auth','admin'])->prefix('admin')->group(function() {
         Route::get('/inhouse/product/edit/{id}','ProductController@edit')->name('admin.my-product.edit')->middleware(['permission']);
     }
 });
+
+Route::middleware(['auth','admin'])->prefix('admin')->as('admin.')->group(function() {
+    // Warehouses
+    Route::get('/warehouses', 'WarehouseController@index')->name('warehouses.index')->middleware('permission');
+    Route::get('/warehouses/create', 'WarehouseController@create')->name('warehouses.create')->middleware('permission');
+    Route::post('/warehouses/store', 'WarehouseController@store')->name('warehouses.store')->middleware(['permission', 'prohibited_demo_mode']);
+    Route::get('/warehouses/{id}/edit', 'WarehouseController@edit')->name('warehouses.edit')->middleware('permission');
+    Route::post('/warehouses/{id}/update', 'WarehouseController@update')->name('warehouses.update')->middleware(['permission', 'prohibited_demo_mode']);
+    Route::post('/warehouses/{id}/set-default', 'WarehouseController@setDefault')->name('warehouses.set_default')->middleware(['permission', 'prohibited_demo_mode']);
+    Route::post('/warehouses/{id}/delete', 'WarehouseController@destroy')->name('warehouses.destroy')->middleware(['permission', 'prohibited_demo_mode']);
+});
+

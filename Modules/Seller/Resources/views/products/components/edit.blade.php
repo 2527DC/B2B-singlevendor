@@ -23,6 +23,14 @@ $LanguageList = getLanguageList();
                         <form action="{{route('seller.product.update',$product->id)}}" method="POST" enctype="multipart/form-data">
                             @csrf
                             @method('POST')
+                            @php
+                                $selected_warehouse_ids = \DB::table('warehouse_product_stocks')
+                                    ->whereIn('seller_product_sku_id', $product->skus->pluck('id')->toArray())
+                                    ->where('is_active', 1)
+                                    ->pluck('warehouse_id')
+                                    ->unique()
+                                    ->toArray();
+                            @endphp
                             <div class="row">
                                 <div class="col-lg-6">
                                     <div class="primary_input mb-15">
@@ -31,6 +39,16 @@ $LanguageList = getLanguageList();
                                             <input type="checkbox" id="checkbox1" @if ($product->stock_manage == 1) checked @endif value="{{ $product->id }}">
                                             <div class="slider round"></div>
                                         </label>
+                                    </div>
+                                </div>
+                                <div class="col-lg-6" id="warehouse_select_div_existing">
+                                    <div class="primary_input mb-25">
+                                        <label class="primary_input_label" for="warehouse_ids_existing">Select Warehouses</label>
+                                        <select class="primary_select mb-25" name="warehouse_ids[]" id="warehouse_ids_existing" multiple>
+                                            @foreach($warehouses as $warehouse)
+                                                <option value="{{ $warehouse->id }}" {{ in_array($warehouse->id, $selected_warehouse_ids) ? 'selected' : '' }}>{{ $warehouse->warehouse_name }}</option>
+                                            @endforeach
+                                        </select>
                                     </div>
                                 </div>
                             </div>
@@ -42,16 +60,56 @@ $LanguageList = getLanguageList();
                             @if($product->product->product_type ==1)
                                 <div class="row">
                                     @if ($product->stock_manage == 1)
-                                  <div class="col-xl-6 d-none">
+                                        <div class="col-xl-6 d-none">
                                             <div class="primary_input mb-25">
                                                 <label class="primary_input_label" for="product_stock">{{__('product.product_stock')}} <span class="text-danger">*</span></label>
-                                                <input class="primary_input_field" name="product_stock" id="product_stock" placeholder="{{__("product.product_stock")}}" type="number" min="0" step="0" value="{{$product->skus->first()->product_stock??0}}" required>
-                                                @error('product_stock')
-                                                <span class="text-danger">{{$message}}</span>
-                                                @enderror
+                                                <input class="primary_input_field" name="product_stock" id="product_stock" placeholder="{{__("product.product_stock")}}" type="number" min="0" step="0" value="{{$product->skus->first()->product_stock??0}}">
                                             </div>
                                         </div>
                                     @endif
+
+                                    <div class="col-xl-12 d-none" id="warehouse_stocks_container_existing">
+                                        <div class="primary_input mb-25">
+                                            <label class="primary_input_label">Warehouse Stocks</label>
+                                            <div class="row align-items-center mb-3">
+                                                <div class="col-md-4">
+                                                    <input type="number" class="primary_input_field" id="bulk_stock_input_existing" placeholder="Stock value for all" min="0" step="1" style="padding: 8px 10px; height: auto;">
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <button type="button" class="primary-btn fix-gr-bg" id="apply_to_all_stocks_existing" style="height: 38px; line-height: 38px; padding: 0 15px;">Same for all</button>
+                                                </div>
+                                            </div>
+                                            <div class="table-responsive">
+                                                <table class="table table-bordered">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Warehouse</th>
+                                                            <th>Stock</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="warehouse_stocks_list_existing">
+                                                        @foreach($warehouses as $warehouse)
+                                                            @if(in_array($warehouse->id, $selected_warehouse_ids))
+                                                                @php
+                                                                    $wh_stock = \DB::table('warehouse_product_stocks')
+                                                                        ->where('seller_product_sku_id', $product->skus->first()->id)
+                                                                        ->where('warehouse_id', $warehouse->id)
+                                                                        ->first();
+                                                                    $stock_val = $wh_stock ? $wh_stock->stock : 0;
+                                                                @endphp
+                                                                <tr class="wh_stock_row_{{ $warehouse->id }}">
+                                                                    <td>{{ $warehouse->warehouse_name }}</td>
+                                                                    <td>
+                                                                        <input type="number" class="primary_input_field warehouse-stock-input-existing" name="warehouse_stock[{{ $warehouse->id }}]" value="{{ $stock_val }}" min="0" required style="padding: 6px 10px; height: auto;">
+                                                                    </td>
+                                                                </tr>
+                                                            @endif
+                                                        @endforeach
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
                                     <input type="hidden" id="stock_manage" name="stock_manage" value="{{ $product->stock_manage }}">
                                     <div class="col-lg-6">
                                         <div class="primary_input mb-15">
@@ -330,9 +388,26 @@ $LanguageList = getLanguageList();
                                                     </td>
 
                                                     @if ($product->stock_manage == 1)
-                                                        <td class="text-center sku_price_td">
-                                                            <input class="primary_input_field" type="number" name="stock[]" value="{{$item->product_stock}}" min="0" step="0" class="form-control" required>
-                                                        </td>
+                                                         <td class="text-center sku_price_td stock_td">
+                                                             <input class="primary_input_field d-none" type="number" name="stock[]" value="{{$item->product_stock}}" min="0" step="0" class="form-control">
+                                                             <div class="warehouse-sku-stock-container mt-2">
+                                                                 @foreach($warehouses as $warehouse)
+                                                                     @if(in_array($warehouse->id, $selected_warehouse_ids))
+                                                                         @php
+                                                                             $wh_stock = \DB::table('warehouse_product_stocks')
+                                                                                 ->where('seller_product_sku_id', $item->id)
+                                                                                 ->where('warehouse_id', $warehouse->id)
+                                                                                 ->first();
+                                                                             $stock_val = $wh_stock ? $wh_stock->stock : 0;
+                                                                         @endphp
+                                                                         <div class="mb-1 d-flex align-items-center">
+                                                                             <small class="mr-1" style="font-size:10px; width:70px; display:inline-block; overflow:hidden; text-overflow:ellipsis;">{{ $warehouse->warehouse_name }}:</small>
+                                                                             <input type="number" class="primary_input_field warehouse-stock-input-existing-variant" name="warehouse_stock[{{ $warehouse->id }}][{{ $item->id }}]" value="{{ $stock_val }}" min="0" style="padding: 4px; height: auto; width: 60px;" required>
+                                                                         </div>
+                                                                     @endif
+                                                                 @endforeach
+                                                             </div>
+                                                         </td>
                                                     @endif
                                                     <td class="text-center product_sku_name">
                                                         <label class="switch_toggle" for="checkbox_{{$item->id}}">
@@ -547,6 +622,126 @@ $LanguageList = getLanguageList();
 
 
             });
+        // Multi-warehouse Stock management script
+        function getSelectedWarehouses(selectId) {
+            var selected = [];
+            $(selectId + ' option:selected').each(function() {
+                selected.push({
+                    id: $(this).val(),
+                    name: $(this).text().replace(' (Default)', '')
+                });
+            });
+            return selected;
+        }
+
+        // Sync single product warehouse stock inputs (Existing product form)
+        function syncExistingSingleWarehouseStocks() {
+            var stock_manage = $('#stock_manage').val();
+            var warehouses = getSelectedWarehouses('#warehouse_ids_existing');
+            var isVariant = $('#product_sku').length > 0; // Check if it has variant dropdown
+
+            if (stock_manage == 1 && !isVariant && warehouses.length > 0) {
+                $('#warehouse_stocks_container_existing').removeClass('d-none');
+                $('#single_product_stock_div').addClass('d-none');
+                $('#product_stock').removeAttr('required');
+
+                // Read existing stock values from list to preserve them
+                var currentStocks = {};
+                $('.warehouse-stock-input-existing').each(function() {
+                    currentStocks[$(this).attr('name').match(/\d+/)[0]] = $(this).val();
+                });
+
+                var html = '';
+                warehouses.forEach(function(wh) {
+                    var val = currentStocks[wh.id] || '0';
+                    html += `<tr class="wh_stock_row_${wh.id}">
+                        <td>${wh.name}</td>
+                        <td>
+                            <input type="number" class="primary_input_field warehouse-stock-input-existing" name="warehouse_stock[${wh.id}]" value="${val}" min="0" required style="padding: 6px 10px; height: auto;">
+                        </td>
+                    </tr>`;
+                });
+                $('#warehouse_stocks_list_existing').html(html);
+            } else {
+                $('#warehouse_stocks_container_existing').addClass('d-none');
+                if (stock_manage == 1 && !isVariant) {
+                    $('#single_product_stock_div').removeClass('d-none');
+                    $('#product_stock').attr('required', 'required');
+                }
+            }
+        }
+
+        // Sync variant product warehouse stock inputs (Existing product form)
+        function syncExistingVariantWarehouseStocks() {
+            var stock_manage = $('#stock_manage').val();
+            var warehouses = getSelectedWarehouses('#warehouse_ids_existing');
+            var isVariant = $('#product_sku').length > 0;
+
+            if (stock_manage == 1 && isVariant && warehouses.length > 0) {
+                $('#warehouse_stocks_container_existing').addClass('d-none');
+                
+                $('#sku_tbody tr').each(function(rowIndex) {
+                    var sku_id = $(this).find('input[name="product_skus[]"]').val();
+                    var stockTd = $(this).find('.stock_td');
+                    
+                    stockTd.find('input[name="stock[]"]').addClass('d-none').removeAttr('required');
+                    
+                    var container = stockTd.find('.warehouse-sku-stock-container');
+                    if (container.length === 0) {
+                        container = $('<div class="warehouse-sku-stock-container mt-2"></div>');
+                        stockTd.append(container);
+                    }
+                    
+                    // Preserve existing input values
+                    var currentStocks = {};
+                    container.find('.warehouse-stock-input-existing-variant').each(function() {
+                        var matches = $(this).attr('name').match(/warehouse_stock\[(\d+)\]/);
+                        if (matches) {
+                            currentStocks[matches[1]] = $(this).val();
+                        }
+                    });
+
+                    container.empty();
+                    
+                    warehouses.forEach(function(wh) {
+                        var val = currentStocks[wh.id] || '0';
+                        container.append(`
+                            <div class="mb-1 d-flex align-items-center">
+                                <small class="mr-1" style="font-size:10px; width:70px; display:inline-block; overflow:hidden; text-overflow:ellipsis;">${wh.name}:</small>
+                                <input type="number" class="primary_input_field warehouse-stock-input-existing-variant" name="warehouse_stock[${wh.id}][${sku_id}]" value="${val}" min="0" style="padding: 4px; height: auto; width: 60px;" required>
+                            </div>
+                        `);
+                    });
+                });
+            }
+        }
+
+        // "Same for all" buttons logic
+        $(document).on('click', '#apply_to_all_stocks_existing', function() {
+            var val = $('#bulk_stock_input_existing').val();
+            if (val !== '') {
+                $('.warehouse-stock-input-existing').val(val);
+                $('.warehouse-stock-input-existing-variant').val(val);
+            }
+        });
+
+        // Bind event handlers for Existing Product Form
+        $(document).on('change', '#warehouse_ids_existing, #stock_manage, #product_sku', function() {
+            syncExistingSingleWarehouseStocks();
+            syncExistingVariantWarehouseStocks();
+        });
+
+        // Re-trigger sync when ajax combinations render
+        $(document).ajaxComplete(function(event, xhr, settings) {
+            if (settings.url && settings.url.indexOf('variant-edit') !== -1) {
+                syncExistingVariantWarehouseStocks();
+            }
+        });
+
+        // Initial trigger
+        syncExistingSingleWarehouseStocks();
+        syncExistingVariantWarehouseStocks();
+
         })(jQuery);
 
 

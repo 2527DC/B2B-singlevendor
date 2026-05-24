@@ -71,6 +71,8 @@
                         @if(!@$menu->backendMenu->module or isModuleActive(@$menu->backendMenu->module))
                             @if(@$menu->backendMenu->route == 'payment_gateway.index' && auth()->user()->role->type == 'seller' && !app('general_setting')->seller_wise_payment)
                                 @continue
+                            @elseif(isModuleActive('MultiVendor') && auth()->user()->role->type != 'seller' && in_array(@$menu->backendMenu->name, ['common.customer', 'order.order_manages', 'order.order_manage', 'refund.refund_manage', 'product.product_manage', 'product.products', 'review.review', 'shipping.shipping', 'Drivers', 'checkpincode.check_pincode', 'amazy.Followers']))
+                                @continue
                             @elseif(permissionCheck(@$menu->backendMenu->route))
                                 <li class="{{spn_active_link(childrenRoute($menu))}}">
                                     <a href="

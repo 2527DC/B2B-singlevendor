@@ -76,12 +76,48 @@ $LanguageList = getLanguageList();
                                                     class="text-danger">*</span></label>
                                             <input class="primary_input_field" name="product_stock" id="product_stock"
                                                 placeholder="{{__("product.product_stock")}}" type="number" min="0"
-                                                step="{{step_decimal()}}" value="0" required>
+                                                step="{{step_decimal()}}" value="0">
                                             @error('product_stock')
                                             <span class="text-danger">{{$message}}</span>
                                             @enderror
                                         </div>
+                                    </div>
 
+                                    <div class="col-xl-6" id="warehouse_select_div_existing">
+                                        <div class="primary_input mb-25">
+                                            <label class="primary_input_label" for="warehouse_ids_existing">Select Warehouses</label>
+                                            <select class="primary_select mb-25" name="warehouse_ids[]" id="warehouse_ids_existing" multiple>
+                                                @foreach($warehouses as $warehouse)
+                                                    <option value="{{ $warehouse->id }}" {{ $warehouse->is_default ? 'selected' : '' }}>{{ $warehouse->warehouse_name }} @if($warehouse->is_default) (Default) @endif</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-xl-12 d-none" id="warehouse_stocks_container_existing">
+                                        <div class="primary_input mb-25">
+                                            <label class="primary_input_label">Warehouse Stocks</label>
+                                            <div class="row align-items-center mb-3">
+                                                <div class="col-md-4">
+                                                    <input type="number" class="primary_input_field" id="bulk_stock_input_existing" placeholder="Stock value for all" min="0" step="1" style="padding: 8px 10px; height: auto;">
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <button type="button" class="primary-btn fix-gr-bg" id="apply_to_all_stocks_existing" style="height: 38px; line-height: 38px; padding: 0 15px;">Same for all</button>
+                                                </div>
+                                            </div>
+                                            <div class="table-responsive">
+                                                <table class="table table-bordered">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Warehouse</th>
+                                                            <th>Stock</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="warehouse_stocks_list_existing">
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div id="variant_sku_div" class="col-xl-6 d-none">
                                         <div class="primary_input mb-25">
@@ -807,6 +843,43 @@ $LanguageList = getLanguageList();
                                                         <label class="primary_input_label" for="single_stock"> {{__('product.product_stock') }}</label>
                                                         <input class="primary_input_field" name="single_stock" id="single_stock" type="number" min="0" step="0" value="{{old('single_stock')?old('single_stock'):0}}">
                                                         <span class="text-danger">{{ $errors->first('single_stock') }}</span>
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-lg-6" id="warehouse_select_div_new">
+                                                    <div class="primary_input mb-25">
+                                                        <label class="primary_input_label" for="warehouse_ids_new">Select Warehouses</label>
+                                                        <select class="primary_select mb-25" name="warehouse_ids[]" id="warehouse_ids_new" multiple>
+                                                            @foreach($warehouses as $warehouse)
+                                                                <option value="{{ $warehouse->id }}" {{ $warehouse->is_default ? 'selected' : '' }}>{{ $warehouse->warehouse_name }} @if($warehouse->is_default) (Default) @endif</option>
+                                                            @endforeach
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-lg-12 d-none" id="warehouse_stocks_container_new">
+                                                    <div class="primary_input mb-25">
+                                                        <label class="primary_input_label">Warehouse Stocks</label>
+                                                        <div class="row align-items-center mb-3">
+                                                            <div class="col-md-4">
+                                                                <input type="number" class="primary_input_field" id="bulk_stock_input_new" placeholder="Stock value for all" min="0" step="1" style="padding: 8px 10px; height: auto;">
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <button type="button" class="primary-btn fix-gr-bg" id="apply_to_all_stocks_new" style="height: 38px; line-height: 38px; padding: 0 15px;">Same for all</button>
+                                                            </div>
+                                                        </div>
+                                                        <div class="table-responsive">
+                                                            <table class="table table-bordered">
+                                                                 <thead>
+                                                                     <tr>
+                                                                         <th>Warehouse</th>
+                                                                         <th>Stock</th>
+                                                                     </tr>
+                                                                 </thead>
+                                                                 <tbody id="warehouse_stocks_list_new">
+                                                                 </tbody>
+                                                            </table>
+                                                        </div>
                                                     </div>
                                                 </div>
 
@@ -1877,6 +1950,189 @@ $LanguageList = getLanguageList();
         }
 
 
+
+        // Multi-warehouse Stock management script
+        function getSelectedWarehouses(selectId) {
+            var selected = [];
+            $(selectId + ' option:selected').each(function() {
+                selected.push({
+                    id: $(this).val(),
+                    name: $(this).text().replace(' (Default)', '')
+                });
+            });
+            return selected;
+        }
+
+        // Sync single product warehouse stock inputs (Existing product form)
+        function syncExistingSingleWarehouseStocks() {
+            var stock_manage = $('#stock_manage').val();
+            var warehouses = getSelectedWarehouses('#warehouse_ids_existing');
+            var isVariant = !$('#variant_sku_div').hasClass('d-none');
+
+            if (stock_manage == 1 && !isVariant && warehouses.length > 0) {
+                $('#warehouse_stocks_container_existing').removeClass('d-none');
+                $('#single_product_stock_div').addClass('d-none');
+                $('#product_stock').removeAttr('required');
+
+                var html = '';
+                warehouses.forEach(function(wh) {
+                    html += `<tr>
+                        <td>${wh.name}</td>
+                        <td>
+                            <input type="number" class="primary_input_field warehouse-stock-input-existing" name="warehouse_stock[${wh.id}]" value="0" min="0" required style="padding: 6px 10px; height: auto;">
+                        </td>
+                    </tr>`;
+                });
+                $('#warehouse_stocks_list_existing').html(html);
+            } else {
+                $('#warehouse_stocks_container_existing').addClass('d-none');
+                $('#warehouse_stocks_list_existing').empty();
+                if (stock_manage == 1 && !isVariant) {
+                    $('#single_product_stock_div').removeClass('d-none');
+                    $('#product_stock').attr('required', 'required');
+                }
+            }
+        }
+
+        // Sync variant product warehouse stock inputs (Existing product form)
+        function syncExistingVariantWarehouseStocks() {
+            var stock_manage = $('#stock_manage').val();
+            var warehouses = getSelectedWarehouses('#warehouse_ids_existing');
+            var isVariant = !$('#variant_sku_div').hasClass('d-none');
+
+            if (stock_manage == 1 && isVariant && warehouses.length > 0) {
+                $('#warehouse_stocks_container_existing').addClass('d-none');
+                
+                $('#sku_tbody tr').each(function(rowIndex) {
+                    var sku_id = $(this).find('input[name="product_skus[]"]').val();
+                    var stockTd = $(this).find('.stock_td');
+                    
+                    stockTd.find('input[name="stock[]"]').addClass('d-none').removeAttr('required');
+                    
+                    var container = stockTd.find('.warehouse-sku-stock-container');
+                    if (container.length === 0) {
+                        container = $('<div class="warehouse-sku-stock-container mt-2"></div>');
+                        stockTd.append(container);
+                    }
+                    container.empty();
+                    
+                    warehouses.forEach(function(wh) {
+                        container.append(`
+                            <div class="mb-1 d-flex align-items-center">
+                                <small class="mr-1" style="font-size:10px; width:70px; display:inline-block; overflow:hidden; text-overflow:ellipsis;">${wh.name}:</small>
+                                <input type="number" class="primary_input_field warehouse-stock-input-existing-variant" name="warehouse_stock[${wh.id}][${sku_id}]" value="0" min="0" style="padding: 4px; height: auto; width: 60px;" required>
+                            </div>
+                        `);
+                    });
+                });
+            }
+        }
+
+        // Sync single product warehouse stock inputs (New product form)
+        function syncNewSingleWarehouseStocks() {
+            var stock_manage = $('#new_product_div #stock_manage').val();
+            var warehouses = getSelectedWarehouses('#warehouse_ids_new');
+            var isVariant = $('#variant_prod').is(':checked');
+
+            if (stock_manage == 1 && !isVariant && warehouses.length > 0) {
+                $('#warehouse_stocks_container_new').removeClass('d-none');
+                $('#single_stock_div').addClass('d-none');
+                $('#single_stock').removeAttr('required');
+
+                var html = '';
+                warehouses.forEach(function(wh) {
+                    html += `<tr>
+                        <td>${wh.name}</td>
+                        <td>
+                            <input type="number" class="primary_input_field warehouse-stock-input-new" name="warehouse_stock[${wh.id}]" value="0" min="0" required style="padding: 6px 10px; height: auto;">
+                        </td>
+                    </tr>`;
+                });
+                $('#warehouse_stocks_list_new').html(html);
+            } else {
+                $('#warehouse_stocks_container_new').addClass('d-none');
+                $('#warehouse_stocks_list_new').empty();
+                if (stock_manage == 1 && !isVariant) {
+                    $('#single_stock_div').removeClass('d-none');
+                    $('#single_stock').attr('required', 'required');
+                }
+            }
+        }
+
+        // Sync variant product warehouse stock inputs (New product form)
+        function syncNewVariantWarehouseStocks() {
+            var stock_manage = $('#new_product_div #stock_manage').val();
+            var warehouses = getSelectedWarehouses('#warehouse_ids_new');
+            var isVariant = $('#variant_prod').is(':checked');
+
+            if (stock_manage == 1 && isVariant && warehouses.length > 0) {
+                $('#warehouse_stocks_container_new').addClass('d-none');
+                
+                $('.sku_combination table tbody tr.variant').each(function(rowIndex) {
+                    var stockTd = $(this).find('td.stock_td');
+                    
+                    stockTd.removeClass('d-none');
+                    stockTd.find('input[name="sku_stock[]"]').addClass('d-none').removeAttr('required');
+                    
+                    var container = stockTd.find('.warehouse-sku-stock-container');
+                    if (container.length === 0) {
+                        container = $('<div class="warehouse-sku-stock-container mt-2"></div>');
+                        stockTd.append(container);
+                    }
+                    container.empty();
+                    
+                    warehouses.forEach(function(wh) {
+                        container.append(`
+                            <div class="mb-1 d-flex align-items-center">
+                                <small class="mr-1" style="font-size:10px; width:70px; display:inline-block; overflow:hidden; text-overflow:ellipsis;">${wh.name}:</small>
+                                <input type="number" class="primary_input_field warehouse-stock-input-new-variant" name="warehouse_stock[${wh.id}][${rowIndex}]" value="0" min="0" style="padding: 4px; height: auto; width: 60px;" required>
+                            </div>
+                        `);
+                    });
+                });
+            }
+        }
+
+        // "Same for all" buttons logic
+        $(document).on('click', '#apply_to_all_stocks_existing', function() {
+            var val = $('#bulk_stock_input_existing').val();
+            if (val !== '') {
+                $('.warehouse-stock-input-existing').val(val);
+                $('.warehouse-stock-input-existing-variant').val(val);
+            }
+        });
+
+        $(document).on('click', '#apply_to_all_stocks_new', function() {
+            var val = $('#bulk_stock_input_new').val();
+            if (val !== '') {
+                $('.warehouse-stock-input-new').val(val);
+                $('.warehouse-stock-input-new-variant').val(val);
+            }
+        });
+
+        // Bind event handlers for Existing Product Form
+        $(document).on('change', '#warehouse_ids_existing, #stock_manage, #product_sku', function() {
+            syncExistingSingleWarehouseStocks();
+            syncExistingVariantWarehouseStocks();
+        });
+
+        // Bind event handlers for New Product Form
+        $(document).on('change', '#warehouse_ids_new, #new_product_div #stock_manage, .prod_type, #choice_options', function() {
+            syncNewSingleWarehouseStocks();
+            setTimeout(syncNewVariantWarehouseStocks, 1000);
+        });
+
+        // Re-trigger sync when ajax combinations render
+        $(document).ajaxComplete(function(event, xhr, settings) {
+            if (settings.url && (settings.url.indexOf('sku-combination') !== -1 || settings.url.indexOf('variant') !== -1)) {
+                syncExistingVariantWarehouseStocks();
+                syncNewVariantWarehouseStocks();
+            }
+        });
+
+        // Initial trigger
+        syncExistingSingleWarehouseStocks();
+        syncNewSingleWarehouseStocks();
 
     })(jQuery);
 

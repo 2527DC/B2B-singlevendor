@@ -9,11 +9,9 @@
             <td width="13%" class="text-center">
                 <label for="" class="control-label">{{__('product.selling_price')}}</label>
             </td>
-            @if(!isModuleActive('MultiVendor'))
-                <td width="13%" class="text-center stock_td d-none">
-                    <label for="" class="control-label">{{__('product.stock')}}</label>
-                </td>
-            @endif
+            <td width="13%" class="text-center stock_td d-none">
+                <label for="" class="control-label">{{__('product.stock')}}</label>
+            </td>
             <td width="11%" class="text-center">
                 <label for="" class="control-label">{{__('product.SKU')}}</label>
             </td>
@@ -86,12 +84,10 @@
                             @endif
                         </div>
                     </td>
-                    @if(!isModuleActive('MultiVendor'))
-                        <td class="text-center pt-20 stock_td d-none">
-                            <input class="primary_input_field mt-20" type="number" name="sku_stock[]"
-                                   value="{{gv($sku_stock,$ttt, 0)}}" min="0" step="0" class="form-control" required>
-                        </td>
-                    @endif
+                    <td class="text-center pt-20 stock_td d-none">
+                        <input class="primary_input_field mt-20" type="number" name="sku_stock[]"
+                               value="{{gv($sku_stock,$ttt, 0)}}" min="0" step="0" class="form-control" required>
+                    </td>
                     <td class="text-center pt-25">
                         <input class="primary_input_field mt-20" type="text" name="sku[]"
                                value="{{ gv($old_sku,$ttt, $sku) }}" class="form-control">

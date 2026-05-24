@@ -92,7 +92,7 @@ class HomePageSection extends Model
         });
 
         if (auth()->check() && auth()->user()->warehouse_id && $this->section_name == 'top_brands') {
-            $brands->where('seller_products.user_id', auth()->user()->warehouse_id);
+            $brands->where('products.warehouse_id', auth()->user()->warehouse_id);
         }
         if ($this->type == 1) {
             $brands = $brands->orderByDesc('brands.total_sale');

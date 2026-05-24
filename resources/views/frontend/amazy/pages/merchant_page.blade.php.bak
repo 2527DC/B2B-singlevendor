@@ -199,6 +199,9 @@
                                         <div class="Information_box_right">
                                             @if(auth()->check() && auth()->id() != $seller->id)
                                                 @if(auth()->check() && !auth()->user()->follow($seller->id))
+                                                    <button type="btn" id="follow_seller_btn"
+                                                        class="amaz_primary_btn style3 text-uppercase">{{__('common.follow')}}</button>
+                                                @elseif(auth()->check() && auth()->user()->follow($seller->id))
                                                     <button type="btn"
                                                         class="amaz_primary_btn style3 text-uppercase">{{__('amazy.Followed')}}</button>
                                                 @endif

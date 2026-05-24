@@ -256,14 +256,10 @@ Route::get('frontend/close-promotion',[WelcomeController::class,'closePromotion'
      Route::get('/product-review', [ProductReviewController::class, 'index']);
      Route::post('/product-review', [ProductReviewController::class, 'store'])->name('frontend.profile.review.store');
      Route::post('/user-notification-read', [NotificationController::class,'read'])->name('user_notification_read');
-     Route::get('/follow-customer', [FollowCustomerController::class,'follow_customer'])->name('frontend.profile.follow-customer');
  });
 
     Route::get('product-review/filter',[ProductReviewController::class,'filterReview'])->name('filterReview');
 
-    //Seller Follow Customer
-    Route::post('/frontend/seller-follow', [FollowCustomerController::class,'store'])->name('frontend.follow_seller')->middleware('auth');
-    Route::post('/frontend/seller-unfollow',[FollowCustomerController::class,'unfollow'])->name('frontend.unfollow_seller')->middleware('auth');
  // send mail with queue
     Route::get('/send-mail/send-mail-with-queue',[WelcomeController::class,'sendEmailViaQueueCron'])->name('mail-send-via-queue');
  //for summernote image upload

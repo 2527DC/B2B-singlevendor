@@ -13,6 +13,7 @@
             @endif
         @endif
         <a class="dropdown-item manage_stock" href="javascript:void(0);" data-id="{{$products->id}}" data-type="{{$products->product_type}}" data-name="{{$products->product_name}}">{{__('product.manage_stock')}}</a>
+        <a class="dropdown-item assign_warehouses" href="javascript:void(0);" data-id="{{$products->id}}" data-name="{{$products->product_name}}">{{__('common.assign_warehouses') ?? 'Assign Warehouses'}}</a>
         <a class="dropdown-item manage_history" href="javascript:void(0);" data-id="{{$products->id}}">{{__('product.manage_history')}}</a>
         @if(permissionCheck('product_destroy'))
           <a href="" class="dropdown-item seller_product_delete" data-id="{{$products->id}}">{{__('common.delete')}}</a>

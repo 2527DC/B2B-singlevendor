@@ -838,7 +838,9 @@ class ProductController extends Controller
                     ], 404);
                 }
 
-                $skus = $product->skus->map(function($sellerSku) use ($product) {
+                $warehouse_id = $request->warehouse_id;
+
+                $skus = $product->skus->map(function($sellerSku) use ($product, $warehouse_id) {
                     $variation = '';
                     if ($product->product && $product->product->product_type == 2) {
                         $variations = $sellerSku->product_variations->map(function($var) {
@@ -847,11 +849,17 @@ class ProductController extends Controller
                         $variation = $variations->implode(', ');
                     }
                     
+                    $query = \DB::table('warehouse_product_stocks')->where('seller_product_sku_id', $sellerSku->id);
+                    if ($warehouse_id) {
+                        $query->where('warehouse_id', $warehouse_id);
+                    }
+                    $current_stock = $query->sum('stock');
+                    
                     return [
                         'id' => $sellerSku->id,
                         'sku' => $sellerSku->sku->sku ?? '',
                         'variation' => $variation,
-                        'current_stock' => $sellerSku->product_stock ?? 0,
+                        'current_stock' => $current_stock,
                         'selling_price' => $sellerSku->selling_price,
                     ];
                 });
@@ -907,19 +915,25 @@ class ProductController extends Controller
             'sku_id' => 'required|integer',
             'stock_type' => 'required|in:add,subtract,set',
             'quantity' => 'required|integer|min:1',
+            'warehouse_id' => 'required|integer'
+        ], [
+            'warehouse_id.required' => __('common.please_select_a_warehouse')
         ]);
 
         DB::beginTransaction();
         try {
             if (isModuleActive('MultiVendor')) {
-                // Multi-vendor mode uses the seller_product_s_k_us table
                 $sku = \Modules\Seller\Entities\SellerProductSKU::findOrFail($request->sku_id);
             } else {
-                // Single-vendor mode uses the product_sku table
                 $sku = \Modules\Product\Entities\ProductSku::findOrFail($request->sku_id);
             }
             
-            $previousStock = $sku->product_stock ?? 0;
+            $warehouseStock = \DB::table('warehouse_product_stocks')
+                ->where('seller_product_sku_id', $sku->id)
+                ->where('warehouse_id', $request->warehouse_id)
+                ->first();
+                
+            $previousStock = $warehouseStock ? $warehouseStock->stock : 0;
             
             // Calculate new stock based on type
             switch ($request->stock_type) {
@@ -937,13 +951,24 @@ class ProductController extends Controller
                     break;
             }
             
-            // Update SKU stock
-            $sku->product_stock = $newStock;
-            $sku->save();
+            // Update Warehouse Stock
+            \DB::table('warehouse_product_stocks')->updateOrInsert(
+                [
+                    'seller_product_sku_id' => $sku->id,
+                    'warehouse_id' => $request->warehouse_id
+                ],
+                [
+                    'stock' => $newStock,
+                    'updated_at' => now(),
+                    // created_at needs a raw DB or check if exists, but updateOrInsert handles it partially.
+                    // For safety:
+                ]
+            );
             
             // Create stock history record
             \Modules\Product\Entities\StockHistory::create([
                 'product_sku_id' => $sku->id,
+                'warehouse_id' => $request->warehouse_id,
                 'type' => $historyType,
                 'quantity' => $request->quantity,
                 'previous_stock' => $previousStock,
@@ -1073,6 +1098,10 @@ class ProductController extends Controller
 
             if ($toDate) {
                 $query->whereDate('stock_histories.created_at', '<=', $toDate);
+            }
+            
+            if ($request->warehouse_id) {
+                $query->where('stock_histories.warehouse_id', $request->warehouse_id);
             }
 
             $history = $query->orderByDesc('stock_histories.created_at')->get();

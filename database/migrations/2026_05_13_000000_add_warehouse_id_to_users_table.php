@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (Schema::hasTable('seller_accounts')) {
-            Schema::table('seller_accounts', function (Blueprint $table) {
-                $table->dropUnique(['seller_shop_display_name']);
+        if (!Schema::hasColumn('users', 'warehouse_id')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->unsignedBigInteger('warehouse_id')->nullable()->after('role_id');
             });
         }
     }
@@ -23,9 +23,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        if (Schema::hasTable('seller_accounts')) {
-            Schema::table('seller_accounts', function (Blueprint $table) {
-                $table->unique('seller_shop_display_name');
+        if (Schema::hasColumn('users', 'warehouse_id')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->dropColumn('warehouse_id');
             });
         }
     }

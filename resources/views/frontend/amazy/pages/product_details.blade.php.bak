@@ -11,8 +11,8 @@
         <meta property="og:description" content="{{@$product->product->meta_description}}" />
         <meta name="description" content="{{@$product->product->meta_description}}">
     @else
-        <meta property="og:description" content="{{@$product->product->description}}" />
-        <meta name="description" content="{{ @$product->product->description }}">
+        <meta property="og:description" content="{{ Str::limit(strip_tags($product->product->description), 128)}}" />
+        <meta name="description" content="{{ Str::limit(strip_tags($product->product->description), 128) }}">
     @endif
     @if(@$product->product->meta_title != null)
         <meta name="title" content="{{ @substr(@$product->product->meta_title, 0, 60) }}" />
@@ -28,10 +28,12 @@
     @elseif(count(@$product->product->gallary_images) > 0 && @getimagesize(showImage(@$product->product->gallary_images[0]->images_source))[0] > 200)
         <meta property="og:image" content="{{showImage(@$product->product->gallary_images[0]->images_source)}}" />
     @endif
+
+
     <meta property="og:url" content="{{singleProductURL(@$product->seller->slug, $product->slug)}}" />
     <meta property="og:image:width" content="400" />
     <meta property="og:image:height" content="300" />
-    <meta property="og:type" content="{{@$product->product->meta_description}}">
+    <meta property="og:type" content="og:product">
     @php
         $total_tag = count($product->product->tags);
         $meta_tags = '';
@@ -42,8 +44,28 @@
                 $meta_tags .= $tag->name;
             }
         }
+        if (!empty($product->product->meta_title)) {
+            $product_title = $product->product->meta_title;
+        } else {
+            $product_title = $product->product_name;
+        }
+
     @endphp
-    <meta name="keywords" , content="{{$meta_tags}}">
+    @php
+        $public_code = null;
+        $payment = DB::table('payment_methods')->where('method', 'Tabby')->where('active_status', 1)->first();
+        if ($payment) {
+            $tabby_gateway = getPaymentGatewayInfo($payment->id);
+            if ($tabby_gateway) {
+                $public_code = $tabby_gateway->perameter_1;
+            }
+        }
+
+    @endphp
+    <meta property="product:plural_title" content="{{ $product_title }}" />
+    <meta property="product:price:amount" content="{{str_replace('$', '', getProductDiscountedPrice($product))}}" />
+    <meta property="product:price:currency" content="{{ currencyCode() }}" />
+    <meta name="keywords" , content="{{$meta_tags}}, {{ config('app.name') }}">
 @endsection
 @push('styles')
     <link rel="stylesheet" href="{{asset(asset_path('frontend/amazy/css/page_css/product_details.css'))}}" />
@@ -66,6 +88,21 @@
             }
         </style>
     @endif
+    <style>
+        .report-product {
+            font-size: 12px;
+            color: var(--base_color) !important;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            grid-gap: 10px;
+            text-transform: uppercase;
+        }
+
+        .report-product:hover {
+            color: var(--base_color) !important;
+        }
+    </style>
 @endpush
 @section('content')
     <!-- product_details_wrapper::start  -->
@@ -210,19 +247,51 @@
                                     @endif
                                 </div>
                                 <div class="destils_prise_information_box mb_20">
-                                    <h2 class="pro_details_prise d-flex align-items-center  m-0">
-                                        <span>
-                                            {{single_price($awarded_bid->bid_amount)}}
+                                    @if(isGuestAddtoCart())
+                                        {{-- Selling Price --}}
+                                        <h2 class="pro_details_prise m-0">
+                                            {{ getProductDiscountedPrice($product) }}
+                                        </h2>
 
-                                        </span>
-                                    </h2>
+                                        {{-- MRP (Strikethrough) --}}
+                                        @if(isset($product->product->mrp) || optional($product->skus->first())->mrp)
+                                            <h4 class="discount_prise m-0">
+                                                <del class="text-muted">
+                                                    {{ single_price($product->product->mrp ?? optional($product->skus->first())->mrp) }}
+                                                </del>
+                                            </h4>
+                                        @endif
 
+                                        {{-- Discount Percentage --}}
+                                        <div class="pro_details_disPrise d-flex align-items-center gap_15">
+                                            @if($product->hasDeal && $product->hasDeal->discount > 0)
+                                                <span class="diccount_percents">
+                                                    @if($product->hasDeal->discount_type == 0)
+                                                        -{{ getNumberTranslate($product->hasDeal->discount) }}%
+                                                    @else
+                                                        -{{ single_price($product->hasDeal->discount) }}
+                                                    @endif
+                                                </span>
+                                            @elseif($product->hasDiscount == 'yes' && $product->discount > 0)
+                                                <span class="diccount_percents">
+                                                    @if($product->discount_type == 0)
+                                                        -{{ getNumberTranslate($product->discount) }}%
+                                                    @else
+                                                        -{{ single_price($product->discount) }}
+                                                    @endif
+                                                </span>
+                                            @endif
+                                        </div>
+                                    @endif
+
+                                    {{-- ADD THESE HIDDEN INPUTS HERE --}}
                                     <input type="hidden" name="product_sku_id" id="product_sku_id"
                                         value="{{$product->product->product_type == 1 ? $product->skus->where('status', 1)->first()->id : $product->skus->where('status', 1)->first()->id}}">
                                     <input type="hidden" name="seller_id" id="seller_id" value="{{$product->user_id}}">
                                     <input type="hidden" id="owner" value="{{encrypt($product->user_id)}}">
                                     <input type="hidden" name="stock_manage_status" id="stock_manage_status"
                                         value="{{$product->stock_manage}}">
+
                                     <p class="pro_details_text">
                                         <span class="text-uppercase">{{__('common.tag')}}:</span>
                                         @php
@@ -358,54 +427,143 @@
                                     <div class="single_pro_varient">
                                         <h5 class="font_14 f_w_500 theme_text3 ">{{__('common.quantity')}}:</h5>
                                         <div class="product_number_count mr_5" data-target="amount-1">
-
+                                            <span class="count_single_item inumber_decrement qtyChange" data-value="-"> <i
+                                                    class="ti-minus"></i></span>
                                             <input name="qty" id="qty" class="count_single_item input-number qty"
-                                                type="text" readonly data-value="{{$auction->quantity}}"
-                                                value="{{getNumberTranslate($auction->quantity)}}" disabled>
-
+                                                type="text" data-value="{{@$product->product->minimum_order_qty}}"
+                                                value="{{getNumberTranslate(@$product->product->minimum_order_qty)}}">
+                                            <span class="count_single_item number_increment qtyChange" data-value="+"> <i
+                                                    class="ti-plus"></i></span>
                                         </div>
                                     </div>
                                     <input type="hidden" name="base_sku_price" id="base_sku_price" value="
-                                                    {{selling_price($awarded_bid->bid_amount)}}
-
-                                                ">
+                                                @if(@$product->hasDeal)
+                                                    {{ selling_price(@$product->skus->where('status', 1)->first()->sell_price, @$product->hasDeal->discount_type, @$product->hasDeal->discount) }}
+                                                @else
+                                                    @if($product->hasDiscount == 'yes')
+                                                        {{selling_price(@$product->skus->where('status', 1)->first()->sell_price, @$product->discount_type, @$product->discount)}}
+                                                    @else
+                                                        {{@$product->skus->where('status', 1)->first()->sell_price}}
+                                                    @endif
+                                                @endif
+                                            ">
                                     <input type="hidden" name="final_price" id="final_price" value="
-                                                    {{selling_price($awarded_bid->bid_amount)}}
+                                                @if(@$product->hasDeal)
+                                                    {{ selling_price(@$product->skus->where('status', 1)->first()->sell_price, @$product->hasDeal->discount_type, @$product->hasDeal->discount) }}
+                                                @else
+                                                    @if($product->hasDiscount == 'yes')
+                                                        {{selling_price(@$product->skus->where('status', 1)->first()->sell_price, @$product->discount_type, @$product->discount)}}
+                                                    @else
+                                                        {{@$product->skus->where('status', 1)->first()->sell_price}}
+                                                    @endif
+                                                @endif
+                                            ">
 
-                                                ">
-                                    <h5 class="mb-0">{{__('common.total')}}:
-                                        <span id="total_price">
-                                            {{single_price($awarded_bid->bid_amount)}}
+                                    @if(isGuestAddtoCart() == true)
+                                        <h5 class="mb-0">{{__('common.total')}}:
+                                            <span id="total_price">
+                                                @if(@$product->hasDeal)
+                                                    {{single_price(selling_price(@$product->skus->where('status', 1)->first()->sell_price, @$product->hasDeal->discount_type, @$product->hasDeal->discount) * $product->product->minimum_order_qty)}}
+                                                @else
+                                                    @if($product->hasDiscount == 'yes')
+                                                        {{single_price(selling_price(@$product->skus->where('status', 1)->first()->sell_price, @$product->discount_type, @$product->discount) * $product->product->minimum_order_qty)}}
+                                                    @else
+                                                        {{single_price(@$product->skus->where('status', 1)->first()->sell_price * $product->product->minimum_order_qty)}}
+                                                    @endif
+                                                @endif
+                                            </span>
+                                        </h5>
+                                    @endif
 
-                                        </span>
-                                    </h5>
-                                    <div class="row mt_30 " id="add_to_cart_div">
-                                        @if ($product->stock_manage == 1 && $product->skus->where('status', 1)->first()->product_stock >= $product->product->minimum_order_qty)
-
-                                            <div class="col-md-6">
-                                                <button type="button" id="butItNow"
-                                                    class="amaz_primary_btn3 mb_20  w-100 text-center justify-content-center text-uppercase buy_now_btn"
-                                                    data-id="{{$product->id}}"
-                                                    data-type="product">{{__('common.buy_now')}}</button>
+                                    @if(isModuleActive('CheckPincode') && $pincodeConfig->pincode_check_system_status == 1)
+                                        <div class="row mt_30 form-inline" id="checkpincode_div">
+                                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                                                <div class="form-group ">
+                                                    <input type="text" class="form-control" id="check_pincode"
+                                                        placeholder="CHECK PINCODE"
+                                                        style="border: none;border-bottom: 1px solid #ced4da;border-radius:0px;padding-top:20px; text-align:center;">
+                                                </div>
                                             </div>
-                                        @elseif($product->stock_manage == 0)
-
-                                            <div class="col-md-6">
-                                                <button type="button" id="butItNow"
-                                                    class="amaz_primary_btn3 mb_20  w-100 text-center justify-content-center text-uppercase buy_now_btn"
-                                                    data-id="{{$product->id}}"
-                                                    data-type="product">{{__('common.buy_now')}}</button>
+                                            <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12 mt-3 mt-md-0">
+                                                <button type="button" class="amaz_primary_btn3"
+                                                    id="check_pincode_btn">{{__('checkpincode.check')}}</button>
                                             </div>
-                                        @else
-                                            <div class="col-md-6">
-                                                <button type="button" disabled
-                                                    class="amaz_primary_btn style2 mb_20  add_to_cart text-uppercase flex-fill text-center w-100">{{__('defaultTheme.out_of_stock')}}</button>
-                                            </div>
-                                        @endif
-                                    </div>
-                                    <div class="add_wish_compare d-flex alingn-items-center mb_20">
+                                        </div>
+                                        <div class="row d-none mt_10 availablity_show_div">
+                                            <div class="col-lg-12">
+                                                <p>{{__('checkpincode.available_at')}} <span id="pin_code_area"></span>.</p>
 
-                                    </div>
+                                                <p class="pdelivery d-none">{{__('amazy.Delivery within')}}: <span
+                                                        id="pin_code_delivery"></span>.</p>
+
+                                            </div>
+                                        </div>
+                                        <div class="row mt_10 not_serve d-none">
+                                            <p>{{__('checkpincode.oops_we_are_not_currently_servicing_your_area')}}</p>
+                                        </div>
+                                    @endif
+
+
+                                    @if(isGuestAddtoCart() == true)
+                                        <div class="row mt_30 " id="add_to_cart_div">
+                                            @if ($product->stock_manage == 1 && $product->skus->where('status', 1)->first()->product_stock >= $product->product->minimum_order_qty)
+                                                <div class="col-6">
+                                                    <button type="button" id="add_to_cart_btn"
+                                                        class="amaz_primary_btn style2 mb_20  add_to_cart add_to_cart_btn text-uppercase flex-fill text-center w-100">{{__('common.add_to_cart')}}</button>
+                                                </div>
+                                                <div class="col-6">
+                                                    <button type="button" id="butItNow"
+                                                        class="amaz_primary_btn3 mb_20  w-100 text-center justify-content-center text-uppercase buy_now_btn"
+                                                        data-id="{{$product->id}}"
+                                                        data-type="product">{{__('common.buy_now')}}</button>
+                                                </div>
+                                            @elseif($product->stock_manage == 0)
+                                                <div class="col-6">
+                                                    <button type="button" id="add_to_cart_btn"
+                                                        class="amaz_primary_btn style2 mb_20  add_to_cart text-uppercase add_to_cart_btn flex-fill text-center w-100">{{__('common.add_to_cart')}}</button>
+                                                </div>
+                                                <div class="col-6">
+                                                    <button type="button" id="butItNow"
+                                                        class="amaz_primary_btn3 mb_20  w-100 text-center justify-content-center text-uppercase buy_now_btn"
+                                                        data-id="{{$product->id}}"
+                                                        data-type="product">{{__('common.buy_now')}}</button>
+                                                </div>
+                                            @else
+                                                <div class="col-6">
+                                                    <button type="button" disabled
+                                                        class="amaz_primary_btn style2 mb_20  add_to_cart text-uppercase flex-fill text-center w-100">{{__('defaultTheme.out_of_stock')}}</button>
+                                                </div>
+                                            @endif
+                                        </div>
+                                        <div class="add_wish_compare d-flex alingn-items-center mb_20">
+                                            <a id="wishlist_btn" data-product_id="{{$product->id}}"
+                                                data-seller_id="{{$product->user_id}}"
+                                                class="single_wish_compare text-uppercase text-nowrap cursor_pointer">
+                                                <i class="far fa-heart"></i> {{__('defaultTheme.add_to_wishlist')}}
+                                            </a>
+                                            <a id="add_to_compare_btn_modify" data-product_sku_id="#product_sku_id"
+                                                data-product_type="{{$product->product->product_type}}"
+                                                class="single_wish_compare text-uppercase text-nowrap cursor_pointer">
+                                                <i class="ti-control-shuffle"></i> {{__('defaultTheme.add_to_compare')}}
+                                            </a>
+                                            @if(!empty($product->seller) && $product->seller->role_id != 1 && app('general_setting')->product_report == 1)
+
+                                                <a class="report-product" data-product-id='{{ $product->product_id }}'
+                                                    href="javascript:void(0)">
+                                                    <i class="fas fa-ban"></i>
+                                                    {{ __('product.report_this_product') }}
+                                                </a>
+                                            @endif
+                                        </div>
+                                    @else
+                                        <div class="row mt_30 " id="add_to_cart_div">
+                                            <div class="col-md-12">
+                                                <a href="{{ url('/login') }}" class="amaz_primary_btn w-100">
+                                                    {{__('defaultTheme.login_to_order')}}
+                                                </a>
+                                            </div>
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
                             @php
@@ -441,13 +599,12 @@
                                                 <input type="hidden" id="both_buy_price" value="{{$both_buy_price}}">
                                                 <div class="thumb both_buy">
                                                     <img src="
-                                                                                    @if(@$both_buy_product->thum_img != null)
-                                                                                        {{showImage(@$both_buy_product->thum_img)}}
-                                                                                    @else
-                                                                                        {{showImage(@$both_buy_product->product->thumbnail_image_source)}}
-                                                                                    @endif
-                                                                                    "
-                                                        alt="{{@$both_buy_product->product->product_name}}"
+                                                                        @if(@$both_buy_product->thum_img != null)
+                                                                            {{showImage(@$both_buy_product->thum_img)}}
+                                                                        @else
+                                                                            {{showImage(@$both_buy_product->product->thumbnail_image_source)}}
+                                                                        @endif
+                                                                        " alt="{{@$both_buy_product->product->product_name}}"
                                                         title="{{@$both_buy_product->product->product_name}}">
                                                 </div>
                                                 <div class="product_details_sujjetion_content">
@@ -479,6 +636,7 @@
                                 $sharelinks = Share::currentPage()->facebook()->twitter()->linkedin()->whatsapp()->telegram()->reddit()->getRawLinks();
                             @endphp
                             <div class="contact_wiz_box mt_20">
+                                <div id="TabbyPromo" class="w-100 mt-4 mb-4"></div>
                                 <span
                                     class="contact_box_title font_16 f_w_500 d-block lh-1 ">{{__('defaultTheme.share_on')}}:</span>
                                 <div class="contact_link">
@@ -509,9 +667,17 @@
                                     <h4 class="font_20 f_w_400 m-0 ">{{__('common.description')}}</h4>
                                 </div>
                                 <div class="product_details_dec_body">
-                                    @php
-                                        echo $product->product->description;
-                                    @endphp
+                                    <div class="product_description_container">
+                                        <div class="contents">
+                                            @php
+                                                echo $product->product->description;
+                                            @endphp
+                                        </div>
+                                    </div>
+                                    <div class="col-12 show_full_btn d-none">
+                                        <button id="show_full_details"
+                                            class="show_less amaz_primary_btn style3 text-uppercase">Show More</button>
+                                    </div>
                                 </div>
                             </div>
                             <div class="product_details_dec mb_76">
@@ -522,9 +688,7 @@
                                     <div class="single_desc style2 mb_20">
                                         <p class="f_w_500 m-0">{{ __('common.brand') }}: {{@$product->product->brand->name}}
                                         </p>
-                                        <p class="f_w_500 m-0">{{ __('common.model_number') }}:
-                                            {{@$product->product->model_number}}
-                                        </p>
+                                        <!-- <p class="f_w_500 m-0">{{ __('common.model_number') }}: {{@$product->product->model_number}}</p> -->
                                         <p class="f_w_500 m-0">{{ __('common.availability') }}:
                                             @if ($product->stock_manage == 1 && $product->skus->where('status', 1)->first()->product_stock >= $product->product->minimum_order_qty)
                                                 {{ __('common.in_stock') }}
@@ -595,6 +759,7 @@
                                 </div>
                             @endif
                         </div>
+
                         @if($recent_viewed_products->count())
                             <div class="col-12">
                                 <div class="row">
@@ -616,7 +781,7 @@
                                                             $thumbnail = showImage(@$recent_viewed_product->product->thumbnail_image_source);
                                                         }
 
-                                                        $price_qty = $awarded_bid->bid_amount;
+                                                        $price_qty = getProductDiscountedPrice(@$recent_viewed_product);
                                                         $showData = [
                                                             'name' => @$recent_viewed_product->product_name,
                                                             'url' => singleProductURL(@$recent_viewed_product->seller->slug, @$recent_viewed_product->slug),
@@ -633,30 +798,63 @@
                                                         @else
                                                             <img src="{{$thumbnail}}" alt="{{@$recent_viewed_product->product_name}}"
                                                                 title="{{@$recent_viewed_product->product_name}}">
-
                                                         @endif
                                                     </a>
-                                                    <div class="product_action">
-                                                        <a href="" class="addToCompareFromThumnail"
-                                                            data-producttype="{{ @$recent_viewed_product->product->product_type }}"
-                                                            data-seller={{ $recent_viewed_product->user_id }} data-product-sku={{ @$recent_viewed_product->skus->first()->id }} data-product-id={{ $recent_viewed_product->id }}>
-                                                            <i class="ti-control-shuffle"
-                                                                title="{{ __('defaultTheme.compare') }}"></i>
-                                                        </a>
-                                                        <a href=""
-                                                            class="add_to_wishlist {{$recent_viewed_product->is_wishlist() == 1 ? 'is_wishlist' : ''}}"
-                                                            id="wishlistbtn_{{$recent_viewed_product->id}}"
-                                                            data-product_id="{{$recent_viewed_product->id}}"
-                                                            data-seller_id="{{$recent_viewed_product->user_id}}">
-                                                            <i class="far fa-heart" title="{{ __('defaultTheme.wishlist') }}"></i>
-                                                        </a>
-                                                        <a class="quickView" data-product_id="{{$recent_viewed_product->id}}"
-                                                            data-type="product">
-                                                            <i class="ti-eye" title="{{ __('defaultTheme.quick_view') }}"></i>
-                                                        </a>
-                                                    </div>
+                                                    @if(isGuestAddtoCart())
+                                                        <div class="product_action">
+                                                            <a href="" class="addToCompareFromThumnail"
+                                                                data-producttype="{{ @$recent_viewed_product->product->product_type }}"
+                                                                data-seller={{ $recent_viewed_product->user_id }} data-product-sku={{ @$recent_viewed_product->skus->first()->id }} data-product-id={{ $recent_viewed_product->id }}>
+                                                                <i class="ti-control-shuffle"
+                                                                    title="{{ __('defaultTheme.compare') }}"></i>
+                                                            </a>
+                                                            <a href=""
+                                                                class="add_to_wishlist {{$recent_viewed_product->is_wishlist() == 1 ? 'is_wishlist' : ''}}"
+                                                                id="wishlistbtn_{{$recent_viewed_product->id}}"
+                                                                data-product_id="{{$recent_viewed_product->id}}"
+                                                                data-seller_id="{{$recent_viewed_product->user_id}}">
+                                                                <i class="far fa-heart" title="{{ __('defaultTheme.wishlist') }}"></i>
+                                                            </a>
+                                                            <a class="quickView" data-product_id="{{$recent_viewed_product->id}}"
+                                                                data-type="product">
+                                                                <i class="ti-eye" title="{{ __('defaultTheme.quick_view') }}"></i>
+                                                            </a>
+                                                        </div>
+                                                    @endif
                                                     <div class="product_badge">
+                                                        @if(isGuestAddtoCart())
+                                                            @if($recent_viewed_product->hasDeal)
+                                                                @if($recent_viewed_product->hasDeal->discount > 0)
+                                                                    <span class="d-flex align-items-center discount">
+                                                                        @if($recent_viewed_product->hasDeal->discount > 0)
+                                                                            @if($recent_viewed_product->hasDeal->discount_type == 0)
+                                                                                {{getNumberTranslate($recent_viewed_product->hasDeal->discount)}} %
+                                                                                {{__('common.off')}}
+                                                                            @else
+                                                                                {{single_price($recent_viewed_product->hasDeal->discount)}}
+                                                                                {{__('common.off')}}
+                                                                            @endif
 
+                                                                        @endif
+                                                                    </span>
+                                                                @endif
+                                                            @else
+                                                                @if($recent_viewed_product->hasDiscount == 'yes')
+                                                                    @if($recent_viewed_product->discount > 0)
+                                                                        <span class="d-flex align-items-center discount">
+                                                                            @if($recent_viewed_product->discount > 0)
+                                                                                @if($recent_viewed_product->discount_type == 0)
+                                                                                    {{getNumberTranslate($recent_viewed_product->discount)}} %
+                                                                                    {{__('common.off')}}
+                                                                                @else
+                                                                                    {{single_price($recent_viewed_product->discount)}} {{__('common.off')}}
+                                                                                @endif
+                                                                            @endif
+                                                                        </span>
+                                                                    @endif
+                                                                @endif
+                                                            @endif
+                                                        @endif
                                                         @if(isModuleActive('ClubPoint'))
                                                             <span class="d-flex align-items-center point">
                                                                 <svg width="16" height="14" viewBox="0 0 16 14" fill="none">
@@ -704,34 +902,53 @@
                                                             @endif
                                                         </h4>
                                                     </a>
-                                                    <div
-                                                        class="product_price d-flex align-items-center justify-content-between flex-wrap">
-                                                        <a class="amaz_primary_btn addToCartFromThumnail"
-                                                            data-producttype="{{ @$recent_viewed_product->product->product_type }}"
-                                                            data-seller={{ $recent_viewed_product->user_id }} data-product-sku={{ @$recent_viewed_product->skus->first()->id }} @if (@$recent_viewed_product->hasDeal) data-base-price={{ selling_price(@$recent_viewed_product->skus->first()->sell_price, @$recent_viewed_product->hasDeal->discount_type, @$recent_viewed_product->hasDeal->discount) }} @else @if (@$recent_viewed_product->hasDiscount == 'yes') data-base-price={{ selling_price(@$recent_viewed_product->skus->first()->sell_price, @$recent_viewed_product->discount_type, @$recent_viewed_product->discount) }} @else data-base-price={{ @$recent_viewed_product->skus->first()->sell_price }} @endif @endif
-                                                            data-shipping-method=0 data-product-id={{ $recent_viewed_product->id }}
-                                                            data-stock_manage="{{$recent_viewed_product->stock_manage}}"
-                                                            data-stock="{{@$recent_viewed_product->skus->first()->product_stock}}"
-                                                            data-min_qty="{{@$recent_viewed_product->product->minimum_order_qty}}"
-                                                            data-prod_info="{{ json_encode($showData) }}">
-                                                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                                                <path
-                                                                    d="M0.464844 1.14286C0.464844 0.78782 0.751726 0.5 1.10561 0.5H1.58256C2.39459 0.5 2.88079 1.04771 3.15883 1.55685C3.34414 1.89623 3.47821 2.28987 3.58307 2.64624C3.61147 2.64401 3.64024 2.64286 3.66934 2.64286H14.3464C15.0557 2.64286 15.5679 3.32379 15.3734 4.00811L13.8119 9.50163C13.5241 10.5142 12.6019 11.2124 11.5525 11.2124H6.47073C5.41263 11.2124 4.48508 10.5028 4.20505 9.47909L3.55532 7.10386L2.48004 3.4621L2.47829 3.45572C2.34527 2.96901 2.22042 2.51433 2.03491 2.1746C1.85475 1.84469 1.71115 1.78571 1.58256 1.78571H1.10561C0.751726 1.78571 0.464844 1.49789 0.464844 1.14286ZM4.79882 6.79169L5.44087 9.1388C5.56816 9.60414 5.98978 9.92669 6.47073 9.92669H11.5525C12.0295 9.92669 12.4487 9.60929 12.5795 9.14909L14.0634 3.92857H3.95529L4.78706 6.74583C4.79157 6.76109 4.79548 6.77634 4.79882 6.79169ZM7.72683 13.7857C7.72683 14.7325 6.96184 15.5 6.01812 15.5C5.07443 15.5 4.30942 14.7325 4.30942 13.7857C4.30942 12.8389 5.07443 12.0714 6.01812 12.0714C6.96184 12.0714 7.72683 12.8389 7.72683 13.7857ZM6.4453 13.7857C6.4453 13.5491 6.25405 13.3571 6.01812 13.3571C5.7822 13.3571 5.59095 13.5491 5.59095 13.7857C5.59095 14.0224 5.7822 14.2143 6.01812 14.2143C6.25405 14.2143 6.4453 14.0224 6.4453 13.7857ZM13.7073 13.7857C13.7073 14.7325 12.9423 15.5 11.9986 15.5C11.0549 15.5 10.2899 14.7325 10.2899 13.7857C10.2899 12.8389 11.0549 12.0714 11.9986 12.0714C12.9423 12.0714 13.7073 12.8389 13.7073 13.7857ZM12.4258 13.7857C12.4258 13.5491 12.2345 13.3571 11.9986 13.3571C11.7627 13.3571 11.5714 13.5491 11.5714 13.7857C11.5714 14.0224 11.7627 14.2143 11.9986 14.2143C12.2345 14.2143 12.4258 14.0224 12.4258 13.7857Z"
-                                                                    fill="currentColor" />
-                                                            </svg>
-                                                            {{__('defaultTheme.add_to_cart')}}
-                                                        </a>
-                                                        <p>
-                                                            @if (getProductwitoutDiscountPrice(@$recent_viewed_product) != single_price(0))
-                                                                <del>
-                                                                    {{getProductwitoutDiscountPrice(@$recent_viewed_product)}}
-                                                                </del>
-                                                            @endif
-                                                            <strong>
-                                                                {{getProductDiscountedPrice(@$recent_viewed_product)}}
-                                                            </strong>
-                                                        </p>
-                                                    </div>
+                                                    @if(isModuleActive('MultiVendor'))
+                                                        @php
+                                                            $sellerUrl = $recent_viewed_product->seller->slug ? route('frontend.seller', $recent_viewed_product->seller->slug) : route('frontend.seller', base64_encode($recent_viewed_product->seller->id));
+                                                            $sellerName = $recent_viewed_product->seller->role->type == 'seller' ? (@$recent_viewed_product->seller->SellerAccount->seller_shop_display_name ?: ($recent_viewed_product->seller->first_name . ' ' . $recent_viewed_product->seller->last_name)) : app('general_setting')->company_name;
+                                                        @endphp
+                                                        <p class="stock_text mb-1"><small>Warehouse: <a href="{{ $sellerUrl }}" style="font-weight:600;">{{ $sellerName }}</a></small></p>
+                                                    @endif
+
+                                                    @if(isGuestAddtoCart())
+                                                        <div
+                                                            class="product_price d-flex align-items-center justify-content-between flex-wrap">
+                                                            <a class="amaz_primary_btn addToCartFromThumnail"
+                                                                data-producttype="{{ @$recent_viewed_product->product->product_type }}"
+                                                                data-seller={{ $recent_viewed_product->user_id }} data-product-sku={{ @$recent_viewed_product->skus->first()->id }} @if (@$recent_viewed_product->hasDeal) data-base-price={{ selling_price(@$recent_viewed_product->skus->first()->sell_price, @$recent_viewed_product->hasDeal->discount_type, @$recent_viewed_product->hasDeal->discount) }} @else @if (@$recent_viewed_product->hasDiscount == 'yes') data-base-price={{ selling_price(@$recent_viewed_product->skus->first()->sell_price, @$recent_viewed_product->discount_type, @$recent_viewed_product->discount) }} @else data-base-price={{ @$recent_viewed_product->skus->first()->sell_price }} @endif @endif
+                                                                data-shipping-method=0 data-product-id={{ $recent_viewed_product->id }}
+                                                                data-stock_manage="{{$recent_viewed_product->stock_manage}}"
+                                                                data-stock="{{@$recent_viewed_product->skus->first()->product_stock}}"
+                                                                data-min_qty="{{@$recent_viewed_product->product->minimum_order_qty}}"
+                                                                data-prod_info="{{ json_encode($showData) }}">
+                                                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                                                    <path
+                                                                        d="M0.464844 1.14286C0.464844 0.78782 0.751726 0.5 1.10561 0.5H1.58256C2.39459 0.5 2.88079 1.04771 3.15883 1.55685C3.34414 1.89623 3.47821 2.28987 3.58307 2.64624C3.61147 2.64401 3.64024 2.64286 3.66934 2.64286H14.3464C15.0557 2.64286 15.5679 3.32379 15.3734 4.00811L13.8119 9.50163C13.5241 10.5142 12.6019 11.2124 11.5525 11.2124H6.47073C5.41263 11.2124 4.48508 10.5028 4.20505 9.47909L3.55532 7.10386L2.48004 3.4621L2.47829 3.45572C2.34527 2.96901 2.22042 2.51433 2.03491 2.1746C1.85475 1.84469 1.71115 1.78571 1.58256 1.78571H1.10561C0.751726 1.78571 0.464844 1.49789 0.464844 1.14286ZM4.79882 6.79169L5.44087 9.1388C5.56816 9.60414 5.98978 9.92669 6.47073 9.92669H11.5525C12.0295 9.92669 12.4487 9.60929 12.5795 9.14909L14.0634 3.92857H3.95529L4.78706 6.74583C4.79157 6.76109 4.79548 6.77634 4.79882 6.79169ZM7.72683 13.7857C7.72683 14.7325 6.96184 15.5 6.01812 15.5C5.07443 15.5 4.30942 14.7325 4.30942 13.7857C4.30942 12.8389 5.07443 12.0714 6.01812 12.0714C6.96184 12.0714 7.72683 12.8389 7.72683 13.7857ZM6.4453 13.7857C6.4453 13.5491 6.25405 13.3571 6.01812 13.3571C5.7822 13.3571 5.59095 13.5491 5.59095 13.7857C5.59095 14.0224 5.7822 14.2143 6.01812 14.2143C6.25405 14.2143 6.4453 14.0224 6.4453 13.7857ZM13.7073 13.7857C13.7073 14.7325 12.9423 15.5 11.9986 15.5C11.0549 15.5 10.2899 14.7325 10.2899 13.7857C10.2899 12.8389 11.0549 12.0714 11.9986 12.0714C12.9423 12.0714 13.7073 12.8389 13.7073 13.7857ZM12.4258 13.7857C12.4258 13.5491 12.2345 13.3571 11.9986 13.3571C11.7627 13.3571 11.5714 13.5491 11.5714 13.7857C11.5714 14.0224 11.7627 14.2143 11.9986 14.2143C12.2345 14.2143 12.4258 14.0224 12.4258 13.7857Z"
+                                                                        fill="currentColor" />
+                                                                </svg>
+                                                                {{__('defaultTheme.add_to_cart')}}
+                                                            </a>
+                                                            <p>
+                                                                @if (getProductwitoutDiscountPrice(@$recent_viewed_product) != single_price(0))
+                                                                    <del>
+                                                                        {{getProductwitoutDiscountPrice(@$recent_viewed_product)}}
+                                                                    </del>
+                                                                @endif
+                                                                <strong>
+                                                                    {{getProductDiscountedPrice(@$recent_viewed_product)}}
+                                                                </strong>
+                                                            </p>
+                                                        </div>
+                                                    @else
+                                                        <div
+                                                            class="product_price d-flex align-items-center justify-content-between flex-wrap">
+                                                            <a class="amaz_primary_btn w-100" style="text-indent: 0;"
+                                                                href="{{ url('/login') }}">
+
+                                                                {{__('defaultTheme.login_to_order')}}
+                                                            </a>
+                                                        </div>
+                                                    @endif
                                                 </div>
                                             </div>
                                         </div>
@@ -744,6 +961,7 @@
                         </div>
                     </div>
                 </div>
+
                 <div class="col-xl-3">
                     @php
                         $free_shipping = \Modules\Shipping\Entities\ShippingMethod::where('request_by_user', $product->user_id)->where('is_active', 1)->where('id', '>', 1)->where('cost', 0)->first();
@@ -855,12 +1073,12 @@
                             <div class="amazcart_delivery_wiz_body">
                                 <h4 class="font_14 f_w_700 mb-0">
                                     <a id="shopLink" href="
-                                                                @if ($product->seller->slug)
-                                                                    {{route('frontend.seller', $product->seller->slug)}}
-                                                                @else
-                                                                    {{route('frontend.seller', base64_encode($product->seller->id))}}
-                                                                @endif
-                                                            ">
+                                                        @if ($product->seller->slug)
+                                                            {{route('frontend.seller', $product->seller->slug)}}
+                                                        @else
+                                                            {{route('frontend.seller', base64_encode($product->seller->id))}}
+                                                        @endif
+                                                    ">
                                         @if($product->seller->role->type == 'seller')
                                             @if (@$product->seller->SellerAccount->seller_shop_display_name)
                                                 {{ @$product->seller->SellerAccount->seller_shop_display_name }}
@@ -885,6 +1103,7 @@
                                             <p class="font_14 f_w_400 m-0">{{__('amazy.Seller Score')}}</p>
                                         </div>
                                         <div class="single_info_seller d-flex align-items-center gap_15">
+                                            <h4 class="font_14 f_w_500 m-0" id="follow_seller_count">
                                                 {{getNumberTranslate($product->seller->countFollow())}}
                                             </h4>
                                             <p class="font_14 f_w_400 m-0">{{__('amazy.Followers')}}</p>
@@ -893,6 +1112,9 @@
                                     <div class="Information_box_right">
                                         @if(auth()->check() && auth()->id() != $product->seller->id)
                                             @if(auth()->check() && !auth()->user()->follow($product->seller->id))
+                                                <button type="btn" id="follow_seller_btn"
+                                                    class="amaz_primary_btn style3 text-uppercase">{{__('common.follow')}}</button>
+                                            @elseif(auth()->check() && auth()->user()->follow($product->seller->id))
                                                 <button type="btn"
                                                     class="amaz_primary_btn style3 text-uppercase">{{__('amazy.Followed')}}</button>
                                             @endif
@@ -904,27 +1126,37 @@
                                 </div>
                                 <div class="seller_performance_box">
                                     <h4 class="font_14 f_w_700 text-uppercase ">{{__('amazy.Seller Performance')}}</h4>
-                                    @foreach($product->seller->sellerReviews->where('status', 1) as $seller_review)
-                                        <div class="single_seller_performance d-flex align-items-center gap_10 mb-1">
-                                            <img src="{{showImage('frontend/amazy/img/product_details/star.svg')}}"
-                                                alt="{{@$product->seller->SellerAccount->seller_shop_display_name}}"
-                                                title="{{@$product->seller->SellerAccount->seller_shop_display_name}}">
-                                            <p class="font_14 f_w_400 m-0">{{__('amazy.Order Fulfilment Rate')}}:</p>
-                                            <h4 class="font_14 f_w_500 m-0">
-                                                @if($seller_review->rating == 1)
-                                                    {{__('common.very_poor')}}
-                                                @elseif($seller_review->rating == 2)
-                                                    {{__('common.poor')}}
-                                                @elseif($seller_review->rating == 3)
-                                                    {{__('common.neutral')}}
-                                                @elseif($seller_review->rating == 4)
-                                                    {{__('common.satisfactory')}}
-                                                @elseif($seller_review->rating == 5)
-                                                    {{__('common.delightful')}}
-                                                @endif
-                                            </h4>
-                                        </div>
-                                    @endforeach
+                                    @php
+                                        $total_review = $product->seller->sellerReviews->where('status', 1)->sum('rating');
+                                        $review_count = $product->seller->sellerReviews->where('status', 1)->count();
+                                        if ($total_review != 0) {
+                                            $review = round($total_review / $review_count, 0);
+                                        } else {
+                                            $review = 1;
+                                        }
+                                    @endphp
+
+                                    <div class="single_seller_performance d-flex align-items-center gap_10 mb-1">
+                                        <img src="{{showImage('frontend/amazy/img/product_details/star.svg')}}"
+                                            alt="{{@$product->seller->SellerAccount->seller_shop_display_name}}"
+                                            title="{{@$product->seller->SellerAccount->seller_shop_display_name}}">
+                                        <p class="font_14 f_w_400 m-0">{{__('amazy.Order Fulfilment Rate')}}:</p>
+                                        <h4 class="font_14 f_w_500 m-0">
+                                            @if($review == 1)
+                                                {{__('common.very_poor')}}
+                                            @elseif($review == 2)
+                                                {{__('common.poor')}}
+                                            @elseif($review == 3)
+                                                {{__('common.neutral')}}
+                                            @elseif($review == 4)
+                                                {{__('common.satisfactory')}}
+                                            @elseif($review == 5)
+                                                {{__('common.delightful')}}
+                                            @else
+                                                {{__('common.very_poor')}}
+                                            @endif
+                                        </h4>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -976,33 +1208,48 @@
                                                     title="{{@$related_seller_product->product_name}}">
                                             @endif
                                         </a>
-                                        <div class="product_action">
-                                            <a href="" class="addToCompareFromThumnail"
-                                                data-producttype="{{ @$related_seller_product->product->product_type }}" data-seller={{ $related_seller_product->user_id }} data-product-sku={{ @$related_seller_product->skus->first()->id }} data-product-id={{ $related_seller_product->id }}>
-                                                <i class="ti-control-shuffle" title="{{ __('defaultTheme.compare') }}"></i>
-                                            </a>
-                                            <a href=""
-                                                class="add_to_wishlist {{$related_seller_product->is_wishlist() == 1 ? 'is_wishlist' : ''}}"
-                                                id="wishlistbtn_{{$related_seller_product->id}}"
-                                                data-product_id="{{$related_seller_product->id}}"
-                                                data-seller_id="{{$related_seller_product->user_id}}">
-                                                <i class="ti-heart" title="{{ __('defaultTheme.wishlist') }}"></i>
-                                            </a>
-                                            <a class="quickView" data-product_id="{{$related_seller_product->id}}" data-type="product">
-                                                <i class="ti-eye" title="{{ __('defaultTheme.quick_view') }}"></i>
-                                            </a>
-                                        </div>
+                                        @if(isGuestAddtoCart())
+                                            <div class="product_action">
+                                                <a href="" class="addToCompareFromThumnail"
+                                                    data-producttype="{{ @$related_seller_product->product->product_type }}" data-seller={{ $related_seller_product->user_id }} data-product-sku={{ @$related_seller_product->skus->first()->id }} data-product-id={{ $related_seller_product->id }}>
+                                                    <i class="ti-control-shuffle" title="{{ __('defaultTheme.compare') }}"></i>
+                                                </a>
+                                                <a href=""
+                                                    class="add_to_wishlist {{$related_seller_product->is_wishlist() == 1 ? 'is_wishlist' : ''}}"
+                                                    id="wishlistbtn_{{$related_seller_product->id}}"
+                                                    data-product_id="{{$related_seller_product->id}}"
+                                                    data-seller_id="{{$related_seller_product->user_id}}">
+                                                    <i class="ti-heart" title="{{ __('defaultTheme.wishlist') }}"></i>
+                                                </a>
+                                                <a class="quickView" data-product_id="{{$related_seller_product->id}}" data-type="product">
+                                                    <i class="ti-eye" title="{{ __('defaultTheme.quick_view') }}"></i>
+                                                </a>
+                                            </div>
+                                        @endif
                                         <div class="product_badge">
-                                            @if($related_seller_product->hasDeal)
-                                                @if($related_seller_product->hasDeal->discount > 0)
-                                                    <span class="d-flex align-items-center discount">
-                                                    </span>
-                                                @endif
-                                            @else
-                                                @if($related_seller_product->hasDiscount == 'yes')
-                                                    @if($related_seller_product->discount > 0)
+                                            @if(isGuestAddtoCart())
+                                                @if($related_seller_product->hasDeal)
+                                                    @if($related_seller_product->hasDeal->discount > 0)
                                                         <span class="d-flex align-items-center discount">
+                                                            @if($related_seller_product->hasDeal->discount_type == 0)
+                                                                {{getNumberTranslate($related_seller_product->hasDeal->discount)}} %
+                                                                {{__('common.off')}}
+                                                            @else
+                                                                {{single_price($related_seller_product->hasDeal->discount)}} {{__('common.off')}}
+                                                            @endif
                                                         </span>
+                                                    @endif
+                                                @else
+                                                    @if($related_seller_product->hasDiscount == 'yes')
+                                                        @if($related_seller_product->discount > 0)
+                                                            <span class="d-flex align-items-center discount">
+                                                                @if($related_seller_product->discount_type == 0)
+                                                                    {{getNumberTranslate($related_seller_product->discount)}} % {{__('common.off')}}
+                                                                @else
+                                                                    {{single_price($related_seller_product->discount)}} {{__('common.off')}}
+                                                                @endif
+                                                            </span>
+                                                        @endif
                                                     @endif
                                                 @endif
                                             @endif
@@ -1023,6 +1270,7 @@
                                     </div>
                                     <div class="product_star mx-auto">
                                         @php
+
                                             $reviews = $related_seller_product->reviews->where('status', 1)->pluck('rating');
                                             if (count($reviews) > 0) {
                                                 $value = 0;
@@ -1048,35 +1296,52 @@
                                                 {{ textLimit(@$related_seller_product->product->product_name, 50) }} @endif
                                             </h4>
                                         </a>
-                                        <div class="product_price d-flex align-items-center justify-content-between flex-wrap">
-                                            <a class="amaz_primary_btn add_cart add_to_cart addToCartFromThumnail"
-                                                data-producttype="{{ @$related_seller_product->product->product_type }}" data-seller={{ $related_seller_product->user_id }} data-product-sku={{ @$related_seller_product->skus->first()->id }} @if(@$related_seller_product->hasDeal)
-                                                data-base-price={{ selling_price(@$related_seller_product->skus->first()->sell_price, @$related_seller_product->hasDeal->discount_type, @$related_seller_product->hasDeal->discount) }} @else
-                                                    @if(@$related_seller_product->hasDiscount == 'yes') data-base-price={{ selling_price(@$related_seller_product->skus->first()->sell_price, @$related_seller_product->discount_type, @$related_seller_product->discount) }} @else
-                                                data-base-price={{ @$related_seller_product->skus->first()->sell_price }} @endif @endif
-                                                data-shipping-method=0 data-product-id={{ $related_seller_product->id }}
-                                                data-stock_manage="{{$related_seller_product->stock_manage}}"
-                                                data-stock="{{@$related_seller_product->skus->first()->product_stock}}"
-                                                data-min_qty="{{@$related_seller_product->product->minimum_order_qty}}"
-                                                data-prod_info="{{ json_encode($showData) }}"><svg width="16" height="16"
-                                                    viewBox="0 0 16 16" fill="none">
-                                                    <path
-                                                        d="M0.464844 1.14286C0.464844 0.78782 0.751726 0.5 1.10561 0.5H1.58256C2.39459 0.5 2.88079 1.04771 3.15883 1.55685C3.34414 1.89623 3.47821 2.28987 3.58307 2.64624C3.61147 2.64401 3.64024 2.64286 3.66934 2.64286H14.3464C15.0557 2.64286 15.5679 3.32379 15.3734 4.00811L13.8119 9.50163C13.5241 10.5142 12.6019 11.2124 11.5525 11.2124H6.47073C5.41263 11.2124 4.48508 10.5028 4.20505 9.47909L3.55532 7.10386L2.48004 3.4621L2.47829 3.45572C2.34527 2.96901 2.22042 2.51433 2.03491 2.1746C1.85475 1.84469 1.71115 1.78571 1.58256 1.78571H1.10561C0.751726 1.78571 0.464844 1.49789 0.464844 1.14286ZM4.79882 6.79169L5.44087 9.1388C5.56816 9.60414 5.98978 9.92669 6.47073 9.92669H11.5525C12.0295 9.92669 12.4487 9.60929 12.5795 9.14909L14.0634 3.92857H3.95529L4.78706 6.74583C4.79157 6.76109 4.79548 6.77634 4.79882 6.79169ZM7.72683 13.7857C7.72683 14.7325 6.96184 15.5 6.01812 15.5C5.07443 15.5 4.30942 14.7325 4.30942 13.7857C4.30942 12.8389 5.07443 12.0714 6.01812 12.0714C6.96184 12.0714 7.72683 12.8389 7.72683 13.7857ZM6.4453 13.7857C6.4453 13.5491 6.25405 13.3571 6.01812 13.3571C5.7822 13.3571 5.59095 13.5491 5.59095 13.7857C5.59095 14.0224 5.7822 14.2143 6.01812 14.2143C6.25405 14.2143 6.4453 14.0224 6.4453 13.7857ZM13.7073 13.7857C13.7073 14.7325 12.9423 15.5 11.9986 15.5C11.0549 15.5 10.2899 14.7325 10.2899 13.7857C10.2899 12.8389 11.0549 12.0714 11.9986 12.0714C12.9423 12.0714 13.7073 12.8389 13.7073 13.7857ZM12.4258 13.7857C12.4258 13.5491 12.2345 13.3571 11.9986 13.3571C11.7627 13.3571 11.5714 13.5491 11.5714 13.7857C11.5714 14.0224 11.7627 14.2143 11.9986 14.2143C12.2345 14.2143 12.4258 14.0224 12.4258 13.7857Z"
-                                                        fill="currentColor" />
-                                                </svg>
-                                                {{__('defaultTheme.add_to_cart')}}
-                                            </a>
-                                            <p>
-                                                @if (getProductwitoutDiscountPrice(@$related_seller_product) != single_price(0))
-                                                    <del>
-                                                        {{getProductwitoutDiscountPrice(@$related_seller_product)}}
-                                                    </del>
-                                                @endif
-                                                <strong>
-                                                    {{getProductDiscountedPrice(@$related_seller_product)}}
-                                                </strong>
-                                            </p>
-                                        </div>
+                                        @if(isModuleActive('MultiVendor'))
+                                            @php
+                                                $sellerUrl = $related_seller_product->seller->slug ? route('frontend.seller', $related_seller_product->seller->slug) : route('frontend.seller', base64_encode($related_seller_product->seller->id));
+                                                $sellerName = $related_seller_product->seller->role->type == 'seller' ? (@$related_seller_product->seller->SellerAccount->seller_shop_display_name ?: ($related_seller_product->seller->first_name . ' ' . $related_seller_product->seller->last_name)) : app('general_setting')->company_name;
+                                            @endphp
+                                            <p class="stock_text mb-1"><small>Warehouse: <a href="{{ $sellerUrl }}" style="font-weight:600;">{{ $sellerName }}</a></small></p>
+                                        @endif
+
+                                        @if(isGuestAddtoCart())
+                                            <div class="product_price d-flex align-items-center justify-content-between flex-wrap">
+                                                <a class="amaz_primary_btn add_cart add_to_cart addToCartFromThumnail"
+                                                    data-producttype="{{ @$related_seller_product->product->product_type }}" data-seller={{ $related_seller_product->user_id }} data-product-sku={{ @$related_seller_product->skus->first()->id }} @if(@$related_seller_product->hasDeal)
+                                                    data-base-price={{ selling_price(@$related_seller_product->skus->first()->sell_price, @$related_seller_product->hasDeal->discount_type, @$related_seller_product->hasDeal->discount) }} @else
+                                                        @if(@$related_seller_product->hasDiscount == 'yes') data-base-price={{ selling_price(@$related_seller_product->skus->first()->sell_price, @$related_seller_product->discount_type, @$related_seller_product->discount) }} @else
+                                                    data-base-price={{ @$related_seller_product->skus->first()->sell_price }} @endif @endif
+                                                    data-shipping-method=0 data-product-id={{ $related_seller_product->id }}
+                                                    data-stock_manage="{{$related_seller_product->stock_manage}}"
+                                                    data-stock="{{@$related_seller_product->skus->first()->product_stock}}"
+                                                    data-min_qty="{{@$related_seller_product->product->minimum_order_qty}}"
+                                                    data-prod_info="{{ json_encode($showData) }}"><svg width="16" height="16"
+                                                        viewBox="0 0 16 16" fill="none">
+                                                        <path
+                                                            d="M0.464844 1.14286C0.464844 0.78782 0.751726 0.5 1.10561 0.5H1.58256C2.39459 0.5 2.88079 1.04771 3.15883 1.55685C3.34414 1.89623 3.47821 2.28987 3.58307 2.64624C3.61147 2.64401 3.64024 2.64286 3.66934 2.64286H14.3464C15.0557 2.64286 15.5679 3.32379 15.3734 4.00811L13.8119 9.50163C13.5241 10.5142 12.6019 11.2124 11.5525 11.2124H6.47073C5.41263 11.2124 4.48508 10.5028 4.20505 9.47909L3.55532 7.10386L2.48004 3.4621L2.47829 3.45572C2.34527 2.96901 2.22042 2.51433 2.03491 2.1746C1.85475 1.84469 1.71115 1.78571 1.58256 1.78571H1.10561C0.751726 1.78571 0.464844 1.49789 0.464844 1.14286ZM4.79882 6.79169L5.44087 9.1388C5.56816 9.60414 5.98978 9.92669 6.47073 9.92669H11.5525C12.0295 9.92669 12.4487 9.60929 12.5795 9.14909L14.0634 3.92857H3.95529L4.78706 6.74583C4.79157 6.76109 4.79548 6.77634 4.79882 6.79169ZM7.72683 13.7857C7.72683 14.7325 6.96184 15.5 6.01812 15.5C5.07443 15.5 4.30942 14.7325 4.30942 13.7857C4.30942 12.8389 5.07443 12.0714 6.01812 12.0714C6.96184 12.0714 7.72683 12.8389 7.72683 13.7857ZM6.4453 13.7857C6.4453 13.5491 6.25405 13.3571 6.01812 13.3571C5.7822 13.3571 5.59095 13.5491 5.59095 13.7857C5.59095 14.0224 5.7822 14.2143 6.01812 14.2143C6.25405 14.2143 6.4453 14.0224 6.4453 13.7857ZM13.7073 13.7857C13.7073 14.7325 12.9423 15.5 11.9986 15.5C11.0549 15.5 10.2899 14.7325 10.2899 13.7857C10.2899 12.8389 11.0549 12.0714 11.9986 12.0714C12.9423 12.0714 13.7073 12.8389 13.7073 13.7857ZM12.4258 13.7857C12.4258 13.5491 12.2345 13.3571 11.9986 13.3571C11.7627 13.3571 11.5714 13.5491 11.5714 13.7857C11.5714 14.0224 11.7627 14.2143 11.9986 14.2143C12.2345 14.2143 12.4258 14.0224 12.4258 13.7857Z"
+                                                            fill="currentColor" />
+                                                    </svg>
+                                                    {{__('defaultTheme.add_to_cart')}}
+                                                </a>
+                                                <p>
+                                                    @if (getProductwitoutDiscountPrice(@$related_seller_product) != single_price(0))
+                                                        <del>
+                                                            {{getProductwitoutDiscountPrice(@$related_seller_product)}}
+                                                        </del>
+                                                    @endif
+                                                    <strong>
+                                                        {{getProductDiscountedPrice(@$related_seller_product)}}
+                                                    </strong>
+                                                </p>
+                                            </div>
+                                        @else
+                                            <div class="product_price d-flex align-items-center justify-content-between flex-wrap">
+                                                <a class="amaz_primary_btn add_cart w-100 " style="text-indent: 0;"
+                                                    href="{{ url('/login') }}">
+                                                    {{__('defaultTheme.login_to_order')}}
+                                                </a>
+                                            </div>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
@@ -1106,6 +1371,7 @@
     @endif
     <input type="hidden" id="isWholeSaleActive" value="{{isModuleActive('WholeSale')}}">
     <input type="hidden" id="isMultiVendorActive" value="{{isModuleActive('MultiVendor')}}">
+    @include(theme('components.product_report'), compact('reasons', 'product'))
 @endsection
 @push('scripts')
     <script src="{{ asset(asset_path('frontend/default/js/zoom.js')) }}"></script>
@@ -1114,11 +1380,11 @@
         (function ($) {
             "use strict";
             $(document).ready(function () {
-                if (window.matchMedia('(min-width: 500px)').matches && $(".zoom_01").length > 0) {
+
+                if ($(window).outerWidth() > 767) {
                     zoom_enable();
-                } else {
-                    $('.varintImg').removeClass('zoom_01');
                 }
+
                 function zoom_enable() {
                     $(".zoom_01").elevateZoom({
                         zoomEnabled: true,
@@ -1127,7 +1393,38 @@
                         zoomLevel: .9
                     });
                 }
-                if ($('#isWholeSaleActive').val() == 1 && $('#getWholesalePrice').val() != 0) {
+
+                @if(isModuleActive('CheckPincode'))
+                    $('#check_pincode_btn').click(function (e) {
+                        e.preventDefault();
+                        var pin_code = $('#check_pincode').val();
+                        var seller_id = $('#seller_id').val();
+
+                        $('#pre-loader').show();
+                        var data = { pin_code: pin_code, seller_id: seller_id, _token: '{{csrf_token()}}' };
+                        $.post("{{route('checkpincode.pin.code.availablity')}}", data, function (response) {
+                            if (response.data != null) {
+                                $('.not_serve').addClass('d-none');
+                                $('.availablity_show_div').removeClass('d-none');
+                                $('#pin_code_area').text(response.data.city + ", " + response.data.state);
+                                $('#pin_code_delivery').text(response.data.delivery_days + " days");
+                                if (response.pinConfig.delivery_days_status == 1) {
+                                    $('.pdelivery').removeClass('d-none');
+                                }
+                                else {
+                                    $('.pdelivery').addClass('d-none');
+                                }
+                            } else {
+                                $('.availablity_show_div').addClass('d-none');
+                                $('.not_serve').removeClass('d-none');
+                            }
+                            $('#pre-loader').hide();
+                        });
+
+                    });
+                @endif
+
+                    if ($('#isWholeSaleActive').val() == 1 && $('#getWholesalePrice').val() != 0) {
                     var getWholesalePrice = JSON.parse($('#getWholesalePrice').val());
                     if (getWholesalePrice) {
                         appendWholeSaleP();
@@ -1151,6 +1448,11 @@
                     let page = $(this).attr('href').split('page=')[1];
                     fetch_data(page);
                 });
+
+                $(document).on('click', '.report-product', function () {
+                    $("#report_modal").modal('show');
+                });
+
                 function fetch_data(page) {
                     $('#pre-loader').show();
                     var url = "{{route('frontend.product.reviews.get-data')}}" + '?product_id=' + "{{$product->id}}" + '&page=' + page;
@@ -1189,27 +1491,21 @@
                     }
                     $(this).addClass('selected_btn');
                     get_price_accordint_to_sku();
+
                 });
 
-                // $(document).on('click', '.var_img_sources', function(event){
-                //     var logo = $(this).attr("src");
-                //     var color_id = $(this).data("id");
-                //     var attr_id = $( '.attr_val_name' ).data("value-key");
-                //     $(".sku_img_div").removeClass('active');
-                //     $("#"+color_id).addClass('active');
-                //     $('.varintImg').attr("src", logo);
-                //     $('.varintImg').data("zoom-image", logo);
-                //     $('.varintImg').addClass('zoom_01');
-                //     zoom_enable();
-                // });
 
                 $(document).on('click', '.item-slick', function (event) {
                     var logo = $(this).children().attr("src");
                     $('.varintImg').attr("src", logo);
                     $('.varintImg').data("zoom-image", logo);
                     $('.varintImg').addClass('zoom_01');
-                    zoom_enable();
+                    if ($(window).outerWidth() > 767) {
+                        zoom_enable();
+                    }
                 });
+
+
                 $(document).on('click', '.add_to_cart_btn', function (event) {
                     event.preventDefault();
                     var showData = {
@@ -1218,8 +1514,7 @@
                         'price': currency_format($('#final_price').val()),
                         'thumbnail': $('#thumb_image').val()
                     };
-
-                    addToCart($('#product_sku_id').val(), $('#seller_id').val(), $('#qty').data('value'), $('#base_sku_price').val().trim(), 0, 'product', showData, 'auction');
+                    addToCart($('#product_sku_id').val(), $('#seller_id').val(), $('#qty').data('value'), $('#base_sku_price').val().trim(), $('#shipping_type').val(), 'product', showData);
                 });
                 $(document).on('click', '#both_buy_btn', function (event) {
                     event.preventDefault();
@@ -1253,6 +1548,150 @@
                     event.preventDefault();
                     let value = $(this).data('value');
                     qtyChange(value);
+                });
+
+                $(document).on('keyup', '#qty', function (event) {
+                    event.preventDefault();
+                    let qty = $(this).val();
+                    let available_stock = $('#availability').html();
+                    let stock_manage_status = $('#stock_manage_status').val();
+                    let maximum_order_qty = $('#maximum_order_qty').val();
+                    let minimum_order_qty = $('#minimum_order_qty').val();
+                    if (stock_manage_status != 0) {
+                        if (parseInt(qty) < parseInt(available_stock)) {
+                            if (maximum_order_qty != '' && maximum_order_qty != '') {
+                                if (parseInt(qty) >= 1) {
+                                    if (parseInt(qty) > parseInt(maximum_order_qty) && parseInt(qty) > parseInt(minimum_order_qty)) {
+                                        toastr.warning('{{__("defaultTheme.maximum_quantity_limit_is")}}' + maximum_order_qty + '.', '{{__("common.warning")}}');
+                                    } else if (parseInt(qty) < parseInt(maximum_order_qty) && parseInt(qty) < parseInt(minimum_order_qty)) {
+                                        toastr.warning('{{__("defaultTheme.minimum_quantity_Limit_is")}}' + minimum_order_qty + '.', '{{__("common.warning")}}');
+                                    } else {
+                                        let qty1 = parseInt(qty)
+                                        $('#qty').val(numbertrans(qty1));
+                                        $('#qty').data('value', qty1);
+                                        totalValue(qty1, '#base_price', '#total_price', getWholesalePrice);
+                                    }
+                                } else {
+                                    if (parseInt(qty) == 0) {
+                                        toastr.warning('{{__("defaultTheme.minimum_quantity_Limit_is")}}' + minimum_order_qty + '.', '{{__("common.warning")}}');
+                                    }
+                                    return false;
+                                }
+                            }
+                            else if (maximum_order_qty != '') {
+                                if (parseInt(qty) >= 1) {
+                                    if (parseInt(qty) <= parseInt(maximum_order_qty)) {
+                                        let qty1 = parseInt(qty);
+                                        $('#qty').val(numbertrans(qty1));
+                                        $('#qty').data('value', qty1);
+                                        totalValue(qty1, '#base_price', '#total_price', getWholesalePrice);
+                                    } else {
+                                        toastr.warning('{{__("defaultTheme.maximum_quantity_limit_is")}}' + maximum_order_qty + '.', '{{__("common.warning")}}');
+                                    }
+                                } else {
+                                    if (parseInt(qty) == 0) {
+                                        toastr.warning('{{__("defaultTheme.minimum_quantity_Limit_is")}}' + minimum_order_qty + '.', '{{__("common.warning")}}');
+                                    }
+                                    return false;
+                                }
+                            } else if (maximum_order_qty != '') {
+                                if (parseInt(qty) > parseInt(minimum_order_qty)) {
+                                    if (parseInt(qty) >= 1) {
+                                        let qty1 = parseInt(qty)
+                                        $('#qty').val(numbertrans(qty1));
+                                        $('#qty').data('value', qty1);
+                                        totalValue(qty1, '#base_price', '#total_price', getWholesalePrice)
+                                    } else {
+                                        if (parseInt(qty) == 0) {
+                                            toastr.warning('{{__("defaultTheme.minimum_quantity_Limit_is")}}' + minimum_order_qty + '.', '{{__("common.warning")}}');
+                                        }
+                                        return false;
+                                    }
+                                } else {
+                                    toastr.warning('{{__("defaultTheme.minimum_quantity_Limit_is")}}' + minimum_order_qty + '.', '{{__("common.warning")}}')
+                                }
+                            } else {
+                                if (parseInt(qty) >= 1) {
+                                    let qty1 = parseInt(qty);
+                                    $('#qty').val(numbertrans(qty1));
+                                    $('#qty').data('value', qty1);
+                                    totalValue(qty1, '#base_price', '#total_price', getWholesalePrice);
+                                } else {
+                                    if (parseInt(qty) == 0) {
+                                        toastr.warning('{{__("defaultTheme.minimum_quantity_Limit_is")}}' + minimum_order_qty + '.', '{{__("common.warning")}}');
+                                    }
+                                    return false;
+                                }
+                            }
+                        } else {
+                            if (parseInt(qty) >= 0) {
+                                toastr.error("{{__('defaultTheme.no_more_stock')}}", "{{__('common.error')}}");
+                            }
+                            return false;
+                        }
+                    } else {
+                        if (maximum_order_qty != '' && minimum_order_qty != '') {
+                            if (parseInt(qty) >= 1) {
+                                if (parseInt(qty) >= parseInt(maximum_order_qty) && parseInt(qty) >= parseInt(minimum_order_qty)) {
+                                    toastr.warning('{{__("defaultTheme.maximum_quantity_limit_is")}}' + maximum_order_qty + '.', '{{__("common.warning")}}')
+                                } else if (parseInt(qty) < parseInt(maximum_order_qty) && parseInt(qty) < parseInt(minimum_order_qty)) {
+                                    toastr.warning('{{__("defaultTheme.minimum_quantity_Limit_is")}}' + minimum_order_qty + '.', '{{__("common.warning")}}')
+                                } else {
+                                    let qty1 = parseInt(qty);
+                                    $('#qty').val(numbertrans(qty1));
+                                    $('#qty').data('value', qty1);
+                                    totalValue(qty1, '#base_price', '#total_price', getWholesalePrice);
+                                }
+                            } else {
+                                if (parseInt(qty) == 0) {
+                                    toastr.warning('{{__("defaultTheme.minimum_quantity_Limit_is")}}' + minimum_order_qty + '.', '{{__("common.warning")}}');
+                                }
+                                return false;
+                            }
+
+                        } else if (maximum_order_qty != '') {
+                            if (parseInt(qty) >= 1) {
+                                if (parseInt(qty) <= parseInt(maximum_order_qty)) {
+                                    let qty1 = parseInt(qty);
+                                    $('#qty').val(numbertrans(qty1));
+                                    $('#qty').data('value', qty1);
+                                    totalValue(qty1, '#base_price', '#total_price', getWholesalePrice);
+                                } else {
+                                    toastr.warning('{{__("defaultTheme.maximum_quantity_limit_is")}}' + maximum_order_qty + '.', '{{__("common.warning")}}')
+                                }
+                            } else {
+                                if (parseInt(qty) == 0) {
+                                    toastr.warning('{{__("defaultTheme.minimum_quantity_Limit_is")}}' + minimum_order_qty + '.', '{{__("common.warning")}}');
+                                }
+                                return false;
+                            }
+                        } else if (minimum_order_qty != '') {
+                            if (parseInt(qty) >= 1) {
+                                if (parseInt(qty) >= parseInt(minimum_order_qty)) {
+                                    let qty1 = parseInt(qty)
+                                    $('#qty').val(numbertrans(qty1));
+                                    $('#qty').data('value', qty1);
+                                    totalValue(qty1, '#base_price', '#total_price', getWholesalePrice)
+                                } else {
+                                    toastr.warning('{{__("defaultTheme.minimum_quantity_Limit_is")}}' + minimum_order_qty + '.', '{{__("common.warning")}}');
+                                }
+                            } else {
+                                if (parseInt(qty) == 0) {
+                                    toastr.warning('{{__("defaultTheme.minimum_quantity_Limit_is")}}' + minimum_order_qty + '.', '{{__("common.warning")}}');
+                                }
+                                return false;
+                            }
+                        } else {
+                            if (parseInt(qty) >= 1) {
+                                let qty1 = parseInt(qty);
+                                $('#qty').val(numbertrans(qty1));
+                                $('#qty').data('value', qty1);
+                                totalValue(qty1, '#base_price', '#total_price', getWholesalePrice);
+                            } else {
+                                toastr.warning('{{__("defaultTheme.minimum_quantity_Limit_is")}}' + minimum_order_qty + '.', '{{__("common.warning")}}');
+                            }
+                        }
+                    }
                 });
                 function qtyChange(val) {
                     $('.cart-qty-minus').prop('disabled', false);
@@ -1364,27 +1803,36 @@
                 }
                 function totalValue(qty, main_price, total_price, getWholesalePrice) {
                     if ($('#isWholeSaleActive').val() == 1 && getWholesalePrice != null) {
-                        var max_qty = '', min_qty = '', selling_price = '';
+                        var max_qty = '', min_qty = '', selling_price = '', main_price_vat = 0;
                         for (let i = 0; i < getWholesalePrice.length; ++i) {
                             max_qty = getWholesalePrice[i].max_qty;
                             min_qty = getWholesalePrice[i].min_qty;
-                            selling_price = getWholesalePrice[i].selling_price;
+                            selling_price = getWholesalePrice[i].sell_price;
                             if ((min_qty <= qty) && (max_qty >= qty)) {
-                                main_price = selling_price;
-                            }
-                            else if (max_qty < qty) {
-                                main_price = selling_price;
+                                main_price_vat = selling_price;
+                                let discount = $('#discount').val();
+                                let discount_type = $('#discount_type').val();
+                                if (discount_type == 0) {
+                                    discount = (main_price_vat * discount) / 100;
+                                }
+                                main_price_vat = (main_price_vat - discount);
+                                break;
                             }
                             else if (main_price == '#base_price') {
-                                var main_price = $('#base_sku_price').val().trim();
+                                main_price_vat = $('#base_sku_price').val().trim();
                             }
                         }
-                        let discount = $('#discount').val();
-                        let discount_type = $('#discount_type').val();
-                        if (discount_type == 0) {
-                            discount = (main_price * discount) / 100;
+                        if (main_price != '#base_price') {
+                            let discount = $('#discount').val();
+                            let discount_type = $('#discount_type').val();
+                            if (discount_type == 0) {
+                                discount = (main_price_vat * discount) / 100;
+                            }
+                            var base_sku_price = (main_price_vat - discount);
+                        } else {
+                            var base_sku_price = main_price_vat;
                         }
-                        var base_sku_price = (main_price - discount);
+
                     } else {
                         var base_sku_price = $('#base_sku_price').val().trim();
                     }
@@ -1446,7 +1894,12 @@
                                 $('.varintImg').attr("src", image_path);
                                 $('.varintImg').data("zoom-image", image_path);
                                 $('.varintImg').addClass('zoom_01');
-                                zoom_enable();
+                                if ($(window).outerWidth() > 767) {
+                                    zoom_enable();
+                                }
+                                @if(!empty($public_code))
+                                    changeTabbyAmount();
+                                @endif
                             }
                             $(response.data.product.variantDetails).each(function (key, index) {
                                 if (response.data.product.variantDetails.length > 1) {
@@ -1458,6 +1911,9 @@
                                             $('#size_name' + key).text(index.name + ': ' + color[key + 1]);
                                         }
                                     });
+                                    @if(!empty($public_code))
+                                        changeTabbyAmount();
+                                    @endif
                                 } else {
                                     if (index.attr_id == 1) {
                                         $('#color_name').text(index.name + ': ' + color[1]);
@@ -1475,17 +1931,45 @@
                                 $('#availability').html(response.data.product_stock);
                             }
                             if (response.data.product.stock_manage == 1 && parseInt(response.data.product_stock) >= parseInt(response.data.product.product.minimum_order_qty) || response.data.product.stock_manage == 0) {
-                                $('#add_to_cart_div').html(`
-                                            <div class="col-md-6">
-                                                <button type="button" id="add_to_cart_btn" class="amaz_primary_btn style2 mb_20  add_to_cart text-uppercase add_to_cart_btn flex-fill text-center w-100">{{__('defaultTheme.add_to_cart')}}</button>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <button type="button" id="butItNow" class="amaz_primary_btn3 mb_20  w-100 text-center justify-content-center text-uppercase buy_now_btn" data-id="{{$product->id}}" data-type="product">{{__('common.buy_now')}}</button>
-                                            </div>
-                                        `);
+                                @if(isGuestAddtoCart())
+                                    $('#add_to_cart_div').html(`
+                                                    <div class="col-md-6">
+                                                        <button type="button" id="add_to_cart_btn" class="amaz_primary_btn style2 mb_20  add_to_cart text-uppercase add_to_cart_btn flex-fill text-center w-100">{{__('defaultTheme.add_to_cart')}}</button>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <button type="button" id="butItNow" class="amaz_primary_btn3 mb_20  w-100 text-center justify-content-center text-uppercase buy_now_btn" data-id="{{$product->id}}" data-type="product">{{__('common.buy_now')}}</button>
+                                                    </div>
+                                                `);
+                                @else
+                                    $('#add_to_cart_div').html(`
+                                                <div class="col-md-12">
+                                                                <a href="{{ url('/login') }}" class="amaz_primary_btn w-100">
+                                                                    {{__('defaultTheme.login_to_order')}}
+                                                                </a>
+                                                            </div>
+                                                `);
+                                @endif
                                 $('#stock_div').html(`<span class="stoke_badge">{{__('common.in_stock')}}</span>`);
                                 if ($('#isMultiVendorActive').val() == 1) {
                                     $('#cart_footer_mobile').html(`
+                                            <a href="
+                                                @if ($product->seller->slug)
+                                                    {{route('frontend.seller', $product->seller->slug)}}
+                                                @else
+                                                    {{route('frontend.seller', base64_encode($product->seller->id))}}
+                                                @endif
+                                            " class="d-flex flex-column justify-content-center product_details_icon">
+                                                <i class="ti-save"></i>
+                                                <span>{{__('common.store')}}</span>
+                                            </a>
+                                            <button type="button" class="product_details_button style1 buy_now_btn" data-id="{{$product->id}}" data-type="product">
+                                                <span>{{__('common.buy_now')}}</span>
+                                            </button>
+                                            <button class="product_details_button add_to_cart_btn" type="button">{{__('common.add_to_cart')}}</button>
+                                        `);
+                                } else {
+                                    if ($('#isMultiVendorActive').val() == 1) {
+                                        $('#cart_footer_mobile').html(`
                                                 <a href="
                                                     @if ($product->seller->slug)
                                                         {{route('frontend.seller', $product->seller->slug)}}
@@ -1501,48 +1985,40 @@
                                                 </button>
                                                 <button class="product_details_button add_to_cart_btn" type="button">{{__('common.add_to_cart')}}</button>
                                             `);
-                                } else {
-                                    if ($('#isMultiVendorActive').val() == 1) {
-                                        $('#cart_footer_mobile').html(`
-                                                    <a href="
-                                                        @if ($product->seller->slug)
-                                                            {{route('frontend.seller', $product->seller->slug)}}
-                                                        @else
-                                                            {{route('frontend.seller', base64_encode($product->seller->id))}}
-                                                        @endif
-                                                    " class="d-flex flex-column justify-content-center product_details_icon">
-                                                        <i class="ti-save"></i>
-                                                        <span>{{__('common.store')}}</span>
-                                                    </a>
-                                                    <button type="button" class="product_details_button style1 buy_now_btn" data-id="{{$product->id}}" data-type="product">
-                                                        <span>{{__('common.buy_now')}}</span>
-                                                    </button>
-                                                    <button class="product_details_button add_to_cart_btn" type="button">{{__('common.add_to_cart')}}</button>
-                                                `);
                                     } else {
                                         $('#cart_footer_mobile').html(`
-                                                    <button type="button" class="product_details_button style1 buy_now_btn" data-id="{{$product->id}}" data-type="product">
-                                                        <span>{{__('common.buy_now')}}</span>
-                                                    </button>
-                                                    <button class="product_details_button add_to_cart_btn" type="button">{{__('common.add_to_cart')}}</button>
-                                                `);
+                                                <button type="button" class="product_details_button style1 buy_now_btn" data-id="{{$product->id}}" data-type="product">
+                                                    <span>{{__('common.buy_now')}}</span>
+                                                </button>
+                                                <button class="product_details_button add_to_cart_btn" type="button">{{__('common.add_to_cart')}}</button>
+                                            `);
                                     }
                                 }
                             }
                             else {
-                                $('#add_to_cart_div').html(`
-                                            <div class="col-md-6">
-                                                <button type="button" disabled class="amaz_primary_btn style2 mb_20 add_to_cart text-uppercase flex-fill text-center w-100">{{__('defaultTheme.out_of_stock')}}</button>
-                                            </div>
-                                        `);
+                                @if(isGuestAddtoCart())
+                                    $('#add_to_cart_div').html(`
+                                                    <div class="col-md-6">
+                                                        <button type="button" disabled class="amaz_primary_btn style2 mb_20 add_to_cart text-uppercase flex-fill text-center w-100">{{__('defaultTheme.out_of_stock')}}</button>
+                                                    </div>
+                                                `);
+                                @else
+                                    $('#add_to_cart_div').html(`
+                                                    <div class="col-md-12">
+                                                                    <a href="{{ url('/login') }}" class="amaz_primary_btn w-100">
+                                                                    {{__('defaultTheme.login_to_order')}}
+                                                                </a>
+                                                            </div>
+                                                `);
+                                @endif
                                 $('#stock_div').html(`<span class="stokeout_badge">{{__('defaultTheme.out_of_stock')}}</span>`);
-                                toastr.warning("{{__('defaultTheme.out_of_stock')}}");
+
                                 $('#cart_footer_mobile').html(`
-                                            <button type="button" class="product_details_button style1" disabled>
-                                                <span>{{__('defaultTheme.out_of_stock')}}</span>
-                                            </button>
-                                            <button type="button" class="product_details_button" disabled>{{__('defaultTheme.out_of_stock')}}</button>
-                                        `);
+                                        <button type="button" class="product_details_button style1" disabled>
+                                            <span>{{__('defaultTheme.out_of_stock')}}</span>
+                                        </button>
+                                        <button type="button" class="product_details_button" disabled>{{__('defaultTheme.out_of_stock')}}</button>
+                                    `);
                             }
                         } else {
                             toastr.error("{{__('defaultTheme.no_stock_found_for_this_seller')}}", "{{__('common.error')}}");
@@ -1570,7 +2046,10 @@
                                 main_price = selling_price;
                             }
                         }
-                    }
+                        @if(!empty($public_code))
+                            changeTabbyAmount();
+                        @endif
+                        }
                     if (discount_type == 0) {
                         discount = (main_price * discount) / 100;
                     }
@@ -1580,11 +2059,40 @@
                     $('#base_sku_price').val(total_price);
                     $('#final_price').val(total_price);
                 }
+                // function appendWholeSaleP(){
+                //     $('#append_w_s_p_all').empty();
+                //     $.each(getWholesalePrice, function(index, value) {
+                //         $('#append_w_s_p_all').append(`
+                //         <tr class="border-bottom">
+                //             <td class="text-left">
+                //                 <span>${numbertrans(value.min_qty)}</span>
+                //             </td>
+                //             <td class="text-left">
+                //                 <span>${numbertrans(value.max_qty)}</span>
+                //             </td>
+                //             <td class="text-left">
+                //                 <span>${currency_format(value.selling_price)}</span>
+                //             </td>
+                //         </tr>
+                //     `);
+                //     });
+                // }
+
+
+
+
                 function appendWholeSaleP() {
                     $('#append_w_s_p_all').empty();
+
+                    // Store original price in a data attribute (only once)
+                    if (!$('.pro_details_prise span').data('original-price')) {
+                        var originalPrice = $('.pro_details_prise span').text().trim();
+                        $('.pro_details_prise span').data('original-price', originalPrice);
+                    }
+
                     $.each(getWholesalePrice, function (index, value) {
                         $('#append_w_s_p_all').append(`
-                                <tr class="border-bottom">
+                                <tr class="border-bottom wholesale-price-row" data-price="${value.selling_price}">
                                     <td class="text-left">
                                         <span>${numbertrans(value.min_qty)}</span>
                                     </td>
@@ -1597,7 +2105,194 @@
                                 </tr>
                             `);
                     });
+
+                    $(document).on('click', '.wholesale-price-row', function () {
+                        var selectedPrice = $(this).data('price');
+
+                        // Update displayed price
+                        $('.pro_details_prise span').text(currency_format(selectedPrice));
+
+                        // Store the new price for calculations
+                        $('.pro_details_prise span').data('current-price', selectedPrice);
+
+                        // Update the base price input
+                        $('#base_sku_price').val(selectedPrice);
+
+                        // Recalculate total
+                        let qty = $('.qty').data('value');
+                        totalValue(qty, '#base_price', '#total_price', getWholesalePrice);
+
+                        // Update active state
+                        $('.wholesale-price-row').removeClass('active');
+                        $(this).addClass('active');
+
+                        // Update MRP display
+                        updateMRPDisplay();
+                    });
+
+                    if (getWholesalePrice.length > 0) {
+                        var firstPrice = getWholesalePrice[0].selling_price;
+                        $('.pro_details_prise span').text(currency_format(firstPrice));
+                        $('.pro_details_prise span').data('current-price', firstPrice);
+                        $('#base_sku_price').val(firstPrice);
+                        $('.wholesale-price-row').first().addClass('active');
+
+                        // Initialize MRP display
+                        updateMRPDisplay();
+
+                        // Recalculate with first wholesale price
+                        let qty = $('.qty').data('value');
+                        totalValue(qty, '#base_price', '#total_price', getWholesalePrice);
+                    }
                 }
+
+                // Function to update MRP display above tag
+                function updateMRPDisplay() {
+                    var currentPrice = parseFloat($('#base_sku_price').val());
+                    var originalPrice = $('.pro_details_prise span').data('original-price');
+
+                    // If we have original price, show it in MRP
+                    if (originalPrice) {
+                        // Parse original price to get numeric value
+                        var originalPriceNumeric = parseFloat(originalPrice.replace(/[^0-9.-]+/g, ""));
+
+                        // Update the discount price element (MRP)
+                        $('.discount_prise span').text(currency_format(originalPriceNumeric));
+
+                        // Show discount percentage if applicable
+                        if (currentPrice < originalPriceNumeric) {
+                            var discountPercent = Math.round(((originalPriceNumeric - currentPrice) / originalPriceNumeric) * 100);
+                            $('.diccount_percents').text('-' + discountPercent + '%').show();
+                        }
+                    }
+                }
+
+
+
+
+
+
+
+
+
+
+
+
+
+                // Update the totalValue function to use wholesale price correctly
+                function totalValue(qty, main_price, total_price, getWholesalePrice) {
+                    var base_sku_price = 0;
+
+                    if ($('#isWholeSaleActive').val() == 1 && getWholesalePrice != null) {
+                        var max_qty = '', min_qty = '', selling_price = '';
+                        var foundPrice = false;
+
+                        for (let i = 0; i < getWholesalePrice.length; ++i) {
+                            max_qty = getWholesalePrice[i].max_qty;
+                            min_qty = getWholesalePrice[i].min_qty;
+                            selling_price = getWholesalePrice[i].selling_price;
+
+                            if ((min_qty <= qty) && (max_qty >= qty)) {
+                                base_sku_price = selling_price;
+                                foundPrice = true;
+                                break;
+                            }
+                        }
+
+                        // If no matching wholesale price found, use the currently selected price
+                        if (!foundPrice) {
+                            base_sku_price = parseFloat($('#base_sku_price').val());
+                        }
+
+                        // Update the price display with wholesale price
+                        $('.pro_details_prise span').text(currency_format(base_sku_price));
+                        $('.pro_details_prise span').data('current-price', base_sku_price);
+                        $('#base_sku_price').val(base_sku_price);
+
+                    } else {
+                        base_sku_price = parseFloat($('#base_sku_price').val());
+                    }
+
+                    // Calculate final total
+                    let value = parseInt(qty) * parseFloat(base_sku_price);
+                    $(total_price).html(currency_format(value));
+                    both_buy_price(base_sku_price);
+                    $('#final_price').val(value);
+
+                    // Update MRP display
+                    updateMRPDisplay();
+
+                    // Update Tabby amount if exists
+                    if (typeof changeTabbyAmount === 'function') {
+                        changeTabbyAmount();
+                    }
+                }
+
+                // Also update the calculatePrice function similarly
+                function calculatePrice(main_price, discount, discount_type, qty) {
+                    var base_price = parseFloat(main_price);
+
+                    // Apply discount if any
+                    if (discount_type == 0) {
+                        discount = (base_price * discount) / 100;
+                    }
+                    var discounted_price = (base_price - discount);
+
+                    // Check for wholesale price
+                    if ($('#isWholeSaleActive').val() == 1 && getWholesalePrice != null) {
+                        var max_qty = '', min_qty = '', selling_price = '';
+                        var foundWholesalePrice = false;
+
+                        for (let i = 0; i < getWholesalePrice.length; ++i) {
+                            max_qty = getWholesalePrice[i].max_qty;
+                            min_qty = getWholesalePrice[i].min_qty;
+                            selling_price = getWholesalePrice[i].selling_price;
+
+                            if ((min_qty <= qty) && (max_qty >= qty)) {
+                                base_price = selling_price;
+                                foundWholesalePrice = true;
+                                break;
+                            }
+                        }
+
+                        // Apply discount to wholesale price if needed
+                        if (foundWholesalePrice) {
+                            if (discount_type == 0) {
+                                discount = (base_price * discount) / 100;
+                            }
+                            discounted_price = (base_price - discount);
+                        }
+                    }
+
+                    // Update price displays
+                    $('#total_price').text(currency_format((discounted_price * qty)));
+                    $('.pro_details_prise span').text(currency_format(discounted_price));
+                    $('.pro_details_prise span').data('current-price', discounted_price);
+                    $('#base_sku_price').val(discounted_price);
+                    $('#final_price').val(discounted_price);
+
+                    // Update MRP display
+                    updateMRPDisplay();
+
+                    // Update both buy price
+                    both_buy_price(discounted_price);
+
+                    // Update Tabby amount if exists
+                    if (typeof changeTabbyAmount === 'function') {
+                        changeTabbyAmount();
+                    }
+                }
+
+
+
+                // Function to reset to original price if needed
+                function resetToOriginalPrice() {
+                    var originalPrice = $('.pro_details_prise span').data('original-price');
+                    if (originalPrice) {
+                        $('.pro_details_prise span').text(originalPrice);
+                    }
+                }
+
                 $(document).on('change', '#select_city', function (event) {
                     let id = $(this).val();
                     let data = {
@@ -1634,26 +2329,26 @@
                         if (response.shipping != null) {
                             if (response.shipping.cost == 0) {
                                 $('#door_delivery').text(`
-                                            ${trans('amazy.free_shipping_note')} ${response.shipping.shipment_time}.
-                                        `);
+                                        ${trans('amazy.free_shipping_note')} ${response.shipping.shipment_time}.
+                                    `);
                             } else {
                                 $('#door_delivery').text(`
-                                            ${trans('amazy.shipping_note')} ${currency_format(response.shipping.cost)}. ${trans('amazy.Delivery within')} ${response.shipping.shipment_time}.
-                                        `);
+                                        ${trans('amazy.shipping_note')} ${currency_format(response.shipping.cost)}. ${trans('amazy.Delivery within')} ${response.shipping.shipment_time}.
+                                    `);
                             }
                         }
                         if (response.pickup_location != null) {
                             $('#pickup_location').text(`
-                                        {{__('shipping.delivery_from_pickup_location_always_free_of_cost')}} {{__('common.pickup_address')}}: ${response.pickup_location.address}.
-                                        {{__('common.country')}}: ${response.pickup_location.country.name} {{__('common.state')}}: ${response.pickup_location.state.name} {{__('common.city')}}: ${response.pickup_location.city.name} {{__('common.postcode')}}: ${response.pickup_location.pin_code}
-                                    `);
+                                    {{__('shipping.delivery_from_pickup_location_always_free_of_cost')}} {{__('common.pickup_address')}}: ${response.pickup_location.address}.
+                                    {{__('common.country')}}: ${response.pickup_location.country.name} {{__('common.state')}}: ${response.pickup_location.state.name} {{__('common.city')}}: ${response.pickup_location.city.name} {{__('common.postcode')}}: ${response.pickup_location.pin_code}
+                                `);
                         }
                         $('#pre-loader').hide();
                     });
                 }
                 $(document).on("click", ".buy_now_btn", function (event) {
                     event.preventDefault();
-                    buyNow($('#product_sku_id').val(), $('#seller_id').val(), $('#qty').data('value'), $('#base_sku_price').val().trim(), $('#shipping_type').val(), 'product', $('#owner').val(), null, 'auction');
+                    buyNow($('#product_sku_id').val(), $('#seller_id').val(), $('#qty').data('value'), $('#base_sku_price').val().trim(), $('#shipping_type').val(), 'product', $('#owner').val());
                 });
                 $(document).on("click", "#follow_seller_btn", function (event) {
                     event.preventDefault();
@@ -1689,10 +2384,32 @@
                         selector.append("<img src='" + src + "' data-caption='" + caption + "'>");
                     });
                 });
+
+                $(document).on('click', '.filter-review', function () {
+                    let product_id = "{{ $product->id }}";
+                    let star = $(this).attr('data-review');
+                    let data = {
+                        product_id: product_id,
+                        rating: star,
+                    }
+                    $.ajax({
+                        url: "{{ route('filterReview') }}",
+                        method: "get",
+                        data: data,
+                    }).done(function (response) {
+
+                        if (response.status == 1) {
+                            $("#all-reviews").html(response.html);
+                            $("#review-pager").remove();
+                        }
+                    });
+                });
             });
         })(jQuery);
     </script>
     <script>
+
+
         function zoom_enable_for_variant() {
             $(".zoom_01").elevateZoom({
                 zoomEnabled: true,
@@ -1803,7 +2520,11 @@
                         $('.varintImg').attr("src", image_path);
                         $('.varintImg').data("zoom-image", image_path);
                         $('.varintImg').addClass('zoom_01');
-                        zoom_enable_for_variant();
+
+                        if ($(window).outerWidth() > 767) {
+                            zoom_enable_for_variant();
+                        }
+
                     }
 
                     var globalSelector = 0;
@@ -1861,17 +2582,45 @@
                         $('#availability').html(response.data.product_stock);
                     }
                     if (response.data.product.stock_manage == 1 && parseInt(response.data.product_stock) >= parseInt(response.data.product.product.minimum_order_qty) || response.data.product.stock_manage == 0) {
-                        $('#add_to_cart_div').html(`
-                                            <div class="col-md-6">
-                                                <button type="button" id="add_to_cart_btn" class="amaz_primary_btn style2 mb_20  add_to_cart text-uppercase add_to_cart_btn flex-fill text-center w-100">{{__('defaultTheme.add_to_cart')}}</button>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <button type="button" id="butItNow" class="amaz_primary_btn3 mb_20  w-100 text-center justify-content-center text-uppercase buy_now_btn" data-id="{{$product->id}}" data-type="product">{{__('common.buy_now')}}</button>
-                                            </div>
-                                        `);
+                        @if(isGuestAddtoCart())
+                            $('#add_to_cart_div').html(`
+                                                    <div class="col-md-6">
+                                                        <button type="button" id="add_to_cart_btn" class="amaz_primary_btn style2 mb_20  add_to_cart text-uppercase add_to_cart_btn flex-fill text-center w-100">{{__('defaultTheme.add_to_cart')}}</button>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <button type="button" id="butItNow" class="amaz_primary_btn3 mb_20  w-100 text-center justify-content-center text-uppercase buy_now_btn" data-id="{{$product->id}}" data-type="product">{{__('common.buy_now')}}</button>
+                                                    </div>
+                                                `);
+                        @else
+                            $("#add_to_cart_div").html(`<div class="col-md-12">
+                                                        <a href="{{ url('/login') }}" class="amaz_primary_btn w-100">
+                                                        {{__('defaultTheme.login_to_order')}}
+                                                    </a>
+                                                </div>`);
+                        @endif
+
+
                         $('#stock_div').html(`<span class="stoke_badge">{{__('common.in_stock')}}</span>`);
                         if ($('#isMultiVendorActive').val() == 1) {
                             $('#cart_footer_mobile').html(`
+                                            <a href="
+                                                @if ($product->seller->slug)
+                                                    {{route('frontend.seller', $product->seller->slug)}}
+                                                @else
+                                                    {{route('frontend.seller', base64_encode($product->seller->id))}}
+                                                @endif
+                                            " class="d-flex flex-column justify-content-center product_details_icon">
+                                                <i class="ti-save"></i>
+                                                <span>{{__('common.store')}}</span>
+                                            </a>
+                                            <button type="button" class="product_details_button style1 buy_now_btn" data-id="{{$product->id}}" data-type="product">
+                                                <span>{{__('common.buy_now')}}</span>
+                                            </button>
+                                            <button class="product_details_button add_to_cart_btn" type="button">{{__('common.add_to_cart')}}</button>
+                                        `);
+                        } else {
+                            if ($('#isMultiVendorActive').val() == 1) {
+                                $('#cart_footer_mobile').html(`
                                                 <a href="
                                                     @if ($product->seller->slug)
                                                         {{route('frontend.seller', $product->seller->slug)}}
@@ -1887,48 +2636,41 @@
                                                 </button>
                                                 <button class="product_details_button add_to_cart_btn" type="button">{{__('common.add_to_cart')}}</button>
                                             `);
-                        } else {
-                            if ($('#isMultiVendorActive').val() == 1) {
-                                $('#cart_footer_mobile').html(`
-                                                    <a href="
-                                                        @if ($product->seller->slug)
-                                                            {{route('frontend.seller', $product->seller->slug)}}
-                                                        @else
-                                                            {{route('frontend.seller', base64_encode($product->seller->id))}}
-                                                        @endif
-                                                    " class="d-flex flex-column justify-content-center product_details_icon">
-                                                        <i class="ti-save"></i>
-                                                        <span>{{__('common.store')}}</span>
-                                                    </a>
-                                                    <button type="button" class="product_details_button style1 buy_now_btn" data-id="{{$product->id}}" data-type="product">
-                                                        <span>{{__('common.buy_now')}}</span>
-                                                    </button>
-                                                    <button class="product_details_button add_to_cart_btn" type="button">{{__('common.add_to_cart')}}</button>
-                                                `);
                             } else {
                                 $('#cart_footer_mobile').html(`
-                                                    <button type="button" class="product_details_button style1 buy_now_btn" data-id="{{$product->id}}" data-type="product">
-                                                        <span>{{__('common.buy_now')}}</span>
-                                                    </button>
-                                                    <button class="product_details_button add_to_cart_btn" type="button">{{__('common.add_to_cart')}}</button>
-                                                `);
+                                                <button type="button" class="product_details_button style1 buy_now_btn" data-id="{{$product->id}}" data-type="product">
+                                                    <span>{{__('common.buy_now')}}</span>
+                                                </button>
+                                                <button class="product_details_button add_to_cart_btn" type="button">{{__('common.add_to_cart')}}</button>
+                                            `);
                             }
                         }
                     }
                     else {
-                        $('#add_to_cart_div').html(`
-                                            <div class="col-md-6">
-                                                <button type="button" disabled class="amaz_primary_btn style2 mb_20 add_to_cart text-uppercase flex-fill text-center w-100">{{__('defaultTheme.out_of_stock')}}</button>
-                                            </div>
-                                        `);
+                        @if(isGuestAddtoCart())
+                            $('#add_to_cart_div').html(`
+                                                    <div class="col-md-6">
+                                                        <button type="button" disabled class="amaz_primary_btn style2 mb_20 add_to_cart text-uppercase flex-fill text-center w-100">{{__('defaultTheme.out_of_stock')}}</button>
+                                                    </div>
+                                                `);
+                        @else
+                            $('#add_to_cart_div').html(`
+                                                    <div class="col-md-12">
+                                                            <a href="{{ url('/login') }}" class="amaz_primary_btn w-100">
+                                                            {{__('defaultTheme.login_to_order')}}
+                                                        </a>
+                                                    </div>
+                                                `);
+                        @endif
+
                         $('#stock_div').html(`<span class="stokeout_badge">{{__('defaultTheme.out_of_stock')}}</span>`);
-                        toastr.warning("{{__('defaultTheme.out_of_stock')}}");
+
                         $('#cart_footer_mobile').html(`
-                                            <button type="button" class="product_details_button style1" disabled>
-                                                <span>{{__('defaultTheme.out_of_stock')}}</span>
-                                            </button>
-                                            <button type="button" class="product_details_button" disabled>{{__('defaultTheme.out_of_stock')}}</button>
-                                        `);
+                                        <button type="button" class="product_details_button style1" disabled>
+                                            <span>{{__('defaultTheme.out_of_stock')}}</span>
+                                        </button>
+                                        <button type="button" class="product_details_button" disabled>{{__('defaultTheme.out_of_stock')}}</button>
+                                    `);
                     }
                 } else {
                     toastr.error("{{__('defaultTheme.no_stock_found_for_this_seller')}}", "{{__('common.error')}}");
@@ -1937,6 +2679,61 @@
             });
         }
     </script>
+
+    @php
+        $public_code = null;
+        $merchantCode = null;
+        $payment = DB::table('payment_methods')->where('method', 'Tabby')->where('active_status', 1)->first();
+        if ($payment) {
+            $tabby_gateway = getPaymentGatewayInfo($payment->id);
+            if ($tabby_gateway) {
+                $public_code = $tabby_gateway->perameter_1;
+                $merchantCode = $tabby_gateway->perameter_5;
+            }
+        }
+    @endphp
+
+
+
+
+    @if(!empty($public_code))
+        <script src="https://checkout.tabby.ai/tabby-promo.js"></script>
+        <script>
+
+            function changeTabbyAmount() {
+                let amount = $("#total_price").html();
+                const price = amount.replace(/[^0-9.]/g, '');
+                new TabbyPromo({
+                    selector: '#TabbyPromo', // required, content of tabby Promo Snippet will be placed in element with that selector.
+                    currency: 'AED', // required, currency of your product. AED|SAR|KWD|BHD|QAR only supported, with no spaces or lowercase.
+                    price: price, // required, price or the product. 2 decimals max for AED|SAR|QAR and 3 decimals max for KWD|BHD.
+                    installmentsCount: 4, // Optional, for non-standard plans.
+                    lang: 'en', // Optional, language of snippet and popups, if the property is not set, then it is based on the attribute 'lang' of your html tag.
+                    source: 'product', // Optional, snippet placement; `product` for product page and `cart` for cart page.
+                    publicKey: '{{ $public_code }}', // required, store Public Key which identifies your account when communicating with tabby.
+                    merchantCode: '{{ $merchantCode }}'
+                });
+            }
+
+            let amount = $("#total_price").html();
+            const price = amount.replace(/[^0-9.]/g, '');
+            new TabbyPromo({
+                selector: '#TabbyPromo', // required, content of tabby Promo Snippet will be placed in element with that selector.
+                currency: 'AED', // required, currency of your product. AED|SAR|KWD|BHD|QAR only supported, with no spaces or lowercase.
+                price: price, // required, price or the product. 2 decimals max for AED|SAR|QAR and 3 decimals max for KWD|BHD.
+                installmentsCount: 4, // Optional, for non-standard plans.
+                lang: 'en', // Optional, language of snippet and popups, if the property is not set, then it is based on the attribute 'lang' of your html tag.
+                source: 'product', // Optional, snippet placement; `product` for product page and `cart` for cart page.
+                publicKey: '{{ $public_code }}', // required, store Public Key which identifies your account when communicating with tabby.
+                merchantCode: 'FONCY'
+            });
+
+
+
+
+        </script>
+    @endif
 @endpush
+
 @include(theme('partials.add_to_cart_script'))
 @include(theme('partials.add_to_compare_script'))

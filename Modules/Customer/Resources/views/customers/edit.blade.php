@@ -150,7 +150,7 @@
                                         <select name="warehouse_id" id="warehouse_id" class="primary_select mb-25" required>
                                             <option value="" disabled>-- Select Warehouse --</option>
                                             @foreach($warehouses as $wh)
-                                                <option value="{{ $wh->user_id }}" {{ (old('warehouse_id') ? old('warehouse_id') : $customer->warehouse_id) == $wh->user_id ? 'selected' : '' }}>
+                                                <option value="{{ $wh->id }}" {{ (old('warehouse_id') ? old('warehouse_id') : $customer->warehouse_id) == $wh->id ? 'selected' : '' }}>
                                                     {{ $wh->warehouse_name }} ({{ $wh->warehouse_address }})
                                                 </option>
                                             @endforeach

@@ -41,6 +41,9 @@ class CustomerRepository
         }else{
             $phone = $data['email'];
         } 
+        $warehouse = \Modules\Seller\Entities\SellerWarehouseAddress::find($data['warehouse_id']);
+        $seller_id = $warehouse ? $warehouse->user_id : null;
+
         $user = User::create([
             'first_name' => $data['first_name'],
             'last_name' => $data['last_name'],
@@ -62,6 +65,7 @@ class CustomerRepository
             'lang_code' => app('general_setting')->language_code,
             'currency_code' => app('general_setting')->currency_code,
             'warehouse_id' => $data['warehouse_id'],
+            'seller_id' => $seller_id,
         ]);
 
         // User Notification Setting Create
@@ -94,6 +98,9 @@ class CustomerRepository
         } elseif (filter_var($field, FILTER_VALIDATE_EMAIL)) {
             $email = $data['email'];
         }
+        $warehouse = \Modules\Seller\Entities\SellerWarehouseAddress::find($data['warehouse_id']);
+        $seller_id = $warehouse ? $warehouse->user_id : null;
+
         $user = User::find($id);
         $user->update([
             'first_name' => $data['first_name'],
@@ -106,7 +113,8 @@ class CustomerRepository
             'document'   => $data['document'] ?? $user->document,
             'password' => ($data['password'] != null)?Hash::make($data['password']):$user->password,
             'is_active' => $data['status'],
-            'warehouse_id' => $data['warehouse_id']
+            'warehouse_id' => $data['warehouse_id'],
+            'seller_id' => $seller_id,
         ]);
         return $user;
 

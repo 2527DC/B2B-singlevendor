@@ -82,7 +82,7 @@ class RegisterController extends Controller
                 // 'document_type' => ['required', Rule::in(['GST','MSME'])],
                 'store_image' => ['required', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
                 'document' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
-                'warehouse_id' => ['required', 'exists:seller_return_addresses,user_id'],
+            'warehouse_id' => ['required', 'exists:seller_warehouse_addresses,id'],
 
                 'g-recaptcha-response' => $g_recaptcha,
                 'referral_code' => ['sometimes', 'nullable', Rule::exists('referral_codes', 'referral_code')->where('status', 1)]
@@ -250,7 +250,7 @@ class RegisterController extends Controller
             'store_image' => ['required', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
             // 'document_type' => ['required', Rule::in(['GST','MSME'])],
             'document' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
-            'warehouse_id' => ['required', 'exists:seller_return_addresses,user_id'],
+            'warehouse_id' => ['required', 'exists:seller_warehouse_addresses,id'],
 
             'referral_code' => ['sometimes', 'nullable', Rule::exists('referral_codes', 'referral_code')->where('status', 1)]
         ], [

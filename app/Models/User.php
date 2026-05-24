@@ -31,19 +31,13 @@ use Modules\Customer\Entities\CustomerAddress;
 use Modules\Marketing\Entities\ReferralCode;
 use Modules\Review\Entities\SellerReview;
 use Modules\Setup\Entities\ApplyLoan;
-use Modules\MultiVendor\Entities\SellerAccount;
-use Modules\MultiVendor\Entities\SellerSubcription;
 use Modules\Seller\Entities\SellerProduct;
-use Modules\MultiVendor\Entities\SellerBankAccount;
-use Modules\MultiVendor\Entities\SellerBusinessInformation;
-use Modules\MultiVendor\Entities\SellerReturnAddress;
-use Modules\MultiVendor\Entities\SellerWarehouseAddress;
+use Modules\Seller\Entities\SellerWarehouseAddress;
 use Laravel\Sanctum\HasApiTokens;
 use Modules\FrontendCMS\Entities\SellerSocialLink;
 use Modules\GeneralSetting\Entities\Currency;
 use Modules\GeneralSetting\Entities\EmailTemplate;
 use Modules\Language\Entities\Language;
-use Modules\MultiVendor\Entities\FollowSeller;
 use Modules\SidebarManager\Entities\BackendmenuUser;
 
 class User extends Authenticatable
@@ -85,6 +79,7 @@ class User extends Authenticatable
         'currency_code',
         'club_point',
         'warehouse_id',
+        'seller_id',
         'gst_number',
         'salesman_id',
         'coordinates',
@@ -262,27 +257,29 @@ class User extends Authenticatable
     }
 
     public function SellerAccount(){
-        return $this->hasOne(SellerAccount::class, 'user_id', 'id');
+        return null;
     }
-
 
     public function SellerSubscriptions(){
-        return $this->hasOne(SellerSubcription::class, 'seller_id', 'id');
+        return null;
     }
     public function SellerBankAccount(){
-        return $this->hasOne(SellerBankAccount::class, 'user_id', 'id');
+        return null;
     }
     public function SellerBusinessInformation(){
-        return $this->hasOne(SellerBusinessInformation::class, 'user_id', 'id');
+        return null;
     }
     public function SellerWarehouseAddress(){
         return $this->hasOne(SellerWarehouseAddress::class, 'user_id', 'id');
     }
     public function warehouse(){
-        return $this->belongsTo(\Modules\MultiVendor\Entities\SellerWarehouseAddress::class, 'warehouse_id', 'user_id')->withDefault();
+        return $this->belongsTo(SellerWarehouseAddress::class, 'warehouse_id', 'id')->withDefault();
+    }
+    public function seller(){
+        return $this->belongsTo(User::class, 'seller_id', 'id')->withDefault();
     }
     public function SellerReturnAddress(){
-        return $this->hasOne(SellerReturnAddress::class, 'user_id', 'id');
+        return null;
     }
     public function order_packages()
     {
@@ -487,18 +484,6 @@ class User extends Authenticatable
 
     public function sellerSocialLinks(){
         return $this->hasMany(SellerSocialLink::class,'user_id', 'id')->where('status', 1);
-    }
-    public function follow($seller_id)
-    {
-        return  FollowSeller::where('seller_id',$seller_id)->where('customer_id',$this->id)->first();
-    }
-    public function followers($customer_id)
-    {
-        return  FollowSeller::where('customer_id',$customer_id)->where('seller_id',$this->id)->first();
-    }
-    public function countFollow()
-    {
-        return FollowSeller::where('seller_id',$this->id)->count();
     }
 
     public function sellerWiseOrderCount(){

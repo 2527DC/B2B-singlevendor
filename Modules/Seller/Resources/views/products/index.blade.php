@@ -17,12 +17,12 @@
                                             aria-selected="true">{{__('product.product_list')}}</a>
                                     </li>
                                 @endif
-                                @if (permissionCheck('seller_own_product') && auth()->user()->role->type != 'superadmin')
+                                {{-- @if (permissionCheck('seller_own_product') && auth()->user()->role->type != 'superadmin')
                                     <li class="nav-item" id="my_product_list_li">
                                         <a class="nav-link" href="#my_product_data" role="tab" data-toggle="tab" id="1"
                                             aria-selected="true">{{ __('product.my_product_list') }}</a>
                                     </li>
-                                @endif
+                                @endif --}}
                                 @if (permissionCheck('seller_alert_product'))
                                     <li class="nav-item" id="alert_product_list_li">
                                         <a class="nav-link" href="#alert_product_list" role="tab" data-toggle="tab" id="1"
@@ -64,7 +64,23 @@
                 </div>
                 <div class="col-xl-12">
                     <div class="white_box_30px mb_30">
-                        <div class="tab-content">
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="warehouse_filter">Select Warehouse</label>
+                                <select class="primary_select mb-15" id="warehouse_filter">
+                                    <option value="" disabled @if(!$warehouses->contains('is_default', 1)) selected @endif>Select a Warehouse</option>
+                                    @foreach($warehouses as $warehouse)
+                                        <option value="{{ $warehouse->id }}" {{ $warehouse->is_default ? 'selected' : '' }}>{{ $warehouse->warehouse_name }} @if($warehouse->is_default) (Default) @endif</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div id="no_warehouse_msg" class="text-center mt-5 mb-5" style="display: none;">
+                            <h4 class="text-danger">{{ __('common.please_select_a_warehouse_to_list_the_products') ?? 'Please select a warehouse to list the products.' }}</h4>
+                        </div>
+
+                        <div class="tab-content" id="product_tab_content">
                             @if (permissionCheck('seller.product.index'))
                                 <div role="tabpanel" class="tab-pane fade active show" id="product_list">
                                     <div class="box_header common_table_header ">
@@ -82,7 +98,7 @@
                                     </div>
                                 </div>
                             @endif
-                            @if (permissionCheck('seller_own_product') && auth()->user()->role->type != 'superadmin')
+                            {{-- @if (permissionCheck('seller_own_product') && auth()->user()->role->type != 'superadmin')
                                 <div role="tabpanel" class="tab-pane fade" id="my_product_data">
                                     <div class="box_header common_table_header ">
                                         <div class="main-title d-md-flex">
@@ -99,7 +115,7 @@
                                         </div>
                                     </div>
                                 </div>
-                            @endif
+                            @endif --}}
                             @if (permissionCheck('seller_alert_product'))
                                 <div role="tabpanel" class="tab-pane fade" id="alert_product_list">
                                     <div class="box_header common_table_header ">
@@ -170,6 +186,7 @@
     ])
         @include('product::products.stock.manage_stock')
         @include('product::products.stock.stock_history')
-            @include('product::products.manage_history')
+        @include('product::products.manage_history')
+        @include('seller::products.components.manage_warehouses')
 @endsection
 @include('seller::products.components.scripts')

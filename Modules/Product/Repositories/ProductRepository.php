@@ -164,8 +164,9 @@ class ProductRepository
             $data['status'] = isset($data['status']) ? $data['status'] : 1;
             $data['requested_by'] = $user->role_id;
         } else {
-            $data['is_approved'] = 0;
-            $data['status'] = isset($data['status']) ? $data['status'] : 0;
+            // Auto-approved for seller scope
+            $data['is_approved'] = 1;
+            $data['status'] = isset($data['status']) ? $data['status'] : 1;
             $data['requested_by'] = $user->role_id;
         }
         if ($data['is_physical'] == 0) {
@@ -400,11 +401,14 @@ class ProductRepository
                 ]);
             }
         }
-        if (auth()->user()->role->type == 'superadmin' || auth()->user()->role->type == 'admin' || auth()->user()->role->type == 'staff') {
-            $status = 0;
-            if (isset($data['save_type'])) {
-                if ($data['save_type'] == 'save_publish') {
-                    $status = 1;
+        if (auth()->user()->role->type == 'superadmin' || auth()->user()->role->type == 'admin' || auth()->user()->role->type == 'staff' || auth()->user()->role->type == 'seller') {
+            $status = 1;
+            if (auth()->user()->role->type != 'seller') {
+                $status = 0;
+                if (isset($data['save_type'])) {
+                    if ($data['save_type'] == 'save_publish') {
+                        $status = 1;
+                    }
                 }
             }
 
@@ -421,7 +425,7 @@ class ProductRepository
             $sellerProduct->tax_type = $product->tax_type;
             $sellerProduct->discount = isset($data['discount']) ? $data['discount'] : 0;
             $sellerProduct->discount_type = isset($data['discount_type']) ? $data['discount_type'] : 1;
-            $sellerProduct->user_id = 1;
+            $sellerProduct->user_id = auth()->user()->role->type == 'seller' ? getParentSellerId() : 1;
             $sellerProduct->slug = $sellerProductName;
             $sellerProduct->is_approved = 1;
             $sellerProduct->status = isModuleActive('MultiVendor') ? $status : $data['status'];
@@ -436,8 +440,27 @@ class ProductRepository
                     'product_stock' => $item->product_stock,
                     'selling_price' => $item->selling_price,
                     'status' => 1,
-                    'user_id' => 1
+                    'user_id' => auth()->user()->role->type == 'seller' ? getParentSellerId() : 1
                 ]);
+
+                $total_stock = 0;
+                if (isset($data['warehouse_stock']) && is_array($data['warehouse_stock'])) {
+                    foreach ($data['warehouse_stock'] as $warehouse_id => $sku_stocks) {
+                        $stock_amount = is_array($sku_stocks) ? ($sku_stocks[$key] ?? 0) : $sku_stocks;
+                        $stock_amount = intval($stock_amount);
+                        $total_stock += $stock_amount;
+
+                        \Illuminate\Support\Facades\DB::table('warehouse_product_stocks')->updateOrInsert(
+                            ['warehouse_id' => $warehouse_id, 'seller_product_sku_id' => $sellerProductSKU->id],
+                            ['stock' => $stock_amount, 'is_active' => 1, 'updated_at' => now(), 'created_at' => now()]
+                        );
+                    }
+                } else {
+                    $total_stock = $item->product_stock;
+                }
+                
+                $sellerProductSKU->update(['product_stock' => $total_stock]);
+
                 $sellerProduct->update([
                     'min_sell_price' => $sellerProduct->skus->min('selling_price'),
                     'max_sell_price' => $sellerProduct->skus->max('selling_price')

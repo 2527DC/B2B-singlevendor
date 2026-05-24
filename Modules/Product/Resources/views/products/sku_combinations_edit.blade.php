@@ -9,11 +9,9 @@
             <td width="20%" class="text-center">
                 <label for="" class="control-label">{{__('product.selling_price')}}</label>
             </td>
-            @if(!isModuleActive('MultiVendor'))
-                <td width="13%" class="text-center stock_td d-none">
-                    <label for="" class="control-label">{{__('product.stock')}}</label>
-                </td>
-            @endif
+            <td width="13%" class="text-center stock_td d-none">
+                <label for="" class="control-label">{{__('product.stock')}}</label>
+            </td>
             <td width="11%" class="text-center">
                 <label for="" class="control-label">{{__('product.SKU')}}</label>
             </td>
@@ -92,13 +90,11 @@
                             </ul>
                         @endif
                     </td>
-                    @if(!isModuleActive('MultiVendor'))
-                        <td class="text-center pt-20 stock_td d-none">
-                            <input class="primary_input_field mt-30" type="number" name="sku_stock[]"
-                                   value="{{ ($query_1) ? @$query_1->product_stock : "0" }}" min="0" step="0"
-                                   class="form-control" required>
-                        </td>
-                    @endif
+                    <td class="text-center pt-20 stock_td d-none">
+                        <input class="primary_input_field mt-30" type="number" name="sku_stock[]"
+                               value="{{ ($query_1) ? @$query_1->product_stock : "0" }}" min="0" step="0"
+                               class="form-control" required>
+                    </td>
                     <td class="pt-25">
                         <input class="primary_input_field mt-20" type="text" name="sku[]"
                                value="{{ ($query_1) ? @$query_1->sku : $sku }}" class="form-control">
