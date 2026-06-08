@@ -89,7 +89,8 @@
         "google/apiclient-services": [
             "GoogleAnalyticsAdmin",
             "Analytics",
-            "Drive"
+            "Drive",
+            "Sheets"
         ]
     },
     "autoload": {

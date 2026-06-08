@@ -28,7 +28,7 @@ class AddSellerReturnRequestToMenu extends Migration
                     'name' => 'Return Request',
                     'status' => 1,
                     'type' => 2,
-                    'module' => 'MultiVendor'
+                    'module' => 'Refund'
                 ]
             );
             
@@ -61,7 +61,7 @@ class AddSellerReturnRequestToMenu extends Migration
                     'is_admin' => 1,
                     'is_seller' => 1,
                     'position' => 3,
-                    'module' => 'MultiVendor'
+                    'module' => 'Refund'
                 ]
             );
 

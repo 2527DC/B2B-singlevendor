@@ -1,0 +1,13 @@
+{
+    "name": "GoogleWorkspace",
+    "alias": "googleworkspace",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\GoogleWorkspace\\Providers\\GoogleWorkspaceServiceProvider"
+    ],
+    "aliases": {},
+    "files": [],
+    "requires": []
+}

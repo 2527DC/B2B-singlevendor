@@ -43,5 +43,6 @@
     "Otp": true,
     "Affiliate": true,
     "WholeSale": true,
-    "CheckPincode": true
+    "CheckPincode": true,
+    "GoogleWorkspace": true
 }

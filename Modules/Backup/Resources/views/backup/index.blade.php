@@ -110,7 +110,7 @@
                                                     <td>{{str_replace(' ', '-',app('general_setting')->site_title)."_db_$value".'.sql'}}</td>
                                                     <td class="text-center">
                                                        @if(!config('app.sync'))
-                                                         <a href="{{ asset('public/database-backup/'.$value.'/'.$value.'-dump.sql') }}"
+                                                         <a href="{{ asset('database-backup/'.$value.'/'.$value.'-dump.sql') }}"
                                                             download="{{ str_replace(' ', '-',app('general_setting')->site_title)."_db_$value".'.sql' }}"><i
                                                                 class="fa fa-download"></i></a>
                                                        @else

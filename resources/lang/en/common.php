@@ -1,6 +1,8 @@
 <?php
 return [
     'show_location'=> 'Show Location',
+    'warehouse'=>"warehouse",
+    'warehouses'=>"warehouses",
     'sl' => 'SL',
     'add' => 'Add',
     'ip' => 'IP',

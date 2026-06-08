@@ -247,6 +247,10 @@ class CustomerController extends Controller
             return redirect()->route('cusotmer.list_active');
 
         } catch (QueryException $e) {
+            \Log::error('Customer Store Database Error: ' . $e->getMessage(), [
+                'exception' => $e,
+                'request' => $request->except(['password', 'password_confirmation'])
+            ]);
 
             if ($e->errorInfo[1] == 1062) {
                 // Duplicate entry
@@ -259,6 +263,10 @@ class CustomerController extends Controller
             return back();
 
         } catch (\Exception $e) {
+            \Log::error('Customer Store Exception: ' . $e->getMessage(), [
+                'exception' => $e,
+                'request' => $request->except(['password', 'password_confirmation'])
+            ]);
 
             Toastr::error('Something went wrong. Please try again.', 'Error');
             LogActivity::errorLog($e->getMessage());
@@ -324,6 +332,11 @@ class CustomerController extends Controller
             LogActivity::successLog('Customer Updated Successfully.');
             return redirect()->route('cusotmer.list_active');
         } catch (Exception $e) {
+            \Log::error('Customer Update Exception: ' . $e->getMessage(), [
+                'exception' => $e,
+                'id' => $id,
+                'request' => $request->except(['password', 'password_confirmation'])
+            ]);
             LogActivity::errorLog($e->getMessage());
             Toastr::error(__('common.error_message'), __('common.error'));
             return back();

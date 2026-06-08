@@ -66,20 +66,25 @@ class BackupController extends Controller
     public function delete($dir)
     {
         try {
-            $dir = public_path("/database-backup/" . $dir);
-            if (is_dir($dir)) {
-                array_map("unlink", glob("$dir/*.*"));
-                rmdir($dir);
+            $dirPath = public_path("/database-backup/" . $dir);
+            if (is_dir($dirPath)) {
+                $files = glob($dirPath . '/*');
+                if (is_array($files)) {
+                    foreach ($files as $file) {
+                        if (is_file($file)) {
+                            unlink($file);
+                        }
+                    }
+                }
+                rmdir($dirPath);
                 Toastr::success(__('common.deleted_successfully'), __('common.success'));
                 return redirect()->back();
             }
         } catch (\Exception $e) {
-
+            \Log::error('Backup Delete Error: ' . $e->getMessage());
             Toastr::error(__('common.error_message'), __('common.error'));
             return redirect()->back();
-
         }
-
     }
 
     public function import(Request $request)
