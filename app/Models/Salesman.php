@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Modules\Seller\Entities\SellerWarehouseAddress;
 
 class Salesman extends Model
 {
@@ -13,7 +14,16 @@ class Salesman extends Model
         'salesman_id',
         'name',
         'phone_number',
+        'warehouse_id',
     ];
+
+    /**
+     * Get the warehouse this salesman belongs to.
+     */
+    public function warehouse()
+    {
+        return $this->belongsTo(SellerWarehouseAddress::class, 'warehouse_id');
+    }
 
     /**
      * Auto-generate a unique 6-character alphanumeric salesman_id on creation.

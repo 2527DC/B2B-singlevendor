@@ -44,7 +44,7 @@ jobs:
           SSHPASS: ${{ secrets.SSH_PASSWORD }}
         run: |
           sudo apt-get update && sudo apt-get install -y sshpass
-          sshpass -e scp -o StrictHostKeyChecking=no -P 22 deploy.tar.gz ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }}:/var/www/DhatriProduction/
+          sshpass -e scp -o StrictHostKeyChecking=no -P 22 deploy.tar.gz ${{ secrets.REMOTE_USER }}@${{ secrets.REMOTE_HOST }}:/var/www/html/B2B/
 
       - name: Extract Archive and Execute Remote Commands
         uses: appleboy/ssh-action@v1.0.3

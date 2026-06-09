@@ -78,7 +78,25 @@ class ProfileController extends Controller
                 }
                 $data['totalProducts'] = Product::where('is_approved',1)->count();
                 $data['totalSellers'] = isModuleActive('MultiVendor')?SellerAccount::all()->count():0;
-                $data['totalCustomers'] = User::where('role_id',4)->get()->count();
+
+                // Warehouse filter helper
+                $activeWarehouse = session('active_warehouse_id');
+                $warehouseFilter = function ($query) use ($activeWarehouse) {
+                    if ($activeWarehouse && $activeWarehouse !== 'all') {
+                        $query->where('warehouse_id', $activeWarehouse);
+                    }
+                    return $query;
+                };
+                $orderWarehouseFilter = function ($query) use ($activeWarehouse) {
+                    if ($activeWarehouse && $activeWarehouse !== 'all') {
+                        $query->whereHas('customer', function ($q) use ($activeWarehouse) {
+                            $q->where('warehouse_id', $activeWarehouse);
+                        });
+                    }
+                    return $query;
+                };
+
+                $data['totalCustomers'] = $warehouseFilter(User::where('role_id',4))->count();
                 $data['totalvisitors'] = VisitorHistory::VisitorCount('today');
                 $data['total_sale'] = Order::TotalSaleCount('today');
                 $data['total_review'] = ProductReview::TotalReviewCount('today');
@@ -95,13 +113,13 @@ class ProfileController extends Controller
                 $data['income'] = Transaction::GetIncome('today');
                 $data['expense'] = Transaction::GetExpense('today');
                 $data['total_revenue'] = $data['income'] - $data['expense'];
-                $data['new_customers'] = User::where('role_id', 4)->latest()->limit(10)->take(10)->get();
-                $data['total_active_customers'] = User::where('role_id', 4)->where('is_active', 1)->get()->count();
+                $data['new_customers'] = $warehouseFilter(User::where('role_id', 4))->latest()->limit(10)->take(10)->get();
+                $data['total_active_customers'] = $warehouseFilter(User::where('role_id', 4)->where('is_active', 1))->count();
                 $data['total_subscriber'] = Subscription::count();
                 $data['latest_search_keywords'] = SearchTerm::latest()->limit(10)->take(10)->get();
                 $data['recently_added_products'] = SellerProduct::with('product','product.categories','product.brand')->latest()->take(10)->get();
                 $data['top_refferers'] = ReferralCode::with('user')->orderBy('total_used','desc')->take(10)->get();
-                $data['latest_orders'] = Order::with('packages', 'customer')->latest()->take(10)->get();
+                $data['latest_orders'] = $orderWarehouseFilter(Order::with('packages', 'customer'))->latest()->take(10)->get();
                 $data['graph_total_product'] = SellerProduct::where('status',1)->select('id')->count();
                 $data['graph_admin_product'] = SellerProduct::whereHas('seller', function($q){
                                                     $q->where('role_id', 1);

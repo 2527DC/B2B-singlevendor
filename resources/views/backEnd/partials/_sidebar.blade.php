@@ -16,6 +16,41 @@
             <i class="ti-close"></i>
         </a>
     </div>
+
+    {{-- Warehouse Switcher --}}
+    @php
+        $allWarehouses = \Modules\Seller\Entities\SellerWarehouseAddress::orderBy('warehouse_name')->get();
+        $activeWarehouseId = session('active_warehouse_id');
+        if (is_null($activeWarehouseId)) {
+            $defaultWarehouse = $allWarehouses->where('is_default', 1)->first();
+            $activeWarehouseId = $defaultWarehouse ? $defaultWarehouse->id : 'all';
+            session(['active_warehouse_id' => $activeWarehouseId]);
+        }
+        $activeWarehouseName = 'All Warehouses';
+        if ($activeWarehouseId !== 'all') {
+            $found = $allWarehouses->where('id', $activeWarehouseId)->first();
+            if ($found) $activeWarehouseName = $found->warehouse_name;
+        }
+    @endphp
+    @if($allWarehouses->count() > 0)
+    <div class="warehouse-switcher-wrap">
+        <div class="warehouse-switcher-inner">
+            <div class="warehouse-switcher-icon">
+                <i class="fas fa-warehouse"></i>
+            </div>
+            <select id="warehouseSwitcher" class="warehouse-switcher-select" onchange="if(this.value) window.location.href=this.value;">
+                <option value="{{ route('switch.warehouse', 'all') }}" {{ $activeWarehouseId === 'all' ? 'selected' : '' }}>
+                    All Warehouses
+                </option>
+                @foreach($allWarehouses as $wh)
+                    <option value="{{ route('switch.warehouse', $wh->id) }}" {{ $activeWarehouseId == $wh->id ? 'selected' : '' }}>
+                        {{ $wh->warehouse_name }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+    </div>
+    @endif
     @php
 
         $sidebars = \Modules\SidebarManager\Entities\BackendmenuUser::with('children', 'backendMenu')->whereNull('parent_id')->where('user_id', auth()->id())->orderBy('position')->get();

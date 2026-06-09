@@ -40,6 +40,11 @@ class CustomerController extends Controller
         if (auth()->check() && auth()->user()->role->type == 'seller') {
             $query->where('seller_id', auth()->id());
         }
+        // Warehouse filter
+        $activeWarehouse = session('active_warehouse_id');
+        if ($activeWarehouse && $activeWarehouse !== 'all') {
+            $query->where('warehouse_id', $activeWarehouse);
+        }
         $data['customers'] = $query;
         return view('customer::customers.index', $data);
     }
@@ -51,6 +56,11 @@ class CustomerController extends Controller
             $query = $this->customerService->getAll()->with(['salesman', 'warehouse', 'customerAddresses']);
             if (auth()->check() && auth()->user()->role->type == 'seller') {
                 $query->where('seller_id', auth()->id());
+            }
+            // Warehouse filter
+            $activeWarehouse = session('active_warehouse_id');
+            if ($activeWarehouse && $activeWarehouse !== 'all') {
+                $query->where('warehouse_id', $activeWarehouse);
             }
 
             if ($table == 'active_customer') {

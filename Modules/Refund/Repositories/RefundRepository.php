@@ -24,7 +24,15 @@ class RefundRepository
     use SendMail,GoogleAnalytics4;
     public function getRequestAll()
     {
-        return RefundRequest::with('refund_details', 'refund_details.refund_products', 'order')->latest()->get();
+        $query = RefundRequest::with('refund_details', 'refund_details.refund_products', 'order')->latest();
+        // Warehouse filter
+        $activeWarehouse = session('active_warehouse_id');
+        if ($activeWarehouse && $activeWarehouse !== 'all') {
+            $query->whereHas('order.customer', function ($q) use ($activeWarehouse) {
+                $q->where('warehouse_id', $activeWarehouse);
+            });
+        }
+        return $query->get();
     }
     public function getRequestForCustomer()
     {

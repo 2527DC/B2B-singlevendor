@@ -13,7 +13,13 @@ class DriverController extends Controller
     public function index()
     {
         // Get real drivers from database with their warehouse relation
-        $drivers = Driver::with('warehouse')->get();
+        $query = Driver::with('warehouse');
+        // Warehouse filter
+        $activeWarehouse = session('active_warehouse_id');
+        if ($activeWarehouse && $activeWarehouse !== 'all') {
+            $query->where('warehouse_id', $activeWarehouse);
+        }
+        $drivers = $query->get();
         $warehouses = \Modules\Seller\Entities\SellerWarehouseAddress::all();
         
         return view('driver::index', compact('drivers', 'warehouses'));

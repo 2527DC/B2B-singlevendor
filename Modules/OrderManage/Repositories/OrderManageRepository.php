@@ -83,7 +83,15 @@ class OrderManageRepository
 
     public function totalSalesList()
     {
-        return Order::with('packages.gst_taxes', 'customer')->latest();
+        $query = Order::with('packages.gst_taxes', 'customer')->latest();
+        // Warehouse filter — scope orders by customer's warehouse
+        $activeWarehouse = session('active_warehouse_id');
+        if ($activeWarehouse && $activeWarehouse !== 'all') {
+            $query->whereHas('customer', function ($q) use ($activeWarehouse) {
+                $q->where('warehouse_id', $activeWarehouse);
+            });
+        }
+        return $query;
     }
 
     public function findOrderByID($id)

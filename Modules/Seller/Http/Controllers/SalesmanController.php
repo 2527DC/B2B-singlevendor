@@ -19,7 +19,13 @@ class SalesmanController extends Controller
      */
     public function index()
     {
-        $salesmen = Salesman::where('seller_id', Auth::id())->latest()->get();
+        $query = Salesman::where('seller_id', Auth::id())->latest();
+        // Warehouse filter
+        $activeWarehouse = session('active_warehouse_id');
+        if ($activeWarehouse && $activeWarehouse !== 'all') {
+            $query->where('warehouse_id', $activeWarehouse);
+        }
+        $salesmen = $query->get();
         return view('backEnd.salesman.index', compact('salesmen'));
     }
 
