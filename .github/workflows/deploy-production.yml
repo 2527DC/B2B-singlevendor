@@ -60,6 +60,7 @@ jobs:
             mkdir -p storage/framework/{sessions,views,cache}
             mkdir -p storage/temp/mpdf
             sudo chmod -R 777 storage bootstrap/cache
+            composer install --no-dev --optimize-autoloader
             php artisan migrate --force
             php artisan optimize:clear
             php artisan config:cache
