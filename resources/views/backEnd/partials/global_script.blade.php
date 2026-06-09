@@ -825,4 +825,97 @@
             return queryParams;
     }
 
+    $(document).on('init.dt', function (e, settings) {
+        var api = new $.fn.dataTable.Api(settings);
+        
+        if (typeof api.buttons === 'function' && api.buttons().length > 0 && !settings._google_sheets_added) {
+            settings._google_sheets_added = true;
+            
+            api.button().add(null, {
+                text: '<i class="fab fa-google mr-1"></i> Export to Google Sheets',
+                className: 'btn-google-sheets bg-success text-white',
+                action: function (e, dt, node, config) {
+                    swal({
+                        title: "Export to Google Sheets",
+                        text: "Please enter the spreadsheet file name:",
+                        content: {
+                            element: "input",
+                            attributes: {
+                                placeholder: "Exported_Data",
+                                type: "text",
+                            },
+                        },
+                        buttons: {
+                            cancel: true,
+                            confirm: {
+                                text: "Export",
+                                closeModal: false
+                            }
+                        },
+                    })
+                    .then((fileName) => {
+                        if (fileName === null) return;
+                        if (fileName.trim() === "") {
+                            swal("Error", "File name cannot be empty!", "error");
+                            return;
+                        }
+
+                        $('#pre-loader').removeClass('d-none');
+
+                        var exportOpts = {
+                            columns: ':visible:not(.no-export)',
+                            modifier: {
+                                page: 'all',
+                                search: 'applied'
+                            }
+                        };
+                        var data = dt.buttons.exportData(exportOpts);
+
+                        $.ajax({
+                            url: "{{ route('google-workspace.sheets.export-table-data') }}",
+                            type: "POST",
+                            data: {
+                                _token: "{{ csrf_token() }}",
+                                file_name: fileName.trim(),
+                                headers: data.header,
+                                rows: data.body
+                            },
+                            success: function(response) {
+                                $('#pre-loader').addClass('d-none');
+                                if (response.success) {
+                                    swal({
+                                        title: "Export Successful",
+                                        text: "Spreadsheet created: " + response.file_name,
+                                        icon: "success",
+                                        buttons: {
+                                            cancel: "Close",
+                                            confirm: {
+                                                text: "Open Sheet",
+                                                value: true
+                                            }
+                                        }
+                                    }).then((open) => {
+                                        if (open && response.spreadsheet_url) {
+                                            window.open(response.spreadsheet_url, '_blank');
+                                        }
+                                    });
+                                } else {
+                                    swal("Error", response.message || "Failed to export.", "error");
+                                }
+                            },
+                            error: function(xhr) {
+                                $('#pre-loader').addClass('d-none');
+                                let msg = "An error occurred during export. Make sure your Google account is connected.";
+                                if (xhr.responseJSON && xhr.responseJSON.message) {
+                                    msg = xhr.responseJSON.message;
+                                }
+                                swal("Error", msg, "error");
+                            }
+                        });
+                    });
+                }
+            });
+        }
+    });
+
 </script>

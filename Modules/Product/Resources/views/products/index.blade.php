@@ -60,21 +60,7 @@
                 </div>
                 <div class="col-xl-12">
                     <div class="white_box_30px mb_30">
-                        <div class="row mb-3">
-                            <div class="col-md-4">
-                                <label for="warehouse_filter">Select Warehouse</label>
-                                <select class="primary_select mb-15" id="warehouse_filter">
-                                    <option value="" disabled @if(!$warehouses->contains('is_default', 1)) selected @endif>Select a Warehouse</option>
-                                    @foreach($warehouses as $warehouse)
-                                        <option value="{{ $warehouse->id }}" {{ $warehouse->is_default ? 'selected' : '' }}>{{ $warehouse->warehouse_name }} @if($warehouse->is_default) (Default) @endif</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <div id="no_warehouse_msg" class="text-center mt-5 mb-5" style="display: none;">
-                            <h4 class="text-danger">{{ __('common.please_select_a_warehouse_to_list_the_products') ?? 'Please select a warehouse to list the products.' }}</h4>
-                        </div>
+                        <input type="hidden" id="warehouse_filter" value="{{ session('active_warehouse_id') != 'all' ? session('active_warehouse_id') : '' }}">
 
                         <div class="tab-content" id="product_tab_content">
                             @if (permissionCheck('product.get-data'))
@@ -1515,33 +1501,6 @@
             $('#manageStockModal').modal('show');
         });
 
-        // ===== WAREHOUSE FILTERING =====
-        function checkWarehouseSelection() {
-            var val = $('#warehouse_filter').val();
-            if (val == '' || val == null) {
-                $('#product_tab_content').hide();
-                $('#no_warehouse_msg').show();
-            } else {
-                $('#product_tab_content').show();
-                $('#no_warehouse_msg').hide();
-            }
-        }
-
-        // Check on load
-        checkWarehouseSelection();
-
-        $(document).on('change', '#warehouse_filter', function() {
-            checkWarehouseSelection();
-            var val = $('#warehouse_filter').val();
-            if (val != '' && val != null) {
-                $('#mainProductTable').DataTable().ajax.reload(null, false);
-                $('#drafted_product_table').DataTable().ajax.reload(null, false);
-                $('#disabledProductTable').DataTable().ajax.reload(null, false);
-                $('#alertProductTable').DataTable().ajax.reload(null, false);
-                $('#stockoutProductTable').DataTable().ajax.reload(null, false);
-            }
-        });
-        // ===== END WAREHOUSE FILTERING =====
 
         function loadProductSkus(productId) {
             $('#pre-loader').removeClass('d-none');

@@ -44,9 +44,9 @@
                                     <table class="table Crm_table_active3">
                                         <thead>
                                             <tr>
-                                                <th width="60%">Spreadsheet Name</th>
-                                                <th width="30%">{{ __('google_workspace.last_modified') }}</th>
-                                                <th width="10%">{{ __('google_workspace.actions') }}</th>
+                                                <th width="50%">Spreadsheet Name</th>
+                                                <th width="25%">{{ __('google_workspace.last_modified') }}</th>
+                                                <th width="25%">{{ __('google_workspace.actions') }}</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -66,6 +66,9 @@
                                                     <td>
                                                         <a href="{{ route('google-workspace.sheets.view', $sheet->getId()) }}" class="primary-btn radius_30px small fix-gr-bg">
                                                             <i class="fas fa-eye mr-1"></i> {{ __('google_workspace.view') }}
+                                                        </a>
+                                                        <a href="https://docs.google.com/spreadsheets/d/{{ $sheet->getId() }}/edit" target="_blank" class="primary-btn radius_30px small fix-gr-bg" style="background: #27ae60; border: none; margin-left: 5px;">
+                                                            <i class="fas fa-external-link-alt mr-1"></i> Open in Sheets
                                                         </a>
                                                     </td>
                                                 </tr>

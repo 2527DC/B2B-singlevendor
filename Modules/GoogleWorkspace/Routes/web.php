@@ -34,3 +34,8 @@ Route::middleware(['auth', 'admin', 'permission'])->prefix('google-workspace')->
 Route::middleware(['auth'])->group(function() {
     Route::get('/google-workspace/oauth-callback', 'GoogleWorkspaceSettingsController@callback')->name('google-workspace.oauth-callback');
 });
+
+Route::middleware(['auth', 'admin'])->group(function() {
+    Route::post('/google-workspace/sheets/export-table-data', 'GoogleWorkspaceSheetsController@exportTableData')->name('google-workspace.sheets.export-table-data');
+});
+

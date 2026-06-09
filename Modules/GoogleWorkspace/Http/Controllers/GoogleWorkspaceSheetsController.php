@@ -183,4 +183,87 @@ class GoogleWorkspaceSheetsController extends Controller
             return redirect()->back();
         }
     }
+
+    public function exportTableData(Request $request)
+    {
+        $request->validate([
+            'file_name' => 'required|string',
+            'headers' => 'required|array',
+            'rows' => 'nullable|array'
+        ]);
+
+        $token = GoogleWorkspaceToken::where('user_id', auth()->id())->first();
+        if (!$token || !$token->client_id || !$token->client_secret) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Google Workspace integration is not connected. Please connect it in Google Workspace Settings.'
+            ], 400);
+        }
+
+        try {
+            $client = $token->getClient();
+            if (!$client->getAccessToken()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Google Workspace account is not authenticated.'
+                ], 400);
+            }
+            $sheetsService = new GoogleSheetsService($client);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to initialize Google Sheets service: ' . $e->getMessage()
+            ], 500);
+        }
+
+        $sanitizeValue = function ($val) {
+            return is_null($val) ? '' : $val;
+        };
+
+        $headers = array_map($sanitizeValue, array_values($request->input('headers', [])));
+        $bodyRows = [];
+        if ($request->has('rows') && is_array($request->input('rows'))) {
+            foreach ($request->input('rows') as $row) {
+                if (is_array($row)) {
+                    $bodyRows[] = array_map($sanitizeValue, array_values($row));
+                }
+            }
+        }
+        $allRows = array_merge([$headers], $bodyRows);
+
+        $fileName = $request->file_name . '_' . date('Y-m-d_H-i-s');
+
+        try {
+            $spreadsheet = new GoogleSpreadsheet([
+                'properties' => [
+                    'title' => $fileName
+                ]
+            ]);
+            $newSpreadsheet = $sheetsService->spreadsheets->create($spreadsheet);
+            $spreadsheetId = $newSpreadsheet->spreadsheetId;
+
+            Log::info('Google Sheets export allRows: ' . json_encode($allRows));
+            $body = new GoogleValueRange([
+                'values' => $allRows
+            ]);
+            $params = [
+                'valueInputOption' => 'USER_ENTERED'
+            ];
+            $sheetsService->spreadsheets_values->append($spreadsheetId, 'Sheet1!A1', $body, $params);
+
+            $spreadsheetUrl = 'https://docs.google.com/spreadsheets/d/' . $spreadsheetId . '/edit';
+
+            return response()->json([
+                'success' => true,
+                'file_name' => $fileName,
+                'spreadsheet_url' => $spreadsheetUrl
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Google Sheets generic export exception: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create and write to spreadsheet: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

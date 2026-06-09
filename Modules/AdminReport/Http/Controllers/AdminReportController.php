@@ -465,4 +465,5 @@ class AdminReportController extends Controller
             })
             ->toJson();
     }
+
 }

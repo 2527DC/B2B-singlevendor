@@ -13,9 +13,14 @@
                         </span>
                         <h3 class="d-inline-block">{{ $spreadsheetTitle }}</h3>
                     </div>
-                    <a href="{{ route('google-workspace.sheets') }}" class="primary-btn radius_30px small fix-gr-bg">
-                        <i class="fas fa-arrow-left mr-1"></i> Back to Sheets
-                    </a>
+                    <div class="d-flex align-items-center">
+                        <a href="https://docs.google.com/spreadsheets/d/{{ $spreadsheetId }}/edit" target="_blank" class="primary-btn radius_30px small fix-gr-bg mr-10" style="background: #27ae60; border: none;">
+                            <i class="fas fa-external-link-alt mr-1"></i> Open in Sheets
+                        </a>
+                        <a href="{{ route('google-workspace.sheets') }}" class="primary-btn radius_30px small fix-gr-bg">
+                            <i class="fas fa-arrow-left mr-1"></i> Back to Sheets
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
