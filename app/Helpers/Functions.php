@@ -189,7 +189,11 @@ if (!function_exists('menuManagerCheck')) {
 }
 if (!function_exists('asset_path')) {
     function asset_path($path = null){
-        return $path;
+        $isPublicRoot = (basename($_SERVER['DOCUMENT_ROOT'] ?? '') === 'public');
+        if ($isPublicRoot) {
+            return $path;
+        }
+        return 'public/' . $path;
     }
 }
 function setEnv($name, $value)
