@@ -23,12 +23,17 @@
                                     <a class="nav-link" href="#active_customer" role="tab" data-toggle="tab" id="1"
                                         aria-selected="true">{{ __('common.active_customer') }}</a>
                                 </li>
-                                @if (permissionCheck('customer.list_inactive'))
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="#in_active_customer" role="tab" data-toggle="tab" id="1"
-                                            aria-selected="true">{{ __('common.in_active_customer') }}</a>
-                                    </li>
-                                @endif
+                                 @if (permissionCheck('customer.list_inactive'))
+                                     <li class="nav-item">
+                                         <a class="nav-link" href="#in_active_customer" role="tab" data-toggle="tab" id="1"
+                                             aria-selected="true">{{ __('common.in_active_customer') }}</a>
+                                     </li>
+                                 @endif
+
+                                 <li class="nav-item">
+                                     <a class="nav-link" href="#deleted_customer" role="tab" data-toggle="tab" id="1"
+                                         aria-selected="true">{{ __('Deleted Customers') }}</a>
+                                 </li>
 
                                 @if (permissionCheck('admin.customer.create'))
                                     <li class="nav-item">
@@ -77,23 +82,40 @@
                                 </div>
                             </div>
                             @if (permissionCheck('customer.list_inactive'))
-                                <div role="tabpanel" class="tab-pane fade" id="in_active_customer">
-                                    <div class="box_header common_table_header ">
-                                        <div class="main-title d-md-flex">
-                                            <h3 class="mb-0 mr-30 mb_xs_15px mb_sm_20px">{{ __('common.in_active_customer') }}
-                                            </h3>
-                                        </div>
+                                 <div role="tabpanel" class="tab-pane fade" id="in_active_customer">
+                                     <div class="box_header common_table_header ">
+                                         <div class="main-title d-md-flex">
+                                             <h3 class="mb-0 mr-30 mb_xs_15px mb_sm_20px">{{ __('common.in_active_customer') }}
+                                             </h3>
+                                         </div>
+                                     </div>
+                                     <div class="QA_section QA_section_heading_custom check_box_table">
+                                         <div class="QA_table">
+                                             <!-- table-responsive -->
+                                             <div class="">
+                                                 @include('customer::customers.components.in_active_lists')
+                                             </div>
+                                         </div>
+                                     </div>
+                                 </div>
+                            @endif
+
+                            <div role="tabpanel" class="tab-pane fade" id="deleted_customer">
+                                <div class="box_header common_table_header ">
+                                    <div class="main-title d-md-flex">
+                                        <h3 class="mb-0 mr-30 mb_xs_15px mb_sm_20px">{{ __('Deleted Customers') }}
+                                        </h3>
                                     </div>
-                                    <div class="QA_section QA_section_heading_custom check_box_table">
-                                        <div class="QA_table">
-                                            <!-- table-responsive -->
-                                            <div class="">
-                                                @include('customer::customers.components.in_active_lists')
-                                            </div>
+                                </div>
+                                <div class="QA_section QA_section_heading_custom check_box_table">
+                                    <div class="QA_table">
+                                        <!-- table-responsive -->
+                                        <div class="">
+                                            @include('customer::customers.components.deleted_lists')
                                         </div>
                                     </div>
                                 </div>
-                            @endif
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -113,6 +135,7 @@
                 activeCustomerDataTable();
                 inactiveCustomerDataTable();
                 allCustomerDataTable();
+                deletedCustomerDataTable();
 
                 $(document).on('click', '.delete_customer', function (event) {
                     event.preventDefault();
@@ -410,6 +433,118 @@
                             { data: 'salesman_name', name: 'salesman_name', orderable: false, searchable: false },
                             { data: 'action', name: 'action' }
 
+                        ],
+
+                        bLengthChange: true,
+                        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                        "bDestroy": true,
+                        language: {
+                            search: "<i class='ti-search'></i>",
+                            searchPlaceholder: trans('common.quick_search'),
+                            paginate: {
+                                next: "<i class='ti-arrow-right'></i>",
+                                previous: "<i class='ti-arrow-left'></i>"
+                            }
+                        },
+                        dom: 'Blfrtip',
+                        buttons: [{
+                            extend: 'copyHtml5',
+                            text: '<i class="fa fa-files-o"></i>',
+                            title: $("#header_title").text(),
+                            titleAttr: 'Copy',
+                            exportOptions: {
+                                columns: ':visible',
+                                columns: ':not(:last-child)',
+                            }
+                        },
+                        {
+                            extend: 'excelHtml5',
+                            text: '<i class="fa fa-file-excel-o"></i>',
+                            titleAttr: 'Excel',
+                            title: $("#header_title").text(),
+                            margin: [10, 10, 10, 0],
+                            exportOptions: {
+                                columns: ':visible',
+                                columns: ':not(:last-child)',
+                            },
+
+                        },
+                        {
+                            extend: 'csvHtml5',
+                            text: '<i class="fa fa-file-text-o"></i>',
+                            titleAttr: 'CSV',
+                            exportOptions: {
+                                columns: ':visible',
+                                columns: ':not(:last-child)',
+                            }
+                        },
+                        {
+                            extend: 'pdfHtml5',
+                            text: '<i class="fa fa-file-pdf-o"></i>',
+                            title: $("#header_title").text(),
+                            titleAttr: 'PDF',
+                            exportOptions: {
+                                columns: ':visible',
+                                columns: ':not(:last-child)',
+                            },
+                            pageSize: 'A4',
+                            margin: [0, 0, 0, 0],
+                            alignment: 'center',
+                            header: true,
+
+                        },
+                        {
+                            extend: 'print',
+                            text: '<i class="fa fa-print"></i>',
+                            titleAttr: 'Print',
+                            title: $("#header_title").text(),
+                            exportOptions: {
+                                columns: ':not(:last-child)',
+                            }
+                        },
+                        {
+                            extend: 'colvis',
+                            text: '<i class="fa fa-columns"></i>',
+                            postfixButtons: ['colvisRestore']
+                        }
+                        ],
+                        columnDefs: [{
+                            visible: false
+                        }],
+                        responsive: true,
+                    });
+                }
+
+                function deletedCustomerDataTable() {
+                    $('#deletedCustomerTable').DataTable({
+                        processing: true,
+                        serverSide: true,
+                        stateSave: true,
+                        "ajax": ({
+                            url: "{{ route('cusotmer.list.get-data') }}" + '?table=deleted_customer'
+                        }),
+                        "initComplete": function (json) {
+
+                        },
+                        columns: [
+                            {
+                                data: 'DT_RowIndex', name: 'id', render: function (data) {
+                                    return numbertrans(data)
+                                }
+                            },
+                            { data: 'avatar', name: 'avatar' },
+                            { data: 'name', name: 'first_name' },
+                            { data: 'store_name', name: 'store_name' },
+                            { data: 'gst_number', name: 'gst_number' },
+                            { data: 'postal_code', name: 'postal_code', orderable: false, searchable: false },
+                            { data: 'address', name: 'address', orderable: false, searchable: false },
+                            { data: 'phone', name: 'phone' },
+                            { data: 'status', name: 'status' },
+                            { data: 'wallet_balance', name: 'wallet_balance' },
+                            { data: 'orders', name: 'orders' },
+                            { data: 'warehouse_selected', name: 'warehouse_selected', orderable: false, searchable: true },
+                            { data: 'salesman_name', name: 'salesman_name', orderable: false, searchable: false },
+                            { data: 'action', name: 'action' }
                         ],
 
                         bLengthChange: true,

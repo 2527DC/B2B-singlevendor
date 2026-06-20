@@ -33,7 +33,7 @@ use Exception;
 use Modules\FrontendCMS\Entities\LoginPage;
 use Modules\GeneralSetting\Entities\NotificationSetting;
 use App\Rules\RealEmaill;
-use Modules\MultiVendor\Entities\SellerWarehouseAddress;
+use Modules\Seller\Entities\SellerWarehouseAddress;
 class RegisterController extends Controller
 {
     use Notification, Otp, SendMail, RegistersUsers;

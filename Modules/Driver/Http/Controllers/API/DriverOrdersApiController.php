@@ -114,19 +114,26 @@ class DriverOrdersApiController extends Controller
         try {
             // Validate request - allow seller_id to be a single integer or array of integers
             $request->validate([
-                'order_date' => 'nullable|date',
-                'seller_id'  => 'nullable', // Can be single integer or array
+                'order_date'    => 'nullable|date',
+                'assigned_date' => 'nullable|date',
+                'seller_id'     => 'nullable', // Can be single integer or array
             ]);
+    
+            $date = $request->input('assigned_date') ?? $request->input('order_date');
     
             // Fetch CONFIRMED orders with pagination (30 per page)
             $orders = DriverOrders::with(['addressDetails', 'customer'])
                 ->where('is_confirmed', 1) // Only get confirmed orders (is_confirmed = 1)
                 ->where('driver_id', auth('sanctum')->id()) // Filter by logged-in driver
                 ->when(
-                    $request->filled('order_date'),
-                    function ($query) use ($request) {
-                        // Match ONLY assigned_date
-                        $query->whereDate('assigned_date', $request->order_date);
+                    $date,
+                    function ($query) use ($date) {
+                        // For completed orders, get only completed orders on the assigned date.
+                        // Non-completed (pending) orders remain visible across days.
+                        $query->where(function ($q) use ($date) {
+                            $q->where('is_completed', '!=', 1)
+                              ->orWhereDate('assigned_date', $date);
+                        });
                     }   
                 )
                 ->when(
@@ -291,19 +298,22 @@ class DriverOrdersApiController extends Controller
         try {
             // Validate request
             $request->validate([
-                'order_date' => 'nullable|date',
-                'seller_id'  => 'nullable',
+                'order_date'    => 'nullable|date',
+                'assigned_date' => 'nullable|date',
+                'seller_id'     => 'nullable',
             ]);
+    
+            $date = $request->input('assigned_date') ?? $request->input('order_date');
     
             // Fetch CANCELLED orders with pagination (30 per page)
             $orders = DriverOrders::with(['addressDetails', 'customer'])
                 ->where('is_cancelled', 1) // Only get cancelled orders
                 ->where('driver_id', auth('sanctum')->id()) // Filter by logged-in driver
                 ->when(
-                    $request->filled('order_date'),
-                    function ($query) use ($request) {
+                    $date,
+                    function ($query) use ($date) {
                         // Match ONLY assigned_date
-                        $query->whereDate('assigned_date', $request->order_date);
+                        $query->whereDate('assigned_date', $date);
                     }   
                 )
                 ->when(

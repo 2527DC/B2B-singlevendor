@@ -174,33 +174,16 @@ class CartRepository{
         if($data['cart_id']){
             foreach($data['cart_id'] as $key => $id){
                 $cart = Cart::where('id', $id)->first();
-                $price = $cart->price;
-                $qty = $data['qty'][$key];
-                if(isModuleActive('WholeSale') && $cart->product_type == 'product'){
-                    $sku = $cart->product;
-                    if(@$sku->product->hasDeal){
-                        $discount_type = @$sku->product->hasDeal->discount_type;
-                        $discount = @$sku->product->hasDeal->discount;
-                    }else{
-                        $discount_type = @$sku->product->discount_type;
-                        $discount = @$sku->product->discount;
-                    }
-                    if($sku && $sku->wholeSalePrices->count()){
-                        foreach($sku->wholeSalePrices as $wholesale_price){
-                            if($wholesale_price->min_qty <= $qty && $wholesale_price->max_qty >= $qty){
-                                $price = selling_price($wholesale_price->sell_price, @$discount_type,@$discount);
-                            }
-                            elseif($wholesale_price->max_qty < $qty){
-                                $price = selling_price($wholesale_price->sell_price, $discount,@$discount_type);
-                            }
-                        }
-                    }
+                if ($cart) {
+                    $qty = $data['qty'][$key];
+                    $cart->qty = $qty;
+                    $livePrice = $cart->price;
+                    $cart->update([
+                        'qty' => $qty,
+                        'price' => $livePrice,
+                        'total_price' => $livePrice * $qty
+                    ]);
                 }
-                $cart->update([
-                    'qty' => $data['qty'][$key],
-                    'total_price' => $price * $data['qty'][$key],
-                    'price' => $price
-                ]);
             }
             return true;
         }
@@ -246,6 +229,20 @@ class CartRepository{
                 return $query->where('status', 1);
             })->pluck('id')->toArray();
         }
+
+        $activeCartItems = $this->cart::whereIn('id', $cart_ids)->get();
+        foreach ($activeCartItems as $cartItem) {
+            $livePrice = $cartItem->price;
+            $liveTotalPrice = $cartItem->total_price;
+            if ($livePrice != $cartItem->getOriginal('price') || $liveTotalPrice != $cartItem->getOriginal('total_price')) {
+                $cartItem->update([
+                    'price' => $livePrice,
+                    'total_price' => $liveTotalPrice,
+                    'is_updated' => 1
+                ]);
+            }
+        }
+
         $query = $this->cart::with('product.product')->whereIn('id',$cart_ids)->where('is_select', 1)->get();
         $cartData = $query->groupBy('seller_id');
         $recs = new \Illuminate\Database\Eloquent\Collection($query);
@@ -282,36 +279,13 @@ class CartRepository{
     public function updateQty($data){
         $cart =  $this->cart::find($data['id']);
         if($cart){
-            $price = $cart->price;
             $qty = $data['qty'];
-            if(isModuleActive('WholeSale') && $cart->product_type == 'product'){
-                $sku = $cart->product;
-                if(@$sku->product->hasDeal){
-                    $discount_type = @$sku->product->hasDeal->discount_type;
-                    $discount = @$sku->product->hasDeal->discount;
-                }else{
-                    $discount_type = @$sku->product->discount_type;
-                    $discount = @$sku->product->discount;
-                }
-                $price = 0;
-                if($sku && $sku->wholeSalePrices->count()){
-                    foreach($sku->wholeSalePrices as $wholesale_price){
-                        if($wholesale_price->min_qty <= $qty && $wholesale_price->max_qty >= $qty){
-                            $price = selling_price($wholesale_price->sell_price, $discount_type,$discount);
-                        }
-                        elseif($wholesale_price->max_qty < $qty){
-                            $price = selling_price($wholesale_price->sell_price,$discount_type,$discount);
-                        }
-                    }
-                }
-                if($price == 0){
-                    $price = selling_price($sku->sell_price,$discount_type, $discount);
-                }
-            }
+            $cart->qty = $qty;
+            $livePrice = $cart->price;
             $cart->update([
                 'qty' => $qty,
-                'total_price' => $price *$qty,
-                'price' => $price
+                'price' => $livePrice,
+                'total_price' => $livePrice * $qty
             ]);
             return 1;
         }
@@ -319,36 +293,13 @@ class CartRepository{
     public function updateSidebarQty($data){
         $cart =  $this->cart::find($data['id']);
         if($cart){
-            $price = $cart->price;
             $qty = $data['qty'];
-            if(isModuleActive('WholeSale') && $cart->product_type == 'product'){
-                $sku = $cart->product;
-                if(@$sku->product->hasDeal){
-                    $discount_type = @$sku->product->hasDeal->discount_type;
-                    $discount = @$sku->product->hasDeal->discount;
-                }else{
-                    $discount_type = @$sku->product->discount_type;
-                    $discount = @$sku->product->discount;
-                }
-                $price = 0;
-                if($sku && $sku->wholeSalePrices->count()){
-                    foreach($sku->wholeSalePrices as $wholesale_price){
-                        if($wholesale_price->min_qty <= $qty && $wholesale_price->max_qty >= $qty){
-                            $price = selling_price($wholesale_price->sell_price, $discount_type,$discount);
-                        }
-                        elseif($wholesale_price->max_qty < $qty){
-                            $price = selling_price($wholesale_price->sell_price,$discount_type,$discount);
-                        }
-                    }
-                }
-                if($price == 0){
-                    $price = selling_price($sku->sell_price,$discount_type, $discount);
-                }
-            }
+            $cart->qty = $qty;
+            $livePrice = $cart->price;
             $cart->update([
                 'qty' => $qty,
-                'total_price' => $price *$qty,
-                'price' => $price
+                'price' => $livePrice,
+                'total_price' => $livePrice * $qty
             ]);
             return 1;
         }

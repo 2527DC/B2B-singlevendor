@@ -28,6 +28,9 @@
                                             <th scope="col">{{ __('Salesman ID') }}</th>
                                             <th scope="col">{{ __('Name') }}</th>
                                             <th scope="col">{{ __('Phone') }}</th>
+                                            <th scope="col">{{ __('Total Customers') }}</th>
+                                            <th scope="col">{{ __('Total Orders') }}</th>
+                                            <th scope="col">{{ __('Total Order Amount') }}</th>
                                             <th scope="col">{{ __('Action') }}</th>
                                         </tr>
                                     </thead>
@@ -38,12 +41,16 @@
                                             <td><strong>{{ $salesman->salesman_id }}</strong></td>
                                             <td>{{ $salesman->name }}</td>
                                             <td>{{ $salesman->phone_number }}</td>
+                                            <td>{{ $salesman->total_customers }}</td>
+                                            <td>{{ $salesman->total_orders }}</td>
+                                            <td>{{ single_price($salesman->total_amount) }}</td>
                                             <td>
                                                 <div class="dropdown CRM_dropdown">
                                                     <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenu{{ $salesman->id }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                         {{ __('Select') }}
                                                     </button>
                                                     <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenu{{ $salesman->id }}">
+                                                        <a class="dropdown-item" href="{{ route('seller.salesmen.show', $salesman->id) }}">{{__('Details')}}</a>
                                                         <a class="dropdown-item edit_salesman" 
                                                            data-id="{{ $salesman->id }}"
                                                            data-name="{{ $salesman->name }}"

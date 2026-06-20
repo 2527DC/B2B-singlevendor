@@ -5,6 +5,7 @@ namespace Modules\Seller\Http\Controllers;
 use Illuminate\Routing\Controller;
 use App\Models\Salesman;
 use App\Models\User;
+use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -19,13 +20,24 @@ class SalesmanController extends Controller
      */
     public function index()
     {
-        $query = Salesman::where('seller_id', Auth::id())->latest();
-        // Warehouse filter
-        $activeWarehouse = session('active_warehouse_id');
-        if ($activeWarehouse && $activeWarehouse !== 'all') {
-            $query->where('warehouse_id', $activeWarehouse);
+        $salesmen = Salesman::where('seller_id', Auth::id())->latest()->get();
+
+        $salesmanIds = $salesmen->pluck('salesman_id');
+        $customersBySalesman = User::whereIn('salesman_id', $salesmanIds)
+            ->get()
+            ->groupBy('salesman_id');
+
+        foreach ($salesmen as $salesman) {
+            $customers = $customersBySalesman->get($salesman->salesman_id) ?? collect();
+            $customerIds = $customers->pluck('id');
+
+            $salesman->total_customers = $customers->count();
+
+            $ordersQuery = Order::whereIn('customer_id', $customerIds);
+            $salesman->total_orders = $ordersQuery->count();
+            $salesman->total_amount = $ordersQuery->sum('grand_total');
         }
-        $salesmen = $query->get();
+
         return view('backEnd.salesman.index', compact('salesmen'));
     }
 
@@ -127,5 +139,73 @@ class SalesmanController extends Controller
             return redirect()->route('seller.salesmen.index')
                 ->with('error', 'Failed to import Excel: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Display the specified salesman details.
+     */
+    public function show($id)
+    {
+        $salesman = Salesman::where('seller_id', Auth::id())->findOrFail($id);
+
+        // Fetch mapped customers
+        $customers = User::where('salesman_id', $salesman->salesman_id)->get();
+
+        // Fetch all orders for these customers
+        $customerIds = $customers->pluck('id');
+        $orders = Order::whereIn('customer_id', $customerIds)->latest()->get();
+
+        // Group orders by customer for easy stats
+        $ordersByCustomer = $orders->groupBy('customer_id');
+
+        foreach ($customers as $customer) {
+            $customerOrders = $ordersByCustomer->get($customer->id) ?? collect();
+            $customer->total_orders_count = $customerOrders->count();
+            $customer->total_orders_value = $customerOrders->sum('grand_total');
+        }
+
+        // Categorize orders by status
+        $rtoOrderIds = \Modules\Refund\Entities\ReturnRequest::whereIn('order_id', $orders->pluck('id'))
+            ->where('return_type', 'delivery_failure')
+            ->pluck('order_id')
+            ->toArray();
+
+        $completedOrders = collect();
+        $cancelledOrders = collect();
+        $rtoOrders = collect();
+        $pendingOrders = collect();
+
+        foreach ($orders as $order) {
+            $isRto = in_array($order->id, $rtoOrderIds);
+
+            if ($order->is_cancelled == 1) {
+                if ($isRto) {
+                    $rtoOrders->push($order);
+                } else {
+                    $cancelledOrders->push($order);
+                }
+            } elseif ($order->is_confirmed == 1 && $order->is_completed == 1) {
+                $completedOrders->push($order);
+            } else {
+                $pendingOrders->push($order);
+            }
+        }
+
+        // Prepare data for the view
+        $totalCustomersCount = $customers->count();
+        $totalOrdersCount = $orders->count();
+        $totalOrderAmount = $orders->sum('grand_total');
+
+        return view('backEnd.salesman.show', compact(
+            'salesman',
+            'customers',
+            'completedOrders',
+            'cancelledOrders',
+            'rtoOrders',
+            'pendingOrders',
+            'totalCustomersCount',
+            'totalOrdersCount',
+            'totalOrderAmount'
+        ));
     }
 }

@@ -14,7 +14,7 @@
         @if (permissionCheck('admin.customer.edit'))
             <a href="{{route('admin.customer.edit',$customer->id)}}" class="dropdown-item" type="button">{{__('common.edit')}}</a>
         @endif
-        @if (permissionCheck('admin.customer.destroy'))
+        @if (!$customer->is_deleted && permissionCheck('admin.customer.destroy'))
             <a data-value="{{route('admin.customer.destroy', $customer->id)}}" class="dropdown-item delete_customer" type="button">{{__('common.delete')}}</a>
         @endif
     </div>

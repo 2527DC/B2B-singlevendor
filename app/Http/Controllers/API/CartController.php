@@ -100,7 +100,18 @@ class CartController extends Controller
             })->pluck('id')->toArray();
         }
 
-
+        $activeCartItems = Cart::whereIn('id', $cart_ids)->get();
+        foreach ($activeCartItems as $cartItem) {
+            $livePrice = $cartItem->price;
+            $liveTotalPrice = $cartItem->total_price;
+            if ($livePrice != $cartItem->getOriginal('price') || $liveTotalPrice != $cartItem->getOriginal('total_price')) {
+                $cartItem->update([
+                    'price' => $livePrice,
+                    'total_price' => $liveTotalPrice,
+                    'is_updated' => 1
+                ]);
+            }
+        }
 
         $query = Cart::with('shippingMethod','seller', 'customer:id,first_name,last_name,email,email_verified_at','giftCard','product.product.product','product.sku','product.product.product.shippingMethods.shippingMethod','product.product_variations.attribute', 'product.product_variations.attribute_value.color')->whereIn('id',$cart_ids)->where('is_select', 1)->get();
 
@@ -192,33 +203,48 @@ class CartController extends Controller
             $customer = User::where('id',$request->user_id)->first();
         }
 
-        $total_price = $request->price*$request->qty;
-
+        $newQty = $request->qty;
         if(!empty($request->user_id)){
              $product = Cart::where('user_id',$customer->id)->where('product_id',$request->product_id)->where('product_type',$request->product_type)->first();
         }else{
             $product = Cart::where('session_id',$request->device_token)->where('product_id',$request->product_id)->where('product_type',$request->product_type)->first();
         }
 
+        if($product){
+            $newQty = $product->qty + $request->qty;
+        }
+
+        $tempCart = new Cart([
+            'product_id' => $request->product_id,
+            'product_type' => ($request->product_type == 'gift_card') ? 'gift_card' : 'product',
+            'qty' => $newQty,
+            'seller_id' => $request->seller_id,
+            'gift_card_sku' => $request->product_sku_id ?? null,
+            'gift_card_type' => $request->gift_card_type ?? null,
+        ]);
+        $livePrice = $tempCart->price;
 
         if($product){
             $product->update([
-                'qty' => $product->qty+$request->qty,
-                'total_price' => $product->total_price + $total_price
+                'qty' => $newQty,
+                'price' => $livePrice,
+                'total_price' => $livePrice * $newQty
             ]);
         }else{
             Cart::create([
                 'user_id' => !empty($request->user_id) ? $request->user_id:null,
                 'product_type' => ($request->product_type == 'gift_card') ? 'gift_card' : 'product',
                 'product_id' => $request->product_id,
-                'price' => $request->price,
+                'price' => $livePrice,
                 'qty' => $request->qty,
-                'total_price' => $total_price,
+                'total_price' => $livePrice * $request->qty,
                 'seller_id' => $request->seller_id,
                 'shipping_method_id' => 0,
                 'sku' => null,
                 'is_select' => 1,
                 'session_id' => $request->device_token,
+                'gift_card_sku' => $request->product_sku_id ?? null,
+                'gift_card_type' => $request->gift_card_type ?? null,
             ]);
         }
 
@@ -247,27 +273,29 @@ class CartController extends Controller
         if(!empty($request->user_id)){
              $customer = User::where('id',$request->user_id)->first();
         }
-        $total_price = $request->price*$request->qty;
-
-        if(!empty($request->user_id)){
-             $product = Cart::where('user_id',$customer->id)->where('product_id',$request->product_id)->where('product_type',$request->product_type)->first();
-        }else{
-            $product = Cart::where('session_id',$request->device_token)->where('product_id',$request->product_id)->where('product_type',$request->product_type)->first();
-        }
-
-        $total_price = $request->price*$request->qty;
         if($customer){
             $product = Cart::where('user_id',$customer->id)->where('product_id',$request->product_id)->where('product_type',$request->product_type)->first();
             if($product){
                 $product->delete();
             }
+
+            $tempCart = new Cart([
+                'product_id' => $request->product_id,
+                'product_type' => ($request->product_type == 'gift_card') ? 'gift_card' : 'product',
+                'qty' => $request->qty,
+                'seller_id' => $request->seller_id,
+                'gift_card_sku' => $request->product_sku_id ?? null,
+                'gift_card_type' => $request->gift_card_type ?? null,
+            ]);
+            $livePrice = $tempCart->price;
+
             $cart =  Cart::create([
                 'user_id' => !empty($customer)  ? $customer->id:null,
                 'product_type' => ($request->product_type == 'gift_card') ? 'gift_card' : 'product',
                 'product_id' => $request->product_id,
-                'price' => $request->price,
+                'price' => $livePrice,
                 'qty' => $request->qty,
-                'total_price' => $total_price,
+                'total_price' => $livePrice * $request->qty,
                 'seller_id' => $request->seller_id,
                 'shipping_method_id' => 0,
                 'sku' => null,
@@ -360,9 +388,12 @@ class CartController extends Controller
 
         $product = Cart::where('id', $request->id)->first();
         if($product){
+            $product->qty = $request->qty;
+            $livePrice = $product->price;
             $product->update([
                 'qty' => $request->qty,
-                'total_price' => $request->qty * $product->price
+                'price' => $livePrice,
+                'total_price' => $request->qty * $livePrice
             ]);
 
             return response()->json([

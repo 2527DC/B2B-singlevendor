@@ -119,6 +119,8 @@ Route::post('/cart/update-qty', [CartController::class, 'updateQty']);
 Route::post('in-app-cart-store',[CartController::class,'cartForInAppPurchase']);
 Route::post('in-app-cart-delete',[CartController::class,'cartDeleteForInAppPurchase']);
 
+Route::get('/product/category/{categoryId}', [CategoryController::class, 'show']);
+Route::get('/product/{seller}/{slug}', [SellerController::class, 'productBySlug']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('set-lang',[HomepageController::class,'setLocale']);
     Route::post('/set-fcm-token', [PushNotificationController::class, 'setFcmToken']);
@@ -126,7 +128,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/change-password', [AuthController::class, 'changePassword'])->middleware(['api_prohibited_demo_mode']);
     Route::get('/get-user', [AuthController::class, 'getUser']);
-    Route::get('/user-all-notification', [AuthController::class, 'userNotifications']);
+    Route::delete('/user/{id}', [AuthController::class, 'deleteUser'])->middleware('auth:sanctum');
+Route::get('/user-all-notification', [AuthController::class, 'userNotifications']);
 
     Route::post('/profile/update-information', [ProfileController::class, 'profileUpdate'])->middleware(['api_prohibited_demo_mode']);
     Route::post('/profile/update-photo', [ProfileController::class, 'updatePhoto'])->middleware(['api_prohibited_demo_mode']);
@@ -235,7 +238,6 @@ Route::get('/seller/products/recommended-product', [HomepageController::class, '
 
 // category api
 Route::get('/category-list', [CategoryController::class, 'index']);
-Route::get('/product/category/{categoryId}', [CategoryController::class, 'show']);
 
 // brand api
 Route::get('products/brands', [BrandController::class, 'products']);

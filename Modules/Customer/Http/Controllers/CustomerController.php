@@ -38,12 +38,7 @@ class CustomerController extends Controller
     {
         $query = $this->customerService->getAll();
         if (auth()->check() && auth()->user()->role->type == 'seller') {
-            $query->where('seller_id', auth()->id());
-        }
-        // Warehouse filter
-        $activeWarehouse = session('active_warehouse_id');
-        if ($activeWarehouse && $activeWarehouse !== 'all') {
-            $query->where('warehouse_id', $activeWarehouse);
+            $query->where('warehouse_id', auth()->id());
         }
         $data['customers'] = $query;
         return view('customer::customers.index', $data);
@@ -55,21 +50,19 @@ class CustomerController extends Controller
             
             $query = $this->customerService->getAll()->with(['salesman', 'warehouse', 'customerAddresses']);
             if (auth()->check() && auth()->user()->role->type == 'seller') {
-                $query->where('seller_id', auth()->id());
-            }
-            // Warehouse filter
-            $activeWarehouse = session('active_warehouse_id');
-            if ($activeWarehouse && $activeWarehouse !== 'all') {
-                $query->where('warehouse_id', $activeWarehouse);
+                $query->where('warehouse_id', auth()->id());
             }
 
             if ($table == 'active_customer') {
-                $customer = $query->where('is_active', 1);
+                $customer = $query->where('is_active', 1)->where('is_deleted', 0);
             } elseif ($table == 'inactive_customer') {
-                $customer = $query->where('is_active', 0);
+                $customer = $query->where('is_active', 0)->where('is_deleted', 0);
             } elseif ($table == 'all_customer') {
-                $customer = $query->whereNotIn('is_active', ['2']);
+                $customer = $query->whereNotIn('is_active', ['2'])->where('is_deleted', 0);
+            } elseif ($table == 'deleted_customer') {
+                $customer = $query->where('is_deleted', 1);
             }
+
             return DataTables::of($customer)
                 ->filterColumn('phone', function($query, $keyword) {
                     $query->where(function($q) use ($keyword) {
@@ -189,20 +182,9 @@ class CustomerController extends Controller
             return back();
         }
     }
-
     public function create()
     {
-        $seller_id = null;
-        if (auth()->check() && auth()->user()->role->type == 'seller') {
-            $seller_id = auth()->id();
-        }
-        
-        $query = SellerWarehouseAddress::select('id', 'user_id', 'warehouse_name', 'warehouse_address', 'warehouse_phone');
-        if ($seller_id) {
-            $query->where('user_id', $seller_id);
-        }
-        $warehouses = $query->get();
-        
+        $warehouses = SellerWarehouseAddress::select('id', 'user_id', 'warehouse_name', 'warehouse_address', 'warehouse_phone')->get();
         return view('customer::customers.create', compact('warehouses'));
     }
 
@@ -225,7 +207,7 @@ class CustomerController extends Controller
             'password' => 'required|confirmed|min:8',
             'referral_code' => ['sometimes', 'nullable', Rule::exists('referral_codes', 'referral_code')->where('status', 1)],
             'status' => 'required',
-            'warehouse_id' => 'required|exists:seller_warehouse_addresses,id',
+            'warehouse_id' => 'required',
             'gst_number' => 'nullable|string|max:255'
         ]);
 
@@ -257,10 +239,6 @@ class CustomerController extends Controller
             return redirect()->route('cusotmer.list_active');
 
         } catch (QueryException $e) {
-            \Log::error('Customer Store Database Error: ' . $e->getMessage(), [
-                'exception' => $e,
-                'request' => $request->except(['password', 'password_confirmation'])
-            ]);
 
             if ($e->errorInfo[1] == 1062) {
                 // Duplicate entry
@@ -273,10 +251,6 @@ class CustomerController extends Controller
             return back();
 
         } catch (\Exception $e) {
-            \Log::error('Customer Store Exception: ' . $e->getMessage(), [
-                'exception' => $e,
-                'request' => $request->except(['password', 'password_confirmation'])
-            ]);
 
             Toastr::error('Something went wrong. Please try again.', 'Error');
             LogActivity::errorLog($e->getMessage());
@@ -287,22 +261,7 @@ class CustomerController extends Controller
     public function edit($id)
     {
         $customer = $this->customerService->find($id);
-        
-        $seller_id = null;
-        if (auth()->check()) {
-            if (auth()->user()->role->type == 'seller') {
-                $seller_id = auth()->id();
-            } else {
-                $seller_id = $customer->warehouse ? $customer->warehouse->user_id : null;
-            }
-        }
-        
-        $query = SellerWarehouseAddress::select('id', 'user_id', 'warehouse_name', 'warehouse_address', 'warehouse_phone');
-        if ($seller_id) {
-            $query->where('user_id', $seller_id);
-        }
-        $warehouses = $query->get();
-        
+        $warehouses = SellerWarehouseAddress::select('id', 'user_id', 'warehouse_name', 'warehouse_address', 'warehouse_phone')->get();
         return view('customer::customers.edit', compact('customer', 'warehouses'));
     }
 
@@ -317,7 +276,7 @@ class CustomerController extends Controller
             'document' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
             'password' => 'sometimes|nullable|confirmed|min:8',
             'status' => 'required',
-            'warehouse_id' => 'required|exists:seller_warehouse_addresses,id',
+            'warehouse_id' => 'required',
             'gst_number' => 'nullable|string|max:255'
         ]);
         try {
@@ -342,11 +301,6 @@ class CustomerController extends Controller
             LogActivity::successLog('Customer Updated Successfully.');
             return redirect()->route('cusotmer.list_active');
         } catch (Exception $e) {
-            \Log::error('Customer Update Exception: ' . $e->getMessage(), [
-                'exception' => $e,
-                'id' => $id,
-                'request' => $request->except(['password', 'password_confirmation'])
-            ]);
             LogActivity::errorLog($e->getMessage());
             Toastr::error(__('common.error_message'), __('common.error'));
             return back();
@@ -378,7 +332,6 @@ class CustomerController extends Controller
             return back();
         }
     }
-    
     public function show($id)
     {
 
@@ -561,7 +514,20 @@ class CustomerController extends Controller
             $customer = CustomerAddress::findOrFail($request->address_id);
             $old_data = CustomerAddress::findOrFail($request->address_id);
             $customer->update($data);
-
+            // CustomerAddress::where('id',$request->address_id)->update([
+            //     "customer_id" => $old_data->customer_id,
+            //     "name" => $old_data->name,
+            //     "email" => $old_data->email,
+            //     "phone" => $old_data->phone,
+            //     "address" => $old_data->address,
+            //     "city" => $old_data->city,
+            //     "state" => $old_data->state,
+            //     "country" => $old_data->country,
+            //     "postal_code" => $old_data->postal_code,
+            //     "is_shipping_default" => $old_data->is_shipping_default,
+            //     "is_billing_default" => $old_data->is_billing_default,
+            //     "is_updated" => 1,
+            // ]);
 
             LogActivity::successLog('update address');
             return $this->loadTableData();

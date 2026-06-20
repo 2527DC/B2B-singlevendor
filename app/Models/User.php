@@ -31,13 +31,19 @@ use Modules\Customer\Entities\CustomerAddress;
 use Modules\Marketing\Entities\ReferralCode;
 use Modules\Review\Entities\SellerReview;
 use Modules\Setup\Entities\ApplyLoan;
+use Modules\MultiVendor\Entities\SellerAccount;
+use Modules\MultiVendor\Entities\SellerSubcription;
 use Modules\Seller\Entities\SellerProduct;
+use Modules\MultiVendor\Entities\SellerBankAccount;
+use Modules\MultiVendor\Entities\SellerBusinessInformation;
+use Modules\MultiVendor\Entities\SellerReturnAddress;
 use Modules\Seller\Entities\SellerWarehouseAddress;
 use Laravel\Sanctum\HasApiTokens;
 use Modules\FrontendCMS\Entities\SellerSocialLink;
 use Modules\GeneralSetting\Entities\Currency;
 use Modules\GeneralSetting\Entities\EmailTemplate;
 use Modules\Language\Entities\Language;
+use Modules\MultiVendor\Entities\FollowSeller;
 use Modules\SidebarManager\Entities\BackendmenuUser;
 
 class User extends Authenticatable
@@ -79,10 +85,10 @@ class User extends Authenticatable
         'currency_code',
         'club_point',
         'warehouse_id',
-        'seller_id',
         'gst_number',
         'salesman_id',
         'coordinates',
+        'is_deleted',
     ];
 
     /**
@@ -121,6 +127,7 @@ class User extends Authenticatable
         'role_id' => 'integer',
         'is_verified' => 'integer',
         'is_active' => 'integer',
+        'is_deleted' => 'integer',
         'email_verified_at' => 'datetime',
         'coordinates' => 'json',
     ];
@@ -257,29 +264,27 @@ class User extends Authenticatable
     }
 
     public function SellerAccount(){
-        return null;
+        return $this->hasOne(SellerAccount::class, 'user_id', 'id');
     }
 
+
     public function SellerSubscriptions(){
-        return null;
+        return $this->hasOne(SellerSubcription::class, 'seller_id', 'id');
     }
     public function SellerBankAccount(){
-        return null;
+        return $this->hasOne(SellerBankAccount::class, 'user_id', 'id');
     }
     public function SellerBusinessInformation(){
-        return null;
+        return $this->hasOne(SellerBusinessInformation::class, 'user_id', 'id');
     }
     public function SellerWarehouseAddress(){
         return $this->hasOne(SellerWarehouseAddress::class, 'user_id', 'id');
     }
     public function warehouse(){
-        return $this->belongsTo(SellerWarehouseAddress::class, 'warehouse_id', 'id')->withDefault();
-    }
-    public function seller(){
-        return $this->belongsTo(User::class, 'seller_id', 'id')->withDefault();
+        return $this->belongsTo(\Modules\Seller\Entities\SellerWarehouseAddress::class, 'warehouse_id', 'user_id')->withDefault();
     }
     public function SellerReturnAddress(){
-        return null;
+        return $this->hasOne(SellerReturnAddress::class, 'user_id', 'id');
     }
     public function order_packages()
     {
@@ -419,30 +424,26 @@ class User extends Authenticatable
     }
 
     public function scopeActiveSeller($query){
-        if (isModuleActive('MultiVendor')) {
-            $query = $query->where('is_active', 1)->whereHas('role', function($q1){
-                return $q1->where('type','seller');
+        $query = $query->where('is_active', 1)->whereHas('role', function($q1){
+            return $q1->where('type','seller');
+        });
+        $query->whereHas('SellerAccount', function ($q1) {
+            return $q1->where('holiday_mode', 0)->orWhere('holiday_date', '!=', date('Y-m-d'))->orWhere(function ($q2) {
+                return $q2->where('holiday_date_start', '>', date('Y-m-d'))->where('holiday_date_end', '<', date('Y-m-d'))
+                    ->orWhere('holiday_date_start', '>', date('Y-m-d'))->orWhere('holiday_date_end', '<', date('Y-m-d'));
             });
-            $query->whereHas('SellerAccount', function ($q1) {
-                return $q1->where('holiday_mode', 0)->orWhere('holiday_date', '!=', date('Y-m-d'))->orWhere(function ($q2) {
-                    return $q2->where('holiday_date_start', '>', date('Y-m-d'))->where('holiday_date_end', '<', date('Y-m-d'))
-                        ->orWhere('holiday_date_start', '>', date('Y-m-d'))->orWhere('holiday_date_end', '<', date('Y-m-d'));
-                });
-            })->whereHas('SellerSubscriptions', function ($q5) {
-                return $q5->where('expiry_date', '>', date('Y-m-d'))->whereHas('user.SellerAccount', function ($q6) {
-                    return $q6->where('seller_commission_id', 3);
-                });
-            })->orWhereHas('SellerAccount',function($q7){
-                return $q7->where('seller_commission_id','!=',3)
-                ->where('holiday_mode', 0)->orWhere('holiday_date', '!=', date('Y-m-d'))->orWhere(function ($q2) {
-                    return $q2->where('holiday_date_start', '>', date('Y-m-d'))->where('holiday_date_end', '<', date('Y-m-d'))
-                        ->orWhere('holiday_date_start', '>', date('Y-m-d'))->orWhere('holiday_date_end', '<', date('Y-m-d'));
-                });
+        })->whereHas('SellerSubscriptions', function ($q5) {
+            return $q5->where('expiry_date', '>', date('Y-m-d'))->whereHas('user.SellerAccount', function ($q6) {
+                return $q6->where('seller_commission_id', 3);
             });
-            return $query;
-        } else {
-            return $query->where('id', 1)->where('is_active', 1);
-        }
+        })->orWhereHas('SellerAccount',function($q7){
+            return $q7->where('seller_commission_id','!=',3)
+            ->where('holiday_mode', 0)->orWhere('holiday_date', '!=', date('Y-m-d'))->orWhere(function ($q2) {
+                return $q2->where('holiday_date_start', '>', date('Y-m-d'))->where('holiday_date_end', '<', date('Y-m-d'))
+                    ->orWhere('holiday_date_start', '>', date('Y-m-d'))->orWhere('holiday_date_end', '<', date('Y-m-d'));
+            });
+        });
+        return $query;
     }
 
 
@@ -488,6 +489,18 @@ class User extends Authenticatable
 
     public function sellerSocialLinks(){
         return $this->hasMany(SellerSocialLink::class,'user_id', 'id')->where('status', 1);
+    }
+    public function follow($seller_id)
+    {
+        return  FollowSeller::where('seller_id',$seller_id)->where('customer_id',$this->id)->first();
+    }
+    public function followers($customer_id)
+    {
+        return  FollowSeller::where('customer_id',$customer_id)->where('seller_id',$this->id)->first();
+    }
+    public function countFollow()
+    {
+        return FollowSeller::where('seller_id',$this->id)->count();
     }
 
     public function sellerWiseOrderCount(){

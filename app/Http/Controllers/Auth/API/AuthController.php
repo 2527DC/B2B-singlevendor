@@ -166,6 +166,7 @@ class AuthController extends Controller
                         }
                     })
                     ->where('is_active', 1)
+                    ->where('is_deleted', 0)
                     ->whereHas('role', function ($q) {
                         $q->where('type', 'customer');
                     })
@@ -188,6 +189,7 @@ class AuthController extends Controller
                     }
                 })
                 ->where('is_active', 0)
+                ->where('is_deleted', 0)
                 ->whereHas('role', function ($q) {
                     $q->where('type', 'customer');
                 })
@@ -323,9 +325,11 @@ class AuthController extends Controller
                 'device_token' => $request->device_token,
             ]);
 
-            $user = User::where('is_active', 1)->whereHas('role', function ($role) {
-                return $role->where('type', 'customer');
-            })
+            $user = User::where('is_active', 1)
+                ->where('is_deleted', 0)
+                ->whereHas('role', function ($role) {
+                    return $role->where('type', 'customer');
+                })
                 ->where('phone', $request->phone)
                 ->first();
 
@@ -365,6 +369,7 @@ class AuthController extends Controller
             } else {
                 // Check if user exists but is inactive (pending admin approval)
                 $inactiveUser = User::where('is_active', 0)
+                    ->where('is_deleted', 0)
                     ->whereHas('role', function ($role) {
                         return $role->where('type', 'customer');
                     })
@@ -377,6 +382,18 @@ class AuthController extends Controller
                         'login' => $request->phone,
                     ]);
                     return response(['message' => 'Your account is pending admin approval. Please wait for activation.'], 403);
+                }
+
+                // If user doesn't exist at all (or is deleted)
+                $userExists = User::where('is_deleted', 0)
+                    ->whereHas('role', function ($role) {
+                        return $role->where('type', 'customer');
+                    })
+                    ->where('phone', $request->phone)
+                    ->exists();
+
+                if (!$userExists) {
+                    return response(['message' => 'The phone number has not been registered yet. Please register to login.'], 401);
                 }
 
                 Log::warning('Customer Login failed', [
@@ -476,6 +493,50 @@ class AuthController extends Controller
         $user->tokens()->where('id', $user->currentAccessToken()->id)->delete();
         return response(['message' => 'Logged out successfully'], 200);
     }
+    /**
+     * Delete a user by ID.
+     * @param Request $request
+     * @param int $id
+     * @response{ "message": "User deleted successfully" }
+     */
+    public function deleteUser(Request $request, $id)
+    {
+        // Log the deletion request
+        Log::info('User Deletion Request Received', [
+            'user_id' => $id,
+            'requester_id' => $request->user() ? $request->user()->id : null,
+            'ip' => $request->ip(),
+            'request_headers' => $request->headers->all(),
+            'request_body' => $request->all(),
+        ]);
+
+        $user = User::where('is_deleted', 0)->find($id);
+        if (!$user) {
+            $responseBody = ['message' => 'User not found'];
+            Log::warning('User Deletion Response - Not Found', [
+                'user_id' => $id,
+                'response_body' => $responseBody,
+            ]);
+            return response($responseBody, 404);
+        }
+
+        // Soft delete the user by setting is_deleted flag and deactivating
+        $user->is_deleted = 1;
+        $user->is_active = 0;
+        $user->save();
+
+        // Revoke all tokens for this user so they are instantly logged out
+        $user->tokens()->delete();
+
+        $responseBody = ['message' => 'User deleted successfully'];
+        Log::info('User Deletion Response - Success', [
+            'user_id' => $id,
+            'response_body' => $responseBody,
+        ]);
+
+        return response($responseBody, 200);
+    }
+
 
     /**
      * Register Customer
@@ -914,7 +975,7 @@ public function register(Request $request)
     {
         $provider = SocialProvider::where('provider_id', $request->provider_id)->where('provider_name', $request->provider_name)->first();
         if ($provider) {
-            $user = User::where('id', $provider->user_id)->where('is_active', 1)->first();
+            $user = User::where('id', $provider->user_id)->where('is_active', 1)->where('is_deleted', 0)->first();
             if ($user) {
                 $token = $user->createToken('my_token')->plainTextToken;
                 $response = [

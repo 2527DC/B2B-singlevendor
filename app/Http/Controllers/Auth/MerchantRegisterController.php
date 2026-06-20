@@ -46,7 +46,7 @@ use Modules\Shipping\Entities\SellerWiseCarrierConfig;
 use Modules\MultiVendor\Events\SellerShippingRateEvent;
 use \Modules\FrontendCMS\Services\WorkingProcessService;
 use Modules\GeneralSetting\Entities\NotificationSetting;
-use Modules\MultiVendor\Entities\SellerWarehouseAddress;
+use Modules\Seller\Entities\SellerWarehouseAddress;
 use Modules\MultiVendor\Events\SellerCarrierCreateEvent;
 use Modules\Torod\Repositories\TorodInstallerRepository;
 use \Modules\FrontendCMS\Services\MerchantContentService;

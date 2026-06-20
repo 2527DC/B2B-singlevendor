@@ -57,4 +57,72 @@ class Cart extends Model
     public function customer(){
         return $this->belongsTo(User::class,'user_id', 'id')->withDefault();
     }
+
+    public function getPriceAttribute()
+    {
+        if ($this->product_type == 'product') {
+            $sku = $this->product;
+            if (!$sku) {
+                return (double)($this->getRawOriginal('price') ?? 0.0);
+            }
+
+            $qty = $this->qty;
+            $price = 0;
+
+            if (isModuleActive('WholeSale')) {
+                if ($sku->wholeSalePrices && $sku->wholeSalePrices->count()) {
+                    foreach ($sku->wholeSalePrices as $wholesale_price) {
+                        if ($wholesale_price->min_qty <= $qty && $wholesale_price->max_qty >= $qty) {
+                            $price = selling_price($wholesale_price->sell_price, @$sku->product->hasDeal ? $sku->product->hasDeal->discount_type : $sku->product->discount_type, @$sku->product->hasDeal ? $sku->product->hasDeal->discount : $sku->product->discount);
+                        } elseif ($wholesale_price->max_qty < $qty) {
+                            $price = selling_price($wholesale_price->sell_price, @$sku->product->hasDeal ? $sku->product->hasDeal->discount_type : $sku->product->discount_type, @$sku->product->hasDeal ? $sku->product->hasDeal->discount : $sku->product->discount);
+                        }
+                    }
+                }
+            }
+
+            if ($price == 0) {
+                if ($sku->product && $sku->product->hasDeal) {
+                    $price = selling_price(@$sku->sell_price, @$sku->product->hasDeal->discount_type, @$sku->product->hasDeal->discount);
+                } else {
+                    if ($sku->product && $sku->product->hasDiscount == 'yes') {
+                        $price = selling_price(@$sku->sell_price, @$sku->product->discount_type, @$sku->product->discount);
+                    } else {
+                        $price = @$sku->sell_price;
+                    }
+                }
+            }
+
+            return (double)$price;
+        } elseif ($this->product_type == 'gift_card') {
+            if ($this->gift_card_type) {
+                $addGiftCard = \Modules\GiftCard\Entities\AddGiftCard::find($this->gift_card_sku);
+                if ($addGiftCard) {
+                    if ($addGiftCard->hasDiscount()) {
+                        return (double)selling_price($addGiftCard->gift_selling_price, $addGiftCard->gift_discount_type, $addGiftCard->gift_discount_amount);
+                    } else {
+                        return (double)$addGiftCard->gift_selling_price;
+                    }
+                }
+                return (double)($this->getRawOriginal('price') ?? 0.0);
+            } else {
+                $sku = \Modules\GiftCard\Entities\GiftCard::where('id', $this->product_id)->first();
+                if ($sku) {
+                    if ($sku->hasDiscount()) {
+                        return (double)selling_price($sku->sell_price, $sku->discount_type, $sku->discount);
+                    } else {
+                        return (double)$sku->sell_price;
+                    }
+                }
+                return (double)($this->getRawOriginal('price') ?? 0.0);
+            }
+        }
+
+        return (double)($this->getRawOriginal('price') ?? 0.0);
+    }
+
+    public function getTotalPriceAttribute()
+    {
+        return (double)($this->price * $this->qty);
+    }
 }
