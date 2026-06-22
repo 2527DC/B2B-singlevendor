@@ -62,11 +62,15 @@ Route::get('/uploads/digital_file/{slug}',[OrderManageController::class,'downloa
 Route::middleware(['admin'])->group(function () {
     Route::get('/admin-dashboard', [ProfileController::class, 'dashboard'])->name('admin.dashboard')->middleware('permission');
     Route::get('/dashboard-cards-info/{type}', [ProfileController::class, 'dashboardCards'])->name('dashboard.card.info');
+});
 
+Route::middleware(['auth'])->group(function () {
     // Warehouse Switcher — stores active warehouse in session and reloads
     Route::get('/switch-warehouse/{id}', function ($id) {
         if ($id === 'all') {
             session(['active_warehouse_id' => 'all']);
+        } elseif ($id === 'select' || empty($id)) {
+            session(['active_warehouse_id' => 'select']);
         } else {
             $warehouse = \Modules\Seller\Entities\SellerWarehouseAddress::findOrFail($id);
             session(['active_warehouse_id' => $warehouse->id]);

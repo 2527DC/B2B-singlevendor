@@ -3,7 +3,7 @@
     (function($){
         "use strict";
         $(document).ready(function(){
-            if ($('#warehouse_filter').val() != '') {
+            if ($('#warehouse_filter').val() != '' && $('#warehouse_filter').val() != 'select') {
                 productDatatable();
                 mainProductList();
                 alertProductDatatable();
@@ -648,7 +648,7 @@
 
             function checkWarehouseSelection() {
                 var val = $('#warehouse_filter').val();
-                if (val == '' || val == null) {
+                if (val == '' || val == null || val == 'select') {
                     $('#product_tab_content').hide();
                     $('#no_warehouse_msg').show();
                 } else {
@@ -663,7 +663,7 @@
             $(document).on('change', '#warehouse_filter', function() {
                 checkWarehouseSelection();
                 var val = $('#warehouse_filter').val();
-                if (val != '' && val != null) {
+                if (val != '' && val != null && val != 'select') {
                     productDatatable();
                     mainProductList();
                     alertProductDatatable();

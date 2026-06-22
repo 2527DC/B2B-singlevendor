@@ -22,6 +22,7 @@ use Modules\UserActivityLog\Traits\LogActivity;
 use Modules\GST\Repositories\GstConfigureRepository;
 use Modules\OrderManage\Entities\CustomerNotification;
 use Modules\GeneralSetting\Entities\NotificationSetting;
+use Modules\MultiVendor\Entities\SellerBusinessInformation;
 use Modules\Product\Services\ProductService as mainProductService;
 class ProductController extends Controller
 {
@@ -34,8 +35,7 @@ class ProductController extends Controller
     public function index()
     {
         try{
-            $warehouses = \Modules\Seller\Entities\SellerWarehouseAddress::where('user_id', auth()->id())->get();
-            return view('seller::products.index', compact('warehouses'));
+            return view('seller::products.index');
         }catch(Exception $e){
             LogActivity::errorLog($e->getMessage());
             return $e->getMessage();
@@ -44,6 +44,11 @@ class ProductController extends Controller
 
     public function getData()
     {
+        $activeWarehouseId = session('active_warehouse_id');
+        if (is_null($activeWarehouseId) || $activeWarehouseId === '' || $activeWarehouseId === 'select') {
+            return DataTables::of(collect([]))->toJson();
+        }
+
         $status_slider = '_all_product_';
         if(isset($_GET['table'])){
             $products = $this->productService->getFilterdProduct(['table' => $_GET['table']]);
@@ -51,8 +56,6 @@ class ProductController extends Controller
         }else{
             $products = $this->productService->getAll();
         }
-
-        // Warehouse filtering only updates the stock column view, it does not hide inactive products
 
 
         return DataTables::of($products)
@@ -114,21 +117,71 @@ class ProductController extends Controller
     }
     public function create(CategoryService $categoryService, UnitTypeService $unitTypeService, BrandService $brandService, TagService $tagService, AttributeService $attributeService, ShippingService $shippingService,GSTService $gstService){
         $seller_id = getParentSellerId();
-        $data['warehouses'] = \Modules\Seller\Entities\SellerWarehouseAddress::where('user_id', $seller_id)->get();
-        $data['default_warehouse_id'] = 1;
-
-        $data['units'] = $unitTypeService->getActiveAll();
-        $data['attributes'] = $attributeService->getActiveAll();
-        $data['shippings'] = $shippingService->getActiveAll();
-        $data['Products'] = $this->productService->getProductOfOtherSeller();
-        $data['totalProducts'] = count($this->productService->getAllMyProduct());
-        if (app('gst_config')['enable_gst'] == "only_tax") {
-            $data['gst_lists'] = $gstService->getActiveList();
+        $business_info = SellerBusinessInformation::with('country', 'state', 'city')->where('user_id', $seller_id)->first();
+        $bankInfo = $this->productService->getSellerBankInfo();
+        if($business_info ==null || $business_info->business_owner_name == null || $business_info->business_address1 == null
+        || $business_info->business_address1 == null || $business_info->business_country == null
+        || $business_info->business_state == null || $business_info->business_city == null){
+            if(auth()->user()->role->type == 'seller'){
+                Toastr::warning(__('seller.please_update_business_bank_information_from_profile_first'), __('common.warning'));
+                return back();
+            }else{
+                $data['units'] = $unitTypeService->getActiveAll();
+                $data['attributes'] = $attributeService->getActiveAll();
+                $data['shippings'] = $shippingService->getActiveAll();
+                $data['Products'] = $this->productService->getProductOfOtherSeller();
+                $data['totalProducts'] = count($this->productService->getAllMyProduct());
+                if (app('gst_config')['enable_gst'] == "only_tax") {
+                    $data['gst_lists'] = $gstService->getActiveList();
+                }else{
+                    $gstGroup_repo = new GstConfigureRepository();
+                    $data['gst_groups'] = $gstGroup_repo->getGroup();
+                }
+                if (auth()->user()->role->type == "seller") {
+                    if (auth()->user()->SellerAccount->seller_commission_id == 3) {
+                        if (auth()->user()->SellerSubscriptions->pricing->stock_limit > $data['totalProducts'] && auth()->user()->SellerSubscriptions->is_paid == 1) {
+                            return view('seller::products.components.create', $data);
+                        }
+                        else {
+                            Toastr::warning(__('product.uploading_product_is_disabled_according_to_your_package_right_now'),__('common.warning'));
+                            return back();
+                        }
+                    }else {
+                        return view('seller::products.components.create', $data);
+                    }
+                }else {
+                    return view('seller::products.components.create', $data);
+                }
+            }
         }else{
-            $gstGroup_repo = new GstConfigureRepository();
-            $data['gst_groups'] = $gstGroup_repo->getGroup();
+            $data['units'] = $unitTypeService->getActiveAll();
+            $data['attributes'] = $attributeService->getActiveAll();
+            $data['shippings'] = $shippingService->getActiveAll();
+            $data['Products'] = $this->productService->getProductOfOtherSeller();
+            $data['totalProducts'] = count($this->productService->getAllMyProduct());
+            if (app('gst_config')['enable_gst'] == "only_tax") {
+                $data['gst_lists'] = $gstService->getActiveList();
+            }else{
+                $gstGroup_repo = new GstConfigureRepository();
+                $data['gst_groups'] = $gstGroup_repo->getGroup();
+            }
+            if (auth()->user()->role->type == "seller") {
+                $seller = getParentSeller();
+                if ($seller->SellerAccount->seller_commission_id == 3) {
+                    if ($seller->SellerSubscriptions->pricing->stock_limit >= $data['totalProducts'] && $seller->SellerSubscriptions->is_paid == 1) {
+                        return view('seller::products.components.create', $data);
+                    }
+                    else {
+                        Toastr::warning(__('product.uploading_product_is_disabled_according_to_your_package_right_now'),__('common.warning'));
+                        return back();
+                    }
+                }else {
+                    return view('seller::products.components.create', $data);
+                }
+            }else {
+                return view('seller::products.components.create', $data);
+            }
         }
-        return view('seller::products.components.create', $data);
     }
     public function store(Request $request){
         $request->validate([
@@ -234,8 +287,6 @@ class ProductController extends Controller
                     $totalWholesalePrice = \Modules\WholeSale\Entities\WholesalePrice::where('product_id', $id)->get();
                 }
             }
-            $seller_id = getParentSellerId();
-            $data['warehouses'] = \Modules\Seller\Entities\SellerWarehouseAddress::where('user_id', $seller_id)->get();
             $data['totalWholesalePrice'] = $totalWholesalePrice;
             return view('seller::products.components.edit',$data);
         }catch(Exception $e){
@@ -258,10 +309,6 @@ class ProductController extends Controller
                 $gstGroup_repo = new GstConfigureRepository();
                 $data['gst_groups'] = $gstGroup_repo->getGroup();
             }
-            
-            $seller_id = getParentSellerId();
-            $data['warehouses'] = \Modules\Seller\Entities\SellerWarehouseAddress::where('user_id', $seller_id)->get();
-
             return view('seller::products.components.my_product_edit', $data);
         }
         return abort(404);
@@ -279,10 +326,6 @@ class ProductController extends Controller
             $gstGroup_repo = new GstConfigureRepository();
             $data['gst_groups'] = $gstGroup_repo->getGroup();
         }
-
-        $seller_id = getParentSellerId();
-        $data['warehouses'] = \Modules\Seller\Entities\SellerWarehouseAddress::where('user_id', $seller_id)->get();
-
         return view('seller::products.components.my_product_clone', $data);
     }
 
@@ -406,73 +449,6 @@ class ProductController extends Controller
     {
         return $this->productService->get_seller_product_variant_wise_price($request->except('_token'));
     }
-
-    public function getWarehousesStatus(Request $request)
-    {
-        try {
-            $product_id = $request->product_id;
-            $seller_id = getParentSellerId();
-            $warehouses = \Modules\Seller\Entities\SellerWarehouseAddress::where('user_id', $seller_id)->get();
-            $product = \Modules\Seller\Entities\SellerProduct::with('skus')->find($product_id);
-            $sku_ids = $product->skus->pluck('id')->toArray();
-            
-            $status_data = [];
-            foreach ($warehouses as $warehouse) {
-                // Check if any sku of this product is active in this warehouse
-                $is_active = \Illuminate\Support\Facades\DB::table('warehouse_product_stocks')
-                                ->where('warehouse_id', $warehouse->id)
-                                ->whereIn('seller_product_sku_id', $sku_ids)
-                                ->where('is_active', 1)
-                                ->exists();
-                $status_data[] = [
-                    'id' => $warehouse->id,
-                    'name' => $warehouse->warehouse_name,
-                    'is_active' => $is_active ? 1 : 0
-                ];
-            }
-            
-            return response()->json($status_data);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
-    }
-
-    public function updateWarehouseStatus(Request $request)
-    {
-        try {
-            $product_id = $request->product_id;
-            $warehouse_id = $request->warehouse_id;
-            $is_active = $request->is_active;
-
-            $product = \Modules\Seller\Entities\SellerProduct::with('skus')->find($product_id);
-            if (!$product) return response()->json(['msg' => 'Product not found'], 404);
-
-            foreach ($product->skus as $sku) {
-                $stock = \Illuminate\Support\Facades\DB::table('warehouse_product_stocks')
-                            ->where('warehouse_id', $warehouse_id)
-                            ->where('seller_product_sku_id', $sku->id)
-                            ->first();
-                if ($stock) {
-                    \Illuminate\Support\Facades\DB::table('warehouse_product_stocks')
-                        ->where('id', $stock->id)
-                        ->update(['is_active' => $is_active]);
-                } else if ($is_active == 1) {
-                    \Illuminate\Support\Facades\DB::table('warehouse_product_stocks')->insert([
-                        'warehouse_id' => $warehouse_id,
-                        'seller_product_sku_id' => $sku->id,
-                        'stock' => 0,
-                        'is_active' => 1,
-                        'created_at' => now(),
-                        'updated_at' => now()
-                    ]);
-                }
-            }
-            return response()->json(['msg' => 'success']);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
-    }
-
     public function changeState(Request $request){
         if($request->has('type')){
             session()->put('seller_product_create_state', $request->type);

@@ -1,11 +1,11 @@
 
 @if ($products->stock_manage == 1)
     @php
-        $warehouse_id = request()->get('warehouse_id');
+        $warehouse_id = request()->get('warehouse_id') ?: session('active_warehouse_id');
         $stock = 0;
         foreach ($products->skus as $sku) {
             $query = \DB::table('warehouse_product_stocks')->where('seller_product_sku_id', $sku->id);
-            if ($warehouse_id) {
+            if ($warehouse_id && $warehouse_id !== 'all' && $warehouse_id !== 'select') {
                 $query->where('warehouse_id', $warehouse_id);
             }
             $stock += $query->sum('stock');

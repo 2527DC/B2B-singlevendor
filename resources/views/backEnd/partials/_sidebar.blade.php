@@ -22,12 +22,13 @@
         $allWarehouses = \Modules\Seller\Entities\SellerWarehouseAddress::orderBy('warehouse_name')->get();
         $activeWarehouseId = session('active_warehouse_id');
         if (is_null($activeWarehouseId)) {
-            $defaultWarehouse = $allWarehouses->where('is_default', 1)->first();
-            $activeWarehouseId = $defaultWarehouse ? $defaultWarehouse->id : 'all';
+            $activeWarehouseId = 'select';
             session(['active_warehouse_id' => $activeWarehouseId]);
         }
-        $activeWarehouseName = 'All Warehouses';
-        if ($activeWarehouseId !== 'all') {
+        $activeWarehouseName = 'Select Warehouse';
+        if ($activeWarehouseId === 'all') {
+            $activeWarehouseName = 'All Warehouses';
+        } elseif ($activeWarehouseId !== 'select') {
             $found = $allWarehouses->where('id', $activeWarehouseId)->first();
             if ($found) $activeWarehouseName = $found->warehouse_name;
         }
@@ -39,6 +40,9 @@
                 <i class="fas fa-warehouse"></i>
             </div>
             <select id="warehouseSwitcher" class="warehouse-switcher-select" onchange="if(this.value) window.location.href=this.value;">
+                <option value="{{ route('switch.warehouse', 'select') }}" {{ $activeWarehouseId === 'select' ? 'selected' : '' }}>
+                    Select Warehouse
+                </option>
                 <option value="{{ route('switch.warehouse', 'all') }}" {{ $activeWarehouseId === 'all' ? 'selected' : '' }}>
                     All Warehouses
                 </option>

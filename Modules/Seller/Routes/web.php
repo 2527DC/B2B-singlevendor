@@ -57,6 +57,15 @@ Route::middleware(['auth','seller'])->prefix('seller')->as('seller.')->group(fun
     Route::get('/salesmen-download-excel', 'SalesmanController@downloadExcel')->name('salesmen.download_excel');
     Route::post('/salesmen-upload-excel', 'SalesmanController@uploadExcel')->name('salesmen.upload_excel');
     Route::get('/salesmen/{id}', 'SalesmanController@show')->name('salesmen.show');
+
+    // Warehouse
+    Route::get('/warehouses', 'WarehouseController@index')->name('warehouses.index');
+    Route::get('/warehouses/create', 'WarehouseController@create')->name('warehouses.create');
+    Route::post('/warehouses', 'WarehouseController@store')->name('warehouses.store');
+    Route::get('/warehouses/{id}/edit', 'WarehouseController@edit')->name('warehouses.edit');
+    Route::put('/warehouses/{id}', 'WarehouseController@update')->name('warehouses.update');
+    Route::delete('/warehouses/{id}', 'WarehouseController@destroy')->name('warehouses.destroy');
+    Route::post('/warehouses/{id}/default', 'WarehouseController@setDefault')->name('warehouses.set_default');
 });
 Route::prefix('seller')->as('seller.')->group(function() {
     Route::get('/profile/get-state',[CountryController::class, 'get_states'])->name('profile.get-state');
@@ -71,4 +80,13 @@ Route::middleware(['auth','admin'])->prefix('admin')->group(function() {
         Route::get('/inhouse/products/create','ProductController@create')->name('admin.my-product.create')->middleware(['permission']);
         Route::get('/inhouse/product/edit/{id}','ProductController@edit')->name('admin.my-product.edit')->middleware(['permission']);
     }
+
+    // Admin Warehouse
+    Route::get('/warehouses', 'WarehouseController@index')->name('admin.warehouses.index');
+    Route::get('/warehouses/create', 'WarehouseController@create')->name('admin.warehouses.create');
+    Route::post('/warehouses', 'WarehouseController@store')->name('admin.warehouses.store');
+    Route::get('/warehouses/{id}/edit', 'WarehouseController@edit')->name('admin.warehouses.edit');
+    Route::put('/warehouses/{id}', 'WarehouseController@update')->name('admin.warehouses.update');
+    Route::delete('/warehouses/{id}', 'WarehouseController@destroy')->name('admin.warehouses.destroy');
+    Route::post('/warehouses/{id}/default', 'WarehouseController@setDefault')->name('admin.warehouses.set_default');
 });

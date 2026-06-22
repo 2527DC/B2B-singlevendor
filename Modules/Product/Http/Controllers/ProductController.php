@@ -131,6 +131,11 @@ class ProductController extends Controller
 
     public function reportedProducts()
     {
+        $activeWarehouseId = session('active_warehouse_id');
+        if (is_null($activeWarehouseId) || $activeWarehouseId === '' || $activeWarehouseId === 'select') {
+            return DataTables::of(collect([]))->toJson();
+        }
+
         $products = $this->productService->getReportedProduct();
         return DataTables::of($products)
                             ->addIndexColumn()
@@ -159,6 +164,11 @@ class ProductController extends Controller
 
     public function getData()
     {
+        $activeWarehouseId = session('active_warehouse_id');
+        if (is_null($activeWarehouseId) || $activeWarehouseId === '' || $activeWarehouseId === 'select') {
+            return DataTables::of(collect([]))->toJson();
+        }
+
         $user = auth()->user();
 
         $status_slider = '_all_product_';
@@ -204,6 +214,11 @@ class ProductController extends Controller
 
     public function requestGetData()
     {
+        $activeWarehouseId = session('active_warehouse_id');
+        if (is_null($activeWarehouseId) || $activeWarehouseId === '' || $activeWarehouseId === 'select') {
+            return DataTables::of(collect([]))->toJson();
+        }
+
         $products = $this->productService->getRequestProduct();
         return DataTables::of($products)
             ->addIndexColumn()
@@ -234,6 +249,11 @@ class ProductController extends Controller
 
     public function skuGetData()
     {
+        $activeWarehouseId = session('active_warehouse_id');
+        if (is_null($activeWarehouseId) || $activeWarehouseId === '' || $activeWarehouseId === 'select') {
+            return DataTables::of(collect([]))->toJson();
+        }
+
         $skus = $this->productService->getAllSKU();
         return DataTables::of($skus)
             ->addIndexColumn()
@@ -668,39 +688,85 @@ class ProductController extends Controller
     {
         try {
             $product = $this->productService->findById($request->id);
-            $product->update([
-                'status' => $request->status
-            ]);
-            if (!isModuleActive('MultiVendor')) {
-                $product->sellerProducts->where('user_id', 1)->first()->update([
+            $activeWarehouseId = session('active_warehouse_id');
+
+            if ($activeWarehouseId && $activeWarehouseId !== 'all' && $activeWarehouseId !== 'select') {
+                $sku_ids = $product->skus->pluck('id')->toArray();
+                if (!isModuleActive('MultiVendor')) {
+                    $frontProduct = $product->sellerProducts->where('user_id', 1)->first();
+                    if ($frontProduct) {
+                        $front_sku_ids = $frontProduct->skus->pluck('id')->toArray();
+                        $sku_ids = array_merge($sku_ids, $front_sku_ids);
+                    }
+                }
+                $sku_ids = array_unique($sku_ids);
+
+                foreach ($sku_ids as $sku_id) {
+                    DB::table('warehouse_product_stocks')->updateOrInsert(
+                        [
+                            'seller_product_sku_id' => $sku_id,
+                            'warehouse_id' => $activeWarehouseId,
+                        ],
+                        [
+                            'is_active' => $request->status,
+                            'updated_at' => now(),
+                        ]
+                    );
+                }
+            } else {
+                $product->update([
                     'status' => $request->status
                 ]);
-            }
-            foreach ($product->skus as $sku) {
-                $product_sku = $this->productService->findProductSkuById($sku->id);
-                $product_sku->status = $request->status;
-                $product_sku->save();
-            }
-            if($request->status == 0){
-                // Send Notification
-                $notificationUrl = route('seller.product.index');
-                $notificationUrl = str_replace(url('/'),'',$notificationUrl);
-                $this->notificationUrl = $notificationUrl;
-                $this->adminNotificationUrl = '/products';
-                $this->routeCheck = 'product.index';
-                $this->typeId = EmailTemplateType::where('type', 'product_disable_email_template')->first()->id;
-                if(isModuleActive('MultiVendor')){
-                    $sellerProducts = SellerProduct::where('product_id', $product->id)->get();
-                    foreach ($sellerProducts as $sellerProduct) {
+                if (!isModuleActive('MultiVendor')) {
+                    $frontProduct = $product->sellerProducts->where('user_id', 1)->first();
+                    if ($frontProduct) {
+                        $frontProduct->update([
+                            'status' => $request->status
+                        ]);
+                    }
+                }
+                foreach ($product->skus as $sku) {
+                    $product_sku = $this->productService->findProductSkuById($sku->id);
+                    $product_sku->status = $request->status;
+                    $product_sku->save();
+                }
+
+                // Update is_active in warehouse_product_stocks for all warehouses
+                $sku_ids = $product->skus->pluck('id')->toArray();
+                if (!isModuleActive('MultiVendor')) {
+                    $frontProduct = $product->sellerProducts->where('user_id', 1)->first();
+                    if ($frontProduct) {
+                        $front_sku_ids = $frontProduct->skus->pluck('id')->toArray();
+                        $sku_ids = array_merge($sku_ids, $front_sku_ids);
+                    }
+                }
+                $sku_ids = array_unique($sku_ids);
+
+                DB::table('warehouse_product_stocks')
+                    ->whereIn('seller_product_sku_id', $sku_ids)
+                    ->update(['is_active' => $request->status]);
+
+                if($request->status == 0){
+                    // Send Notification
+                    $notificationUrl = route('seller.product.index');
+                    $notificationUrl = str_replace(url('/'),'',$notificationUrl);
+                    $this->notificationUrl = $notificationUrl;
+                    $this->adminNotificationUrl = '/products';
+                    $this->routeCheck = 'product.index';
+                    $this->typeId = EmailTemplateType::where('type', 'product_disable_email_template')->first()->id;
+                    if(isModuleActive('MultiVendor')){
+                        $sellerProducts = SellerProduct::where('product_id', $product->id)->get();
+                        foreach ($sellerProducts as $sellerProduct) {
+                            $notification = NotificationSetting::where('slug','product-disable')->first();
+                            if ($notification) {
+                                $this->notificationSend($notification->id, $sellerProduct->user_id);
+                            }
+                        }
+                    }else{
                         $notification = NotificationSetting::where('slug','product-disable')->first();
                         if ($notification) {
-                            $this->notificationSend($notification->id, $sellerProduct->user_id);
+                            $this->notificationSend($notification->id, 1);
                         }
-                    }
-                }else{
-                    $notification = NotificationSetting::where('slug','product-disable')->first();
-                    if ($notification) {
-                        $this->notificationSend($notification->id, 1);
                     }
                 }
             }
