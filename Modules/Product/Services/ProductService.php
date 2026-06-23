@@ -54,17 +54,24 @@ class ProductService
                     }else{
                         $file = $media_img->file_name;
                     }
-                    if($key == 0){
-                        $thumbnail_image = ImageStore::saveImage($file, 300, 300);
+                    try {
+                        if($key == 0){
+                            $thumbnail_image = ImageStore::saveImage($file, 300, 300);
+                        }
+                        $saved_gal = ImageStore::saveImage($file,1000,1000);
+                        if ($saved_gal) {
+                            $galary_image[] = $saved_gal;
+                        }
+                    } catch (\Exception $imgEx) {
+                        \Log::warning("Skipped image processing during creation for media ID {$image}: " . $imgEx->getMessage());
                     }
-                    $galary_image[] = ImageStore::saveImage($file,1000,1000);
                 }
             }
         }
         $data['galary_image'] = $galary_image;
         if ($host == 'Dropbox') {
-            $data['thumbnail_image_source'] = $thumbnail_image['images_source'];
-            $data['file_dropbox'] = $thumbnail_image['file_dropbox'];
+            $data['thumbnail_image_source'] = $thumbnail_image['images_source'] ?? null;
+            $data['file_dropbox'] = $thumbnail_image['file_dropbox'] ?? null;
         }else{
             $data['thumbnail_image_source'] = $thumbnail_image;
         }
@@ -161,35 +168,49 @@ class ProductService
                     }else{
                         $file = $media_img->file_name;
                     }
-                    $galary_image = ImageStore::saveImage($file,1000,1000);
+                    try {
+                        $galary_image = ImageStore::saveImage($file,1000,1000);
+                        if ($galary_image) {
+                            $product_galary_image = new ProductGalaryImage;
+                            $product_galary_image->product_id = $product->id;
+                            if ($host == 'Dropbox') {
+                                $product_galary_image->images_source = $galary_image['images_source'];
+                                $product_galary_image->file_dropbox = $galary_image['file_dropbox'];
+                            }else{
+                                $product_galary_image->images_source = $galary_image;
+                            }
+                            $product_galary_image->media_id = $media_img->id;
+                            $product_galary_image->save();
+                        }
+                    } catch (\Exception $imgEx) {
+                        \Log::warning("Skipped adding unreadable gallery image ID {$image}: " . $imgEx->getMessage());
+                    }
                 }
-                $product_galary_image = new ProductGalaryImage;
-                $product_galary_image->product_id = $product->id;
-                if ($host == 'Dropbox') {
-                    $product_galary_image->images_source = $galary_image['images_source'];
-                    $product_galary_image->file_dropbox = $galary_image['file_dropbox'];
-                }else{
-                    $product_galary_image->images_source = $galary_image;
-                }
-                $product_galary_image->media_id = $media_img->id;
-                $product_galary_image->save();
             }
         }
         if(count($data['images']) > 0){
             if(count($prev_media_ids) < 1 || count($prev_media_ids) > 0 && $prev_media_ids[0] != $data['images'][0]){
                 $this->deleteImage($product->thumbnail_image_source);
                 $media_img = MediaManager::find($data['images'][0]);
-                if($media_img->storage == 'local'){
-                    $file = asset_path($media_img->file_name);
-                }else{
-                    $file = $media_img->file_name;
-                }
-                $thumbnail_image = ImageStore::saveImage($file, 300, 300);
-                if ($host == 'Dropbox') {
-                    $data['thumbnail_image_source'] = $thumbnail_image['images_source'];
-                    $data['file_dropbox'] = $thumbnail_image['file_dropbox'];
-                }else{
-                    $data['thumbnail_image_source'] = $thumbnail_image;
+                if($media_img){
+                    if($media_img->storage == 'local'){
+                        $file = asset_path($media_img->file_name);
+                    }else{
+                        $file = $media_img->file_name;
+                    }
+                    try {
+                        $thumbnail_image = ImageStore::saveImage($file, 300, 300);
+                        if ($thumbnail_image) {
+                            if ($host == 'Dropbox') {
+                                $data['thumbnail_image_source'] = $thumbnail_image['images_source'];
+                                $data['file_dropbox'] = $thumbnail_image['file_dropbox'];
+                            }else{
+                                $data['thumbnail_image_source'] = $thumbnail_image;
+                            }
+                        }
+                    } catch (\Exception $imgEx) {
+                        \Log::warning("Skipped setting unreadable thumbnail image: " . $imgEx->getMessage());
+                    }
                 }
             }
         }else{
@@ -210,30 +231,38 @@ class ProductService
                 ImageStore::deleteImage($product->meta_image);
             }
             $media_img = MediaManager::find($data['meta_image']);
-            if($media_img->storage == 'local'){
-                $file = asset_path($media_img->file_name);
-            }else{
-                $file = $media_img->file_name;
-            }
-            $meta_image = ImageStore::saveImage($file,300,300);
-            if ($host == 'Dropbox') {
-                $data['meta_image'] = $meta_image['images_source'];
-                $data['meta_file_dropbox'] = $meta_image['file_dropbox'];
-            }else{
-                $data['meta_image'] = $meta_image;
-            }
-            $prev_meta = UsedMedia::where('usable_id', $product->id)->where('usable_type', get_class($product))->where('used_for', 'meta_image')->first();
-            if($prev_meta){
-                $prev_meta->update([
-                    'media_id' => $media_img->id
-                ]);
-            }else{
-                UsedMedia::create([
-                    'media_id' => $media_img->id,
-                    'usable_id' => $product->id,
-                    'usable_type' => get_class($product),
-                    'used_for' => 'meta_image'
-                ]);
+            if($media_img){
+                if($media_img->storage == 'local'){
+                    $file = asset_path($media_img->file_name);
+                }else{
+                    $file = $media_img->file_name;
+                }
+                try {
+                    $meta_image = ImageStore::saveImage($file,300,300);
+                    if ($meta_image) {
+                        if ($host == 'Dropbox') {
+                            $data['meta_image'] = $meta_image['images_source'];
+                            $data['meta_file_dropbox'] = $meta_image['file_dropbox'];
+                        }else{
+                            $data['meta_image'] = $meta_image;
+                        }
+                        $prev_meta = UsedMedia::where('usable_id', $product->id)->where('usable_type', get_class($product))->where('used_for', 'meta_image')->first();
+                        if($prev_meta){
+                            $prev_meta->update([
+                                'media_id' => $media_img->id
+                            ]);
+                        }else{
+                            UsedMedia::create([
+                                'media_id' => $media_img->id,
+                                'usable_id' => $product->id,
+                                'usable_type' => get_class($product),
+                                'used_for' => 'meta_image'
+                            ]);
+                        }
+                    }
+                } catch (\Exception $imgEx) {
+                    \Log::warning("Skipped setting unreadable meta image: " . $imgEx->getMessage());
+                }
             }
         }
         else{

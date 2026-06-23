@@ -150,7 +150,7 @@ class AllProductsResource extends JsonResource
                     "user_id" => $allProductsku->user_id,
                     "product_id" => $allProductsku->product_id,
                     "product_sku_id" => $allProductsku->product_sku_id,
-                    "product_stock" => $allProductsku->product_stock,
+                    "product_stock" => isset($allProductsku->warehouse_stock) ? $allProductsku->warehouse_stock : $allProductsku->product_stock,
                     "purchase_price" => $allProductsku->purchase_price,
                     "selling_price" => $allProductsku->selling_price,
                     "status" => $allProductsku->status,

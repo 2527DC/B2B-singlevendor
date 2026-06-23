@@ -30,6 +30,7 @@ class HomepageController extends Controller
     public function index(Request $request)
     {
         $seller_id = $request->get('seller_id');
+        $warehouse_id = $request->get('warehouse_id');
         $homepagesection = HomePageSection::where('section_name', 'feature_categories')->first();
 
         $categories = Category::with(['sellerProducts' => function($q) {
@@ -83,7 +84,7 @@ class HomepageController extends Controller
 
         $top_picks = [];
         if ($section) {
-            $top_picks =   ToppicksResource::collection($section->getApiProductByQuery($seller_id));
+            $top_picks =   ToppicksResource::collection($section->getApiProductByQuery($seller_id, $warehouse_id));
         }
 
         return response()->json([
@@ -97,9 +98,10 @@ class HomepageController extends Controller
         ], 200);
     }
 
-    public function recomandedProduct()
+    public function recomandedProduct(Request $request)
     {
-        $products = HomePageSection::where('section_name', 'more_products')->first()->getHomePageProductByQuery();
+        $warehouse_id = $request->get('warehouse_id');
+        $products = HomePageSection::where('section_name', 'more_products')->first()->getHomePageProductByQuery($warehouse_id);
         return RecommendedProductListResource::collection($products);
     }
     public function getTopCategoryData()
@@ -176,11 +178,12 @@ class HomepageController extends Controller
         }
     }
 
-    public function getTopPickData()
+    public function getTopPickData(Request $request)
     {
+        $warehouse_id = $request->get('warehouse_id');
         $section = HomePageSection::where('section_name', 'top_picks')->first();
         if ($section) {
-            $top_picks = ToppicksResource::collection($section->getApiProductByQuery());
+            $top_picks = ToppicksResource::collection($section->getApiProductByQuery(null, $warehouse_id));
         } else {
             $top_picks = [];
         }

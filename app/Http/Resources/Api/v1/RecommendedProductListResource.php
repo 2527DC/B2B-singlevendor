@@ -57,7 +57,7 @@ class RecommendedProductListResource extends JsonResource
                     "user_id" => $sku->user_id,
                     "product_id" => $sku->product_id,
                     "product_sku_id" => $sku->product_sku_id,
-                    "product_stock" => $sku->product_stock,
+                    "product_stock" => isset($sku->warehouse_stock) ? $sku->warehouse_stock : $sku->product_stock,
                     "purchase_price" => $sku->purchase_price,
                     "selling_price" => $sku->selling_price,
                     "status" => $sku->status,

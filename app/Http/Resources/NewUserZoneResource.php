@@ -159,7 +159,7 @@ class NewUserZoneResource extends JsonResource
                                 "user_id" => $allPdctsPdctSku->user_id,
                                 "product_id" => $allPdctsPdctSku->product_id,
                                 "product_sku_id" => $allPdctsPdctSku->product_sku_id,
-                                "product_stock" => $allPdctsPdctSku->product_stock,
+                                "product_stock" => isset($allPdctsPdctSku->warehouse_stock) ? $allPdctsPdctSku->warehouse_stock : $allPdctsPdctSku->product_stock,
                                 "purchase_price" => $allPdctsPdctSku->purchase_price,
                                 "selling_price" => $allPdctsPdctSku->selling_price,
                                 "status" => $allPdctsPdctSku->status,

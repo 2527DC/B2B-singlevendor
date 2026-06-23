@@ -42,7 +42,7 @@ class HomePageSection extends Model
         return $data['products']->with('skus', 'product.gallary_images')->take(12)->get();
     }
 
-    public function getHomePageProductByQuery()
+    public function getHomePageProductByQuery($warehouse_id = null)
     {
         $filterRepo = new FilterRepository();
         $data = $filterRepo->getSectionProducts($this->section_name);
@@ -50,7 +50,36 @@ class HomePageSection extends Model
         if (app('theme')->folder_path == 'amazy') {
             $paginate = 20;
         }
-        return $data['products']->with('skus', 'wishList', 'product.shippingMethods')->paginate($paginate);
+
+        $products = $data['products'];
+        if ($warehouse_id) {
+            $products = $products->whereHas('skus', function ($q) use ($warehouse_id) {
+                $q->whereExists(function ($query) use ($warehouse_id) {
+                    $query->select(\DB::raw(1))
+                        ->from('warehouse_product_stocks')
+                        ->whereColumn('warehouse_product_stocks.seller_product_sku_id', '=', 'seller_product_s_k_us.id')
+                        ->where('warehouse_product_stocks.warehouse_id', $warehouse_id)
+                        ->where('warehouse_product_stocks.is_active', 1)
+                        ->where('warehouse_product_stocks.stock', '>', 0);
+                });
+            });
+        }
+
+        return $products->with([
+            'wishList',
+            'product.shippingMethods',
+            'skus' => function ($q) use ($warehouse_id) {
+                if ($warehouse_id) {
+                    $q->select('seller_product_s_k_us.*', 'warehouse_product_stocks.stock as warehouse_stock')
+                        ->join('warehouse_product_stocks', function($join) use ($warehouse_id) {
+                            $join->on('warehouse_product_stocks.seller_product_sku_id', '=', 'seller_product_s_k_us.id')
+                                 ->where('warehouse_product_stocks.warehouse_id', '=', $warehouse_id)
+                                 ->where('warehouse_product_stocks.is_active', '=', 1)
+                                 ->where('warehouse_product_stocks.stock', '>', 0);
+                        });
+                }
+            }
+        ])->paginate($paginate);
     }
 
     public function getCategoryByQuery()
@@ -124,9 +153,9 @@ class HomePageSection extends Model
         return $brands->distinct('brands.id')->take($paginate)->get();
     }
 
-    public function getApiProductByQuery($seller_id = null)
+    public function getApiProductByQuery($seller_id = null, $warehouse_id = null)
     {
-        $products = SellerProduct::with(
+        $products = SellerProduct::with([
             'product.shippingMethods.shippingMethod',
             'product.upSales.up_seller_products',
             'product.crossSales.cross_seller_products',
@@ -138,11 +167,35 @@ class HomePageSection extends Model
             'product.variations',
             'product.skus',
             'product.tags',
-            'product.gallary_images'
-        )->activeSeller();
+            'product.gallary_images',
+            'skus' => function ($q) use ($warehouse_id) {
+                if ($warehouse_id) {
+                    $q->select('seller_product_s_k_us.*', 'warehouse_product_stocks.stock as warehouse_stock')
+                        ->join('warehouse_product_stocks', function($join) use ($warehouse_id) {
+                            $join->on('warehouse_product_stocks.seller_product_sku_id', '=', 'seller_product_s_k_us.id')
+                                 ->where('warehouse_product_stocks.warehouse_id', '=', $warehouse_id)
+                                 ->where('warehouse_product_stocks.is_active', '=', 1)
+                                 ->where('warehouse_product_stocks.stock', '>', 0);
+                        });
+                }
+            }
+        ])->activeSeller();
 
         if ($seller_id) {
             $products = $products->where('user_id', $seller_id);
+        }
+
+        if ($warehouse_id) {
+            $products = $products->whereHas('skus', function ($q) use ($warehouse_id) {
+                $q->whereExists(function ($query) use ($warehouse_id) {
+                    $query->select(\DB::raw(1))
+                        ->from('warehouse_product_stocks')
+                        ->whereColumn('warehouse_product_stocks.seller_product_sku_id', '=', 'seller_product_s_k_us.id')
+                        ->where('warehouse_product_stocks.warehouse_id', $warehouse_id)
+                        ->where('warehouse_product_stocks.is_active', 1)
+                        ->where('warehouse_product_stocks.stock', '>', 0);
+                });
+            });
         }
 
         if ($this->type == 1) {

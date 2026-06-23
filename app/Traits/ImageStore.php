@@ -18,153 +18,172 @@ public static function saveImage($image, $height = null ,$lenght = null , $aspec
 {
 
     if(isset($image)){
+        try {
+            $current_date  = Carbon::now()->format('d-m-Y');
+            $is_url = is_string($image) && (strpos($image, 'http://') === 0 || strpos($image, 'https://') === 0);
+            if (is_string($image) && !$is_url) {
+                if (!file_exists($image)) {
+                    if (file_exists(public_path($image))) {
+                        $image = public_path($image);
+                    } elseif (file_exists(base_path($image))) {
+                        $image = base_path($image);
+                    } else {
+                        \Log::warning("ImageStore::saveImage - Local file does not exist: " . $image);
+                        return null;
+                    }
+                }
+            }
 
-        $current_date  = Carbon::now()->format('d-m-Y');
-        $image_extention = str_replace('image/','',Image::make($image)->mime());
+            $img_check = Image::make($image);
+            $image_extention = str_replace('image/','',$img_check->mime());
 
-        $host = activeFileStorage();
-        if($host == 'AmazonS3' || $host == 'DigitalOcean' || $host == 'GoogleDrive' || $host == 'Wasabi' || $host == 'Backblaze' || $host == 'Dropbox' || $host == 'GoogleCloud' || $host == 'BunnyCDN' || $host == 'Contabo'){
-             $img = Image::make($image);
-            if($height != null && $lenght != null ){
-                if ($aspectration) {
-                    $img_size = getimagesize($image);
-                    $original_width = $img_size[0];
-                    $original_height = $img_size[1];
-                    if($original_width > $original_height){
-                        // resize the image to a width of 300 and constrain aspect ratio (auto height)
-                        $img->resize($lenght, null, function ($constraint) {
-                            $constraint->aspectRatio();
-                        });
-                    }elseif($original_width < $original_height){
-                        // resize the image to a height of 200 and constrain aspect ratio (auto width)
-                        $img->resize(null, $height, function ($constraint) {
-                            $constraint->aspectRatio();
-                        });
-                    }else{
-                        if($lenght>$height){
-                            $img->resize(null,$lenght, function($constraint){
+            $host = activeFileStorage();
+            if($host == 'AmazonS3' || $host == 'DigitalOcean' || $host == 'GoogleDrive' || $host == 'Wasabi' || $host == 'Backblaze' || $host == 'Dropbox' || $host == 'GoogleCloud' || $host == 'BunnyCDN' || $host == 'Contabo'){
+                 $img = Image::make($image);
+                if($height != null && $lenght != null ){
+                    if ($aspectration) {
+                        $img_size = getimagesize($image);
+                        $original_width = $img_size[0];
+                        $original_height = $img_size[1];
+                        if($original_width > $original_height){
+                            // resize the image to a width of 300 and constrain aspect ratio (auto height)
+                            $img->resize($lenght, null, function ($constraint) {
                                 $constraint->aspectRatio();
                             });
-                        }elseif($lenght<$height){
-                            $img->resize($height,null, function($constraint){
+                        }elseif($original_width < $original_height){
+                            // resize the image to a height of 200 and constrain aspect ratio (auto width)
+                            $img->resize(null, $height, function ($constraint) {
                                 $constraint->aspectRatio();
                             });
                         }else{
-                            $img->resize($height,null, function($constraint){
-                                $constraint->aspectRatio();
-                            });
+                            if($lenght>$height){
+                                $img->resize(null,$lenght, function($constraint){
+                                    $constraint->aspectRatio();
+                                });
+                            }elseif($lenght<$height){
+                                $img->resize($height,null, function($constraint){
+                                    $constraint->aspectRatio();
+                                });
+                            }else{
+                                $img->resize($height,null, function($constraint){
+                                    $constraint->aspectRatio();
+                                });
+                            }
                         }
+                    }else {
+                        $img->resize($height,$lenght);
                     }
-                }else {
-                    $img->resize($height,$lenght);
                 }
-            }
-            if ($host == 'DigitalOcean') {
-                $img_name_for_db = 'images/'.uniqid().'.'.$image_extention;
-                Storage::disk('do')->put($img_name_for_db, $img->stream(), 'public');
-                $url = Storage::disk('do')->url($img_name_for_db);
-                return $url;
-            }
-            elseif ($host == 'GoogleDrive') {
-                $img_name_for_db = uniqid().'.'.$image_extention;
-                Storage::disk('google')->put($img_name_for_db, $img->stream(), 'public');
-                $url = Storage::disk('google')->url($img_name_for_db);
+                if ($host == 'DigitalOcean') {
+                    $img_name_for_db = 'images/'.uniqid().'.'.$image_extention;
+                    Storage::disk('do')->put($img_name_for_db, $img->stream(), 'public');
+                    $url = Storage::disk('do')->url($img_name_for_db);
+                    return $url;
+                }
+                elseif ($host == 'GoogleDrive') {
+                    $img_name_for_db = uniqid().'.'.$image_extention;
+                    Storage::disk('google')->put($img_name_for_db, $img->stream(), 'public');
+                    $url = Storage::disk('google')->url($img_name_for_db);
 
-                return $url;
-            }
-            elseif ($host == 'Wasabi') {
-                $img_name_for_db = 'images/'.uniqid().'.'.$image_extention;
-                Storage::disk('Wasabi')->put($img_name_for_db, $img->stream(), 'public');
-                $url = Storage::disk('Wasabi')->url($img_name_for_db);
-                return $url;
-            }
-            elseif ($host == 'Backblaze') {
-                $img_name_for_db = 'images/'.uniqid().'.'.$image_extention;
-                Storage::disk('b2')->put($img_name_for_db, $img->stream(), 'public');
-                $url = 'https://'.env('BACKBLAZE_BUCKET_NAME').'.'.env('BACKBLAZE_END_POINT').'/'.$img_name_for_db;
-                return $url;
-            }
-            elseif ($host == 'Dropbox') {
-                $img_name_for_db = 'images/'.uniqid().'.'.$image_extention;
-                Storage::disk('dropbox')->put($img_name_for_db, $img->stream(), 'public');
-                $url['images_source'] = Storage::disk('dropbox')->url($img_name_for_db);
-                $url['file_dropbox'] = $img_name_for_db;
-                return $url;
-            }
-            elseif ($host == 'GoogleCloud') {
-                $img_name_for_db = 'images/'.uniqid().'.'.$image_extention;
-                Storage::disk('gcs')->put($img_name_for_db, $img->stream(), 'public');
-                $url = Storage::disk('gcs')->url($img_name_for_db);
-                return $url;
-            }
-            elseif ($host == 'BunnyCDN') {
-                $dir = 'public/temp';
-                \File::ensureDirectoryExists($dir);
-                $temp_img = $dir.'/'.uniqid().'.'.$image_extention;
-                $img->save($temp_img);
-                $img_name_for_db = 'images/'.uniqid().'.'.$image_extention;
-                $bunnyCDNStorage = new BunnyCDN(env('BUNNY_STORAGE_ZONE_NAME'), env('BUNNY_API_ACCESS_KEY') , env('BUNNY_STORAGE_ZONE_REGION'));
-                $bunnyCDNStorage->uploadFile($temp_img , "/".env('BUNNY_STORAGE_ZONE_NAME')."/".$img_name_for_db);
-                $file = "https://".env('BUNNY_STORAGE_ZONE_NAME').".b-cdn.net/".$img_name_for_db;
-                \File::delete($temp_img);
-                return $file;
-            }
-            elseif ($host == 'Contabo') {
-                $img_name_for_db = 'images/'.uniqid().'.'.$image_extention;
-                Storage::disk('contabo')->put($img_name_for_db, $img->stream(), 'public');
-                $url = Storage::disk('contabo')->url($img_name_for_db);
-                return $url;
-            }
-            else{
-                $img_name_for_db = 'images/'.uniqid().'.'.$image_extention;
-                Storage::disk('s3')->put($img_name_for_db, $img->stream(), 'public');
-                $url = Storage::disk('s3')->url($img_name_for_db);
-                return $url;
-            }
-        }else{
-            if(!File::isDirectory(asset_path('uploads/images/').$current_date)){
-                File::makeDirectory(asset_path('uploads/images/').$current_date, 0777, true, true);
-            }
-            $image_extention = str_replace('image/','',Image::make($image)->mime());
-            $img = Image::make($image);
-            if($height != null && $lenght != null ){
-                if ($aspectration) {
-                    $img_size = getimagesize($image);
-                    $original_width = $img_size[0];
-                    $original_height = $img_size[1];
-                    if($original_width > $original_height){
-                        // resize the image to a width of 300 and constrain aspect ratio (auto height)
-                        $img->resize($lenght, null, function ($constraint) {
-                            $constraint->aspectRatio();
-                        });
-                    }elseif($original_width < $original_height){
-                        // resize the image to a height of 200 and constrain aspect ratio (auto width)
-                        $img->resize(null, $height, function ($constraint) {
-                            $constraint->aspectRatio();
-                        });
-                    }else{
-                        if($lenght>$height){
-                            $img->resize(null,$lenght, function($constraint){
+                    return $url;
+                }
+                elseif ($host == 'Wasabi') {
+                    $img_name_for_db = 'images/'.uniqid().'.'.$image_extention;
+                    Storage::disk('Wasabi')->put($img_name_for_db, $img->stream(), 'public');
+                    $url = Storage::disk('Wasabi')->url($img_name_for_db);
+                    return $url;
+                }
+                elseif ($host == 'Backblaze') {
+                    $img_name_for_db = 'images/'.uniqid().'.'.$image_extention;
+                    Storage::disk('b2')->put($img_name_for_db, $img->stream(), 'public');
+                    $url = 'https://'.env('BACKBLAZE_BUCKET_NAME').'.'.env('BACKBLAZE_END_POINT').'/'.$img_name_for_db;
+                    return $url;
+                }
+                elseif ($host == 'Dropbox') {
+                    $img_name_for_db = 'images/'.uniqid().'.'.$image_extention;
+                    Storage::disk('dropbox')->put($img_name_for_db, $img->stream(), 'public');
+                    $url['images_source'] = Storage::disk('dropbox')->url($img_name_for_db);
+                    $url['file_dropbox'] = $img_name_for_db;
+                    return $url;
+                }
+                elseif ($host == 'GoogleCloud') {
+                    $img_name_for_db = 'images/'.uniqid().'.'.$image_extention;
+                    Storage::disk('gcs')->put($img_name_for_db, $img->stream(), 'public');
+                    $url = Storage::disk('gcs')->url($img_name_for_db);
+                    return $url;
+                }
+                elseif ($host == 'BunnyCDN') {
+                    $dir = 'public/temp';
+                    \File::ensureDirectoryExists($dir);
+                    $temp_img = $dir.'/'.uniqid().'.'.$image_extention;
+                    $img->save($temp_img);
+                    $img_name_for_db = 'images/'.uniqid().'.'.$image_extention;
+                    $bunnyCDNStorage = new BunnyCDN(env('BUNNY_STORAGE_ZONE_NAME'), env('BUNNY_API_ACCESS_KEY') , env('BUNNY_STORAGE_ZONE_REGION'));
+                    $bunnyCDNStorage->uploadFile($temp_img , "/".env('BUNNY_STORAGE_ZONE_NAME')."/".$img_name_for_db);
+                    $file = "https://".env('BUNNY_STORAGE_ZONE_NAME').".b-cdn.net/".$img_name_for_db;
+                    \File::delete($temp_img);
+                    return $file;
+                }
+                elseif ($host == 'Contabo') {
+                    $img_name_for_db = 'images/'.uniqid().'.'.$image_extention;
+                    Storage::disk('contabo')->put($img_name_for_db, $img->stream(), 'public');
+                    $url = Storage::disk('contabo')->url($img_name_for_db);
+                    return $url;
+                }
+                else{
+                    $img_name_for_db = 'images/'.uniqid().'.'.$image_extention;
+                    Storage::disk('s3')->put($img_name_for_db, $img->stream(), 'public');
+                    $url = Storage::disk('s3')->url($img_name_for_db);
+                    return $url;
+                }
+            }else{
+                if(!File::isDirectory(asset_path('uploads/images/').$current_date)){
+                    File::makeDirectory(asset_path('uploads/images/').$current_date, 0777, true, true);
+                }
+                $image_extention = str_replace('image/','',Image::make($image)->mime());
+                $img = Image::make($image);
+                if($height != null && $lenght != null ){
+                    if ($aspectration) {
+                        $img_size = getimagesize($image);
+                        $original_width = $img_size[0];
+                        $original_height = $img_size[1];
+                        if($original_width > $original_height){
+                            // resize the image to a width of 300 and constrain aspect ratio (auto height)
+                            $img->resize($lenght, null, function ($constraint) {
                                 $constraint->aspectRatio();
                             });
-                        }elseif($lenght<$height){
-                            $img->resize($height,null, function($constraint){
+                        }elseif($original_width < $original_height){
+                            // resize the image to a height of 200 and constrain aspect ratio (auto width)
+                            $img->resize(null, $height, function ($constraint) {
                                 $constraint->aspectRatio();
                             });
                         }else{
-                            $img->resize($height,null, function($constraint){
-                                $constraint->aspectRatio();
-                            });
+                            if($lenght>$height){
+                                $img->resize(null,$lenght, function($constraint){
+                                    $constraint->aspectRatio();
+                                });
+                            }elseif($lenght<$height){
+                                $img->resize($height,null, function($constraint){
+                                    $constraint->aspectRatio();
+                                });
+                            }else{
+                                $img->resize($height,null, function($constraint){
+                                    $constraint->aspectRatio();
+                                });
+                            }
                         }
+                    }else {
+                        $img->resize($height,$lenght);
                     }
-                }else {
-                    $img->resize($height,$lenght);
                 }
+                $img_name_for_db = 'uploads/images/'.$current_date.'/'.uniqid().'.'.$image_extention;
+                $img_name_for_file = asset_path($img_name_for_db);
+                $img->save($img_name_for_file);
+                return $img_name_for_db;
             }
-            $img_name_for_db = 'uploads/images/'.$current_date.'/'.uniqid().'.'.$image_extention;
-            $img_name_for_file = asset_path($img_name_for_db);
-            $img->save($img_name_for_file);
-            return $img_name_for_db;
+        } catch (\Exception $e) {
+            \Log::warning("ImageStore::saveImage failed for: " . (is_string($image) ? $image : 'Object') . ". Error: " . $e->getMessage());
+            return null;
         }
     }else{
         return null ;
